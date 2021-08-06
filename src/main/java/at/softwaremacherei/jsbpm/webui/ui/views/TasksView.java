@@ -1,7 +1,6 @@
 package at.softwaremacherei.jsbpm.webui.ui.views;
 
 import org.springframework.context.annotation.Scope;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
 import com.vaadin.flow.component.grid.Grid;
@@ -13,15 +12,10 @@ import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 
-import at.softwaremacherei.jsbpm.engine.api.EngineService;
 import at.softwaremacherei.jsbpm.engine.api.UserNotFoundException;
-import at.softwaremacherei.jsbpm.engine.api.UserTokenService;
-import at.softwaremacherei.jsbpm.engine.api.instance.Task;
 import at.softwaremacherei.jsbpm.engine.api.instance.TaskInfo;
 import at.softwaremacherei.jsbpm.engine.api.instance.TaskNotFoundException;
 import at.softwaremacherei.jsbpm.engine.api.instance.TaskOutOfDateException;
-import at.softwaremacherei.jsbpm.engine.api.instance.UserToken;
-import at.softwaremacherei.jsbpm.springauthentication.SpringAuthentication;
 import at.softwaremacherei.jsbpm.webui.backend.SbpmEngine;
 import at.softwaremacherei.jsbpm.webui.ui.MainLayout;
 import at.softwaremacherei.jsbpm.webui.ui.views.model.TaskForm.SaveEvent;
