@@ -1,10 +1,7 @@
 package at.softwaremacherei.jsbpm.webui.ui.views.dashboard;
 
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.charts.Chart;
-import com.vaadin.flow.component.charts.model.ChartType;
-import com.vaadin.flow.component.charts.model.DataSeries;
-import com.vaadin.flow.component.charts.model.DataSeriesItem;
+import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.PageTitle;
@@ -13,8 +10,6 @@ import com.vaadin.flow.router.Route;
 import at.softwaremacherei.jsbpm.webui.backend.service.CompanyService;
 import at.softwaremacherei.jsbpm.webui.backend.service.ContactService;
 import at.softwaremacherei.jsbpm.webui.ui.MainLayout;
-
-import java.util.Map;
 
 @PageTitle("Dashboard | Vaadin CRM")
 @Route(value = "dashboard", layout = MainLayout.class)
@@ -45,14 +40,15 @@ public class DashboardView extends VerticalLayout {
     }
 
     private Component getCompaniesChart() {
-        Chart chart = new Chart(ChartType.PIE);
-
-        DataSeries dataSeries = new DataSeries();
-        Map<String, Integer> stats = companyService.getStats();
-        stats.forEach((name, number) ->
-            dataSeries.add(new DataSeriesItem(name, number)));
-
-        chart.getConfiguration().setSeries(dataSeries);
-        return chart;
+//        Chart chart = new Chart(ChartType.PIE);
+//
+//        DataSeries dataSeries = new DataSeries();
+//        Map<String, Integer> stats = companyService.getStats();
+//        stats.forEach((name, number) ->
+//            dataSeries.add(new DataSeriesItem(name, number)));
+//
+//        chart.getConfiguration().setSeries(dataSeries);
+//        return chart;
+        return new Label("TODO ad some content");
     }
 }

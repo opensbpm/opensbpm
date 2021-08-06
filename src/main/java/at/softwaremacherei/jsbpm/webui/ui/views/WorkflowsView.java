@@ -1,17 +1,24 @@
 package at.softwaremacherei.jsbpm.webui.ui.views;
 
+import java.util.Optional;
+
 import org.springframework.context.annotation.Scope;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
+import com.vaadin.flow.component.Key;
+import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.grid.Grid;
-import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.html.Pre;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.router.RouteAlias;
 
 import at.softwaremacherei.jsbpm.engine.api.EngineService;
 import at.softwaremacherei.jsbpm.engine.api.ModelNotFoundException;
@@ -22,68 +29,33 @@ import at.softwaremacherei.jsbpm.engine.api.model.ProcessModelInfo;
 import at.softwaremacherei.jsbpm.engine.api.model.ProcessModelState;
 import at.softwaremacherei.jsbpm.springauthentication.SpringAuthentication;
 import at.softwaremacherei.jsbpm.webui.ui.MainLayout;
-import at.softwaremacherei.jsbpm.webui.ui.views.model.ProcessModelInfoForm;
-import at.softwaremacherei.jsbpm.webui.ui.views.model.ProcessModelInfoForm.CloseEvent;
-import at.softwaremacherei.jsbpm.webui.ui.views.model.ProcessModelInfoForm.SaveEvent;
 
 @Component
 @Scope("prototype")
-//@RouteAlias(value = "")
+@RouteAlias(value = "", layout = MainLayout.class)
 @Route(value = "workflows", layout = MainLayout.class)
 @PageTitle("Workflows | SBPM Engine")
 public class WorkflowsView extends VerticalLayout {
 
     private final EngineService engineService;
     private final UserTokenService userTokenService;
-    
-    private ProcessModelInfoForm form;
+
     private Grid<ProcessModelInfo> grid = new Grid<>(ProcessModelInfo.class);
     private TextField filterText = new TextField();
 
     public WorkflowsView(
-                EngineService engineService,
-                UserTokenService userTokenService) {
-        this.engineService =engineService;
+            EngineService engineService,
+            UserTokenService userTokenService) {
+        this.engineService = engineService;
         this.userTokenService = userTokenService;
-        
-        //addClassName("workflows-view");
+
+        // addClassName("workflows-view");
         addClassName("list-view");
         setSizeFull();
         configureGrid();
 
-
-        form = new ProcessModelInfoForm();
-        form.addListener(SaveEvent.class, this::saveContact);
-        //form.addListener(DeleteEvent.class, this::deleteContact);
-        form.addListener(CloseEvent.class, e -> closeEditor());
-
-        Div content = new Div(grid, form);
-        content.addClassName("content");
-        content.setSizeFull();
-
-        add(getToolBar(), content);
+        add(getToolBar(), grid);
         updateList();
-        closeEditor();
-    }
-
-//    private void deleteContact(DeleteEvent evt) {
-//        contactService.delete(evt.getContact());
-//        updateList();
-//        closeEditor();
-//    }
-
-    private void saveContact(SaveEvent evt) {
-        try {
-            engineService.startProcess(getCurrentUserToken(), evt.getProcessModelInfo());
-        } catch (UserNotFoundException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (ModelNotFoundException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-        updateList();
-        closeEditor();
     }
 
     private HorizontalLayout getToolBar() {
@@ -92,61 +64,66 @@ public class WorkflowsView extends VerticalLayout {
         filterText.setValueChangeMode(ValueChangeMode.LAZY);
         filterText.addValueChangeListener(e -> updateList());
 
-        //Button addContactButton = new Button("Add contact", click -> addContact());
-
-        HorizontalLayout toolbar = new HorizontalLayout(filterText/*, addContactButton*/);
+        HorizontalLayout toolbar = new HorizontalLayout(filterText);
         toolbar.addClassName("toolbar");
         return toolbar;
     }
 
-//    private void addContact() {
-//        grid.asSingleSelect().clear();
-//        showProcessModel(new Contact());
-//    }
-
     private void configureGrid() {
         grid.addClassName("contact-grid");
         grid.setSizeFull();
-        //grid.removeColumnByKey("company");
+        // grid.removeColumnByKey("company");
         grid.setColumns("name", "version", "state");
         grid.addColumn(processModel -> {
-           ProcessModelState state = processModel.getState();
-           return state == null ? "-" : state.toString();
+            ProcessModelState state = processModel.getState();
+            return state == null ? "-" : state.toString();
         }).setHeader("State");
 
         grid.getColumns().forEach(col -> col.setAutoWidth(true));
 
-        //TODO 
-        grid.asSingleSelect().addValueChangeListener(evt -> showProcessModel(evt.getValue()));
-    }
-
-    private void showProcessModel(ProcessModelInfo modelInfo) {
-        form.setProcessModelInfo(modelInfo);
-        form.setVisible(true);
-        addClassName("editing");
-    }
-
-    private void closeEditor() {
-        form.setProcessModelInfo(null);
-        form.setVisible(false);
-        removeClassName("editing");
+        grid.setItemDetailsRenderer(new ComponentRenderer<>(
+                processModel -> {
+                    Button start = new Button("Start");
+                    start.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+                    start.addClickShortcut(Key.ENTER);
+                    start.addClickListener(click -> startProcess(processModel));
+                    if (Optional.ofNullable(processModel.getDescription())
+                            .filter(description -> !description.isEmpty())
+                            .isPresent()) {
+                        return new VerticalLayout(
+                                new Pre(processModel.getDescription()),
+                                new HorizontalLayout(start));
+                    } else
+                        return new HorizontalLayout(start);
+                }));
     }
 
     private void updateList() {
         try {
             UserToken userToken = getCurrentUserToken();
             grid.setItems(engineService.findStartableProcessModels(userToken).stream()
-                .filter(processModel -> processModel.getName().contains(filterText.getValue()))
-            );
+                    .filter(processModel -> processModel.getName().contains(filterText.getValue())));
         } catch (UserNotFoundException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
-        //grid.setItems(contactService.findAll(filterText.getValue()));
+    }
+
+    private void startProcess(ProcessModelInfo modelInfo) {
+        try {
+            engineService.startProcess(getCurrentUserToken(), modelInfo);
+        } catch (UserNotFoundException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (ModelNotFoundException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
     }
 
     private UserToken getCurrentUserToken() throws UserNotFoundException {
-        return userTokenService.retrieveToken(SpringAuthentication.of(SecurityContextHolder.getContext().getAuthentication()));
+        return userTokenService
+                .retrieveToken(SpringAuthentication.of(SecurityContextHolder.getContext().getAuthentication()));
     }
 
 }

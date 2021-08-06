@@ -15,6 +15,7 @@ import com.vaadin.flow.router.HighlightConditions;
 import com.vaadin.flow.router.RouterLink;
 import com.vaadin.flow.server.PWA;
 
+import at.softwaremacherei.jsbpm.webui.ui.views.TasksView;
 import at.softwaremacherei.jsbpm.webui.ui.views.WorkflowsView;
 import at.softwaremacherei.jsbpm.webui.ui.views.dashboard.DashboardView;
 import at.softwaremacherei.jsbpm.webui.ui.views.list.ListView;
@@ -53,8 +54,9 @@ public class MainLayout extends AppLayout {
         listLink.setHighlightCondition(HighlightConditions.sameLocation());
 
         addToDrawer(new VerticalLayout(
-                listLink,
                 new RouterLink("Workflows", WorkflowsView.class),
+                new RouterLink("Tasks", TasksView.class),
+                listLink,
                 new RouterLink("Dashboard", DashboardView.class)));
     }
 
