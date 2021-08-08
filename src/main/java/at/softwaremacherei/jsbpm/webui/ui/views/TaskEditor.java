@@ -214,7 +214,7 @@ public class TaskEditor extends VerticalLayout implements BeforeEnterObserver {
                 case LIST:
                     if (attributeSchema instanceof NestedAttributeSchema) {
                         if (Occurs.UNBOUND == ((NestedAttributeSchema) attributeSchema).getOccurs()) {
-                            bindingBuilder = binder.forField(new EmbeddedGrid((NestedAttributeSchema) attributeSchema));
+                            bindingBuilder = binder.forField(new EmbeddedGrid(sbpmEngine,task.getTaskInfo(), (NestedAttributeSchema) attributeSchema));
                         }else{
                             throw new UnsupportedOperationException("Occurs "+ ((NestedAttributeSchema)attributeSchema).getOccurs() +" not supported yet");
                         }
@@ -225,39 +225,10 @@ public class TaskEditor extends VerticalLayout implements BeforeEnterObserver {
                 case NESTED:
                     if (attributeSchema instanceof NestedAttributeSchema) {
                         if (Occurs.ONE == ((NestedAttributeSchema) attributeSchema).getOccurs()) {
-                            if (false) {
-                                ComboBox<AttributeItem> comboBox = new ComboBox<AttributeItem>();
-                                comboBox.setDataProvider(new FetchItemsCallback<AttributeItem>() {
-                                    @Override
-                                    public Stream<AttributeItem> fetchItems(String filter, int offset, int limit) {
-                                        try {
-                                            ObjectRequest objectRequest = ObjectRequest.of(objectSchema.getId());
-                                            return sbpmEngine.getAutocompleteResponse(task.getTaskInfo(), objectRequest, filter).getAutocompletes().stream()
-                                                    .map(autocomplete -> new AttributeItem() {
-                                                public String toString() {
-                                                    return autocomplete.toString();
-                                                }
-                                            });
-                                        } catch (Exception ex) {
-                                            ex.printStackTrace();
-                                        }
-                                        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-                                    }
-                                }, new SerializableFunction<String, Integer>() {
-                                    @Override
-                                    public Integer apply(String filter) {
-                                        //determine item count
-                                        return 10;
-                                    }
-                                });
-
-                                //bindingBuilder = binder.forField(new Select<SelectItem>());
-                                bindingBuilder = binder.forField(comboBox);
-                            }
                             FormLayout formLayout = new FormHelper(null).createForm(task, ((NestedAttributeSchema) attributeSchema));
                             bindingBuilder = binder.forField(new EmbeddedForm(formLayout));
                         } else if (Occurs.UNBOUND == ((NestedAttributeSchema) attributeSchema).getOccurs()) {
-                                bindingBuilder = binder.forField(new EmbeddedGrid((NestedAttributeSchema) attributeSchema));
+                                bindingBuilder = binder.forField(new EmbeddedGrid(sbpmEngine,task.getTaskInfo(),(NestedAttributeSchema) attributeSchema));
                         }else{
                             throw new UnsupportedOperationException("Occurs "+ ((NestedAttributeSchema)attributeSchema).getOccurs() +" not supported yet");
                         }
@@ -394,6 +365,4 @@ public class TaskEditor extends VerticalLayout implements BeforeEnterObserver {
 
         }
 
-        public static class AttributeItem implements Serializable {
-        }
     }

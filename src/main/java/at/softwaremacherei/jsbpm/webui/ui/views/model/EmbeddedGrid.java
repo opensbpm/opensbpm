@@ -4,6 +4,8 @@ import at.softwaremacherei.jsbpm.engine.api.instance.AttributeSchema;
 import at.softwaremacherei.jsbpm.engine.api.instance.NestedAttributeSchema;
 import at.softwaremacherei.jsbpm.engine.api.instance.ObjectBean;
 import at.softwaremacherei.jsbpm.engine.api.instance.AttributeStore;
+import at.softwaremacherei.jsbpm.engine.api.instance.TaskInfo;
+import at.softwaremacherei.jsbpm.webui.backend.SbpmEngine;
 import at.softwaremacherei.jsbpm.webui.ui.views.model.EmbeddedGrid.GridEditor;
 import com.vaadin.flow.component.AbstractCompositeField;
 import com.vaadin.flow.component.icon.VaadinIcon;
@@ -29,7 +31,7 @@ public class EmbeddedGrid extends AbstractCompositeField<GridEditor, EmbeddedGri
 
     private final NestedAttributeSchema nestedAttributeSchema;
 
-    public EmbeddedGrid(NestedAttributeSchema nestedAttributeSchema) {
+    public EmbeddedGrid(SbpmEngine sbpmEngine, TaskInfo taskInfo,NestedAttributeSchema nestedAttributeSchema) {
         super(null);
         this.nestedAttributeSchema = nestedAttributeSchema;
 
@@ -37,7 +39,7 @@ public class EmbeddedGrid extends AbstractCompositeField<GridEditor, EmbeddedGri
             getContent().addColumn(
                     bean -> bean.get(attribute),
                     (ObjectBean bean, Object vaue) -> bean.set(attribute, vaue),
-                    ComponentFactory.createEditorComponent(attribute))
+                    new ComponentFactory(sbpmEngine).createEditorComponent(taskInfo, attribute) )
                     .setHeader(attribute.getName());
         }
 
