@@ -1,6 +1,5 @@
 package at.softwaremacherei.jsbpm.webui.ui.views;
 
-
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentEvent;
 import com.vaadin.flow.component.ComponentEventListener;
@@ -24,18 +23,17 @@ import at.softwaremacherei.jsbpm.engine.api.instance.NestedAttributeSchema;
 import at.softwaremacherei.jsbpm.engine.api.instance.ObjectBean;
 import at.softwaremacherei.jsbpm.engine.api.instance.ObjectSchema;
 import at.softwaremacherei.jsbpm.engine.api.instance.Task;
-import at.softwaremacherei.jsbpm.engine.api.instance.Task.AttributeBean;
 import at.softwaremacherei.jsbpm.engine.api.instance.TaskInfo;
 import at.softwaremacherei.jsbpm.engine.api.instance.TaskNotFoundException;
 import at.softwaremacherei.jsbpm.engine.api.instance.TaskOutOfDateException;
 import at.softwaremacherei.jsbpm.engine.api.instance.TaskRequest;
+import at.softwaremacherei.jsbpm.engine.api.model.Binary;
 import at.softwaremacherei.jsbpm.engine.api.model.definition.Occurs;
 import at.softwaremacherei.jsbpm.webui.backend.SbpmEngine;
 import at.softwaremacherei.jsbpm.webui.ui.MainLayout;
+import at.softwaremacherei.jsbpm.webui.ui.components.ContentViewer;
 import at.softwaremacherei.jsbpm.webui.ui.views.model.EmbeddedGrid;
 import com.vaadin.flow.component.AbstractCompositeField;
-import com.vaadin.flow.component.Key;
-import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.combobox.ComboBox.FetchItemsCallback;
@@ -54,20 +52,21 @@ import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteParameters;
+import com.vaadin.flow.server.StreamResource;
+import java.io.ByteArrayInputStream;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
-import org.apache.commons.beanutils.PropertyUtils;
 import org.springframework.context.annotation.Scope;
 
 @org.springframework.stereotype.Component
 @Scope("prototype")
 @Route(value = "tasks/:taskId/execute", layout = MainLayout.class)
 
-public class TaskEditor extends VerticalLayout  implements BeforeEnterObserver {
+public class TaskEditor extends VerticalLayout implements BeforeEnterObserver {
 
     private final SbpmEngine sbpmEngine;
     private HorizontalLayout toolbar = new HorizontalLayout();
@@ -76,22 +75,22 @@ public class TaskEditor extends VerticalLayout  implements BeforeEnterObserver {
     private Button start = new Button("Start");
     private Button close = new Button("Cancel");
 
-    //only one binder per form allowed
-    private final Binder<ObjectBean> binder = new BeanValidationBinder<>(ObjectBean.class);
-
     private final Div formContent = new Div();
 
     public TaskEditor(SbpmEngine sbpmEngine) {
-        this.sbpmEngine = Objects.requireNonNull(sbpmEngine,"sbpmEngine must be non null");
+        this.sbpmEngine = Objects.requireNonNull(sbpmEngine, "sbpmEngine must be non null");
         addClassName("contact-form");
 
-        add(    stateLabel, 
+        formContent.setSizeFull();
+        add(stateLabel,
                 formContent,
                 toolbar);
     }
 
-     @Override
+    @Override
     public void beforeEnter(BeforeEnterEvent event) {
+        formContent.removeAll();
+        toolbar.removeAll();
         try {
             String taskId = event.getRouteParameters().get("taskId").get();
             TaskInfo taskInfo = sbpmEngine.getTasks("")
@@ -99,13 +98,14 @@ public class TaskEditor extends VerticalLayout  implements BeforeEnterObserver {
                     .findFirst()
                     .orElseThrow(() -> new TaskOutOfDateException(taskId));
             Task task = sbpmEngine.getTask(taskInfo);
-            
-            stateLabel.setText(task.getProcessName()+":"+ task.getStateName());
-            
+
+            stateLabel.setText(task.getProcessName() + ":" + task.getStateName());
+
             ObjectSchema objectSchema = task.getTaskDocument().getSchemas().stream()
                     .findFirst()
                     .orElseThrow(() -> new IllegalStateException("only one business-object allowed"));
-            formContent.add(new FormHelper(objectSchema).createForm(task, objectSchema));
+            FormHelper formHelper = new FormHelper(objectSchema);
+            formContent.add(formHelper.createForm(task, objectSchema));
 
             AttributeStore attributeStore = task.createAttributeStore(objectSchema);
 
@@ -113,49 +113,57 @@ public class TaskEditor extends VerticalLayout  implements BeforeEnterObserver {
                     .map(nextState -> {
                         Button nextStateButton = new Button(nextState.getName());
                         nextStateButton.addClickListener(click -> {
-                            if (binder.validate().isOk()) {
+                            if (formHelper.binder.validate().isOk()) {
                                 try {
-                                    TaskRequest taskRequest = task.createTaskRequest(nextState,objectSchema, attributeStore);
+                                    TaskRequest taskRequest = task.createTaskRequest(nextState, objectSchema, attributeStore);
                                     sbpmEngine.executeTask(taskRequest);
                                     if (nextState.isEnd()) {
                                         nextStateButton.getUI().ifPresent(ui -> ui.navigate(TasksView.class));
-                                    }else{
-                                        TaskInfo nextTaskInfo= sbpmEngine.getNextTask(taskInfo);
+                                    } else {
+                                        TaskInfo nextTaskInfo = sbpmEngine.getNextTask(taskInfo);
                                         nextStateButton.getUI().ifPresent(ui -> ui.navigate(TaskEditor.class, new RouteParameters("taskId", String.valueOf(nextTaskInfo.getId()))));
-                                    }                                    
-                                } catch (UserNotFoundException|TaskNotFoundException|TaskOutOfDateException ex) {
+                                    }
+                                } catch (UserNotFoundException | TaskNotFoundException | TaskOutOfDateException ex) {
                                     Logger.getLogger(TaskEditor.class.getName()).log(Level.SEVERE, ex.getMessage(), ex);
                                 }
                             }
                         });
+                        formHelper.binder.addStatusChangeListener(evt -> nextStateButton.setEnabled(formHelper.binder.isValid()));
                         return nextStateButton;
                     })
                     .forEach(nextStateButton -> toolbar.add(nextStateButton));
-            
-            binder.setBean(new ObjectBean(objectSchema, attributeStore));
-            
+
+            formHelper.binder.setBean(new ObjectBean(objectSchema, attributeStore));
+
         } catch (TaskNotFoundException | TaskOutOfDateException | UserNotFoundException ex) {
             Logger.getLogger(TaskEditor.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
-    public class FormHelper{
+    public class FormHelper {
+
+        private final Binder<ObjectBean> binder = new BeanValidationBinder<>(ObjectBean.class);
         private final ObjectSchema objectSchema;
 
         public FormHelper(ObjectSchema objectSchema) {
             this.objectSchema = objectSchema;
         }
-        
+
+        public Binder<ObjectBean> getBinder() {
+            return binder;
+        }
+
         private FormLayout createForm(Task task, IsAttributesContainer attributesContainer) throws UnsupportedOperationException {
             FormLayout formLayout = new FormLayout();
             for (AttributeSchema attributeSchema : attributesContainer.getAttributes()) {
                 Component field = createField(task, attributeSchema);
                 formLayout.addFormItem(field, attributeSchema.getName());
             }
+            formLayout.setSizeFull();
             return formLayout;
         }
-        
-        private Component createField(Task task,AttributeSchema attributeSchema) throws UnsupportedOperationException {
+
+        private Component createField(Task task, AttributeSchema attributeSchema) throws UnsupportedOperationException {
             BindingBuilder<ObjectBean, ?> bindingBuilder = null;
             switch (attributeSchema.getFieldType()) {
                 case STRING:
@@ -200,26 +208,37 @@ public class TaskEditor extends VerticalLayout  implements BeforeEnterObserver {
                 case BOOLEAN:
                     bindingBuilder = binder.forField(new Checkbox(attributeSchema.getName()));
                     break;
+                case BINARY:
+                    bindingBuilder = binder.forField(new BinaryViewer(/*attributeSchema.getName()*/));
+                    break;
                 case LIST:
-                    bindingBuilder = binder.forField(new EmbeddedGrid((NestedAttributeSchema)attributeSchema));
+                    if (attributeSchema instanceof NestedAttributeSchema) {
+                        if (Occurs.UNBOUND == ((NestedAttributeSchema) attributeSchema).getOccurs()) {
+                            bindingBuilder = binder.forField(new EmbeddedGrid((NestedAttributeSchema) attributeSchema));
+                        }else{
+                            throw new UnsupportedOperationException("Occurs "+ ((NestedAttributeSchema)attributeSchema).getOccurs() +" not supported yet");
+                        }
+                    } else {
+                        throw new UnsupportedOperationException("FieldType.LIST must use NestedAttributeSchema");
+                    }                        
                     break;
                 case NESTED:
-                    if(attributeSchema instanceof NestedAttributeSchema){
-                        if(Occurs.ONE == ((NestedAttributeSchema)attributeSchema).getOccurs()){
-                            if(false){
+                    if (attributeSchema instanceof NestedAttributeSchema) {
+                        if (Occurs.ONE == ((NestedAttributeSchema) attributeSchema).getOccurs()) {
+                            if (false) {
                                 ComboBox<AttributeItem> comboBox = new ComboBox<AttributeItem>();
                                 comboBox.setDataProvider(new FetchItemsCallback<AttributeItem>() {
                                     @Override
                                     public Stream<AttributeItem> fetchItems(String filter, int offset, int limit) {
-                                        try{
-                                        ObjectRequest objectRequest= ObjectRequest.of(objectSchema.getId());
-                                        return sbpmEngine.getAutocompleteResponse(task.getTaskInfo(),objectRequest,filter).getAutocompletes().stream()
-                                                .map(autocomplete -> new AttributeItem(){
-                                                    public String toString(){
-                                                        return autocomplete.toString();
-                                                    }
-                                                });
-                                        }catch(Exception ex){
+                                        try {
+                                            ObjectRequest objectRequest = ObjectRequest.of(objectSchema.getId());
+                                            return sbpmEngine.getAutocompleteResponse(task.getTaskInfo(), objectRequest, filter).getAutocompletes().stream()
+                                                    .map(autocomplete -> new AttributeItem() {
+                                                public String toString() {
+                                                    return autocomplete.toString();
+                                                }
+                                            });
+                                        } catch (Exception ex) {
                                             ex.printStackTrace();
                                         }
                                         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
@@ -235,121 +254,146 @@ public class TaskEditor extends VerticalLayout  implements BeforeEnterObserver {
                                 //bindingBuilder = binder.forField(new Select<SelectItem>());
                                 bindingBuilder = binder.forField(comboBox);
                             }
-                            EmbeddedForm embeddedForm = new EmbeddedForm();
-                            for (AttributeSchema attribute : ((NestedAttributeSchema)attributeSchema).getAttributes()) {
-                                Component field = createField(task, attribute);
-                                embeddedForm.addFormItem(field, attribute.getName());
-                            }                        
-                            bindingBuilder = binder.forField(embeddedForm);
+                            FormLayout formLayout = new FormHelper(null).createForm(task, ((NestedAttributeSchema) attributeSchema));
+                            bindingBuilder = binder.forField(new EmbeddedForm(formLayout));
+                        } else if (Occurs.UNBOUND == ((NestedAttributeSchema) attributeSchema).getOccurs()) {
+                                bindingBuilder = binder.forField(new EmbeddedGrid((NestedAttributeSchema) attributeSchema));
                         }else{
-                            bindingBuilder = binder.forField(new EmbeddedGrid((NestedAttributeSchema)attributeSchema));
+                            throw new UnsupportedOperationException("Occurs "+ ((NestedAttributeSchema)attributeSchema).getOccurs() +" not supported yet");
                         }
-                    }else{
-                        throw new UnsupportedOperationException("FieldType.NESTED must use NestedAttributeSchema");
-                    }
-                    break;
-                default:
+                        } else {
+                            throw new UnsupportedOperationException("FieldType.NESTED must use NestedAttributeSchema");
+                        }
+                        break;                    
+                    default:
                     throw new UnsupportedOperationException("no component binding for " + attributeSchema.getFieldType());
             }
             if (attributeSchema.isRequired()) {
                 bindingBuilder.asRequired();
             }
             Binding<ObjectBean, ?> binding = bind(attributeSchema, bindingBuilder);
-            Component field =  (Component) binding.getField();
+            Component field = (Component) binding.getField();
             field.setId(String.valueOf(attributeSchema.getId()));
             return field;
-        }
-
-        @SuppressWarnings("unchecked")
-        private <T> Binding<ObjectBean, T> bind(AttributeSchema attributeSchema, BindingBuilder<ObjectBean, T> bindingBuilder) {
-            Setter<ObjectBean, T> setter = null;
-            if (!attributeSchema.isReadonly()) {
-                setter = (ObjectBean bean, T fieldvalue) -> bean.set(attributeSchema,(Serializable) fieldvalue);
             }
-            return bindingBuilder.bind((ObjectBean bean) -> (T) bean.get(attributeSchema), setter);
+
+            @SuppressWarnings("unchecked")
+            private <T> Binding<ObjectBean, T>             bind(AttributeSchema attributeSchema            , BindingBuilder<ObjectBean, T> bindingBuilder          ) {
+            Setter<ObjectBean, T> setter = null;
+                if (!attributeSchema.isReadonly()) {
+                    setter = (ObjectBean bean, T fieldvalue) -> bean.set(attributeSchema.getName(), (Serializable) fieldvalue);
+                }
+                return bindingBuilder.bind((ObjectBean bean) -> (T) bean.get(attributeSchema.getName()), setter);
+            }
         }
-    }
-    private Component createButtonsLayout() {
-        start.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
-        close.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
+//    private Component createButtonsLayout() {
+//        start.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+//        close.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
+//
+//        start.addClickShortcut(Key.ENTER);
+//        close.addClickShortcut(Key.ESCAPE);
+//
+//        //start.addClickListener(click -> validateAndSave());
+//        // delete.addClickListener(click -> fireEvent(new DeleteEvent(this, modelInfo)));
+//        close.addClickListener(click -> fireEvent(new CloseEvent(this)));
+//
+//        binder.addStatusChangeListener(evt -> start.setEnabled(binder.isValid()));
+//
+//        return new HorizontalLayout(start, close);
+//    }
 
-        start.addClickShortcut(Key.ENTER);
-        close.addClickShortcut(Key.ESCAPE);
+        // Events
+        public static abstract class TaskFormEvent extends ComponentEvent<TaskEditor> {
 
-        //start.addClickListener(click -> validateAndSave());
-        // delete.addClickListener(click -> fireEvent(new DeleteEvent(this, modelInfo)));
-        close.addClickListener(click -> fireEvent(new CloseEvent(this)));
+            private Task task;
 
-        binder.addStatusChangeListener(evt -> start.setEnabled(binder.isValid()));
+            protected TaskFormEvent(TaskEditor source, Task task) {
+                super(source, false);
+                this.task = task;
+            }
 
-        return new HorizontalLayout(start, close);
-    }
-
-    // Events
-    public static abstract class TaskFormEvent extends ComponentEvent<TaskEditor> {
-        private Task task;
-
-        protected TaskFormEvent(TaskEditor source, Task task) {
-            super(source, false);
-            this.task = task;
-        }
-
-        public Task getTask() {
-            return task;
-        }
-    }
-
-    public static class SaveEvent extends ComponentEvent<TaskEditor> {
-
-        private final TaskRequest taskRequest;
-
-        public SaveEvent(TaskEditor source,TaskRequest taskRequest) {
-            super(source,false);
-            this.taskRequest = taskRequest;
-        }
-
-        public TaskRequest getTaskRequest() {
-            return taskRequest;
-        }
-        
-
-    }
-
-    public static class DeleteEvent extends TaskFormEvent {
-        DeleteEvent(TaskEditor source, Task task) {
-            super(source, task);
+            public Task getTask() {
+                return task;
+            }
         }
 
-    }
+        public static class SaveEvent extends ComponentEvent<TaskEditor> {
 
-    public static class CloseEvent extends TaskFormEvent {
-        CloseEvent(TaskEditor source) {
-            super(source, null);
+            private final TaskRequest taskRequest;
+
+            public SaveEvent(TaskEditor source, TaskRequest taskRequest) {
+                super(source, false);
+                this.taskRequest = taskRequest;
+            }
+
+            public TaskRequest getTaskRequest() {
+                return taskRequest;
+            }
+
         }
-    }
 
-    public <T extends ComponentEvent<?>> Registration addListener(Class<T> eventType,
-            ComponentEventListener<T> listener) {
-        return getEventBus().addListener(eventType, listener);
-    }
+        public static class DeleteEvent extends TaskFormEvent {
 
-    public static class EmbeddedForm extends AbstractCompositeField<FormLayout, EmbeddedForm, Object>{
+            DeleteEvent(TaskEditor source, Task task) {
+                super(source, task);
+            }
 
-        public EmbeddedForm() {
+        }
+
+        public static class CloseEvent extends TaskFormEvent {
+
+            CloseEvent(TaskEditor source) {
+                super(source, null);
+            }
+        }
+
+        public <T extends ComponentEvent<?>> Registration addListener(Class<T> eventType,
+                ComponentEventListener<T> listener) {
+            return getEventBus().addListener(eventType, listener);
+        }
+
+        public static class BinaryViewer extends AbstractCompositeField<ContentViewer, BinaryViewer, Binary> {
+
+        public BinaryViewer() {
             super(null);
+            getContent().setSizeFull();
         }
 
-        public FormItem addFormItem(Component field, String label) {
-            return getContent().addFormItem(field, label);
-        }
+            
         @Override
-        protected void setPresentationValue(Object newPresentationValue) {
-            System.out.println(getClass()+":"+newPresentationValue);
-//            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        protected void setPresentationValue(Binary binary) {
+                StreamResource resource = new StreamResource(binary.toString(), () ->new ByteArrayInputStream(binary.getValue()));
+                resource.setContentType(binary.getMimeType());
+                getContent().setValue(binary.getMimeType(), resource);
+            }
         }
         
-    }
+        public static class EmbeddedForm extends AbstractCompositeField<FormLayout, EmbeddedForm, ObjectBean> {
 
-    public static class AttributeItem    implements Serializable{
+            private final Binder<ObjectBean> binder = new BeanValidationBinder<>(ObjectBean.class);
+            private final FormLayout formLayout;
+
+            public EmbeddedForm(FormLayout formLayout) {
+                super(null);
+                this.formLayout = formLayout;
+            }
+
+            @Override
+            protected FormLayout initContent() {
+                return formLayout;
+            }
+
+            public FormItem addFormItem(Component field, String label) {
+                return getContent().addFormItem(field, label);
+            }
+
+            @Override
+            protected void setPresentationValue(ObjectBean newPresentationValue) {
+                binder.setBean(newPresentationValue);
+            }
+
+        }
+
+        public static class AttributeItem implements Serializable {
+        }
     }
-}

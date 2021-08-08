@@ -19,7 +19,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
-        <vaadin.version>14.4.4</vaadin.version>
+        <vaadin.version>14.6.7</vaadin.version>
     </properties>
 
     <dependencyManagement>
@@ -70,6 +70,14 @@
             <version>${project.version}</version>
         </dependency>
 
+        <!-- sbpm plugins -->
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>sbpm-plugin-jasperreports</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        
+    
         <!-- user database -->
         <dependency>
             <groupId>${project.groupId}</groupId>
@@ -85,8 +93,7 @@
   
         <dependency>
             <groupId>com.vaadin</groupId>
-            <!-- Replace artifactId with vaadin-core to use only free components -->
-            <artifactId>vaadin</artifactId>
+            <artifactId>vaadin-core</artifactId>
             <exclusions>
                 <!-- Webjars are only needed when running in Vaadin 13 compatibility mode -->
                 <exclusion>

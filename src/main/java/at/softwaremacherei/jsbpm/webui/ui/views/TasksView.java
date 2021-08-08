@@ -4,7 +4,6 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import com.vaadin.flow.component.grid.Grid;
-import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
@@ -14,24 +13,23 @@ import com.vaadin.flow.router.Route;
 
 import at.softwaremacherei.jsbpm.engine.api.UserNotFoundException;
 import at.softwaremacherei.jsbpm.engine.api.instance.TaskInfo;
-import at.softwaremacherei.jsbpm.engine.api.instance.TaskNotFoundException;
-import at.softwaremacherei.jsbpm.engine.api.instance.TaskOutOfDateException;
 import at.softwaremacherei.jsbpm.webui.backend.SbpmEngine;
 import at.softwaremacherei.jsbpm.webui.ui.MainLayout;
-import at.softwaremacherei.jsbpm.webui.ui.views.model.TaskForm.SaveEvent;
-import at.softwaremacherei.jsbpm.webui.ui.views.model.TaskForm;
-import at.softwaremacherei.jsbpm.webui.ui.views.model.TaskForm.CloseEvent;
+import com.vaadin.flow.component.Key;
+import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.button.ButtonVariant;
+import com.vaadin.flow.data.renderer.ComponentRenderer;
+import com.vaadin.flow.router.RouteParameters;
 import java.util.Objects;
 
 @Component
 @Scope("prototype")
 @Route(value = "tasks", layout = MainLayout.class)
-@PageTitle("Workflows | SBPM Engine")
+@PageTitle("Tasks | SBPM Engine")
 public class TasksView extends VerticalLayout {
 
     private final SbpmEngine sbpmEngine;
 
-    private TaskForm form;
     private Grid<TaskInfo> grid = new Grid<>(TaskInfo.class);
     private TextField filterText = new TextField();
 
@@ -43,40 +41,8 @@ public class TasksView extends VerticalLayout {
         setSizeFull();
         configureGrid();
 
-        form = new TaskForm(sbpmEngine);
-        form.addListener(SaveEvent.class, this::executeTask);
-        //form.addListener(DeleteEvent.class, this::deleteContact);
-        form.addListener(CloseEvent.class, e -> closeEditor());
-
-        Div content = new Div(grid, form);
-        content.addClassName("content");
-        content.setSizeFull();
-
-        add(getToolBar(), content);
+        add(getToolBar(), grid);
         updateList();
-        closeEditor();
-    }
-
-//    private void deleteContact(DeleteEvent evt) {
-//        contactService.delete(evt.getContact());
-//        updateList();
-//        closeEditor();
-//    }
-    private void executeTask(SaveEvent evt) {
-        try {
-            sbpmEngine.executeTask(evt.getTaskRequest());
-        } catch (UserNotFoundException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (TaskOutOfDateException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (TaskNotFoundException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-        updateList();
-        closeEditor();
     }
 
     private HorizontalLayout getToolBar() {
@@ -102,28 +68,16 @@ public class TasksView extends VerticalLayout {
         grid.setColumns("processName", "stateName");
         grid.getColumns().forEach(col -> col.setAutoWidth(true));
 
-        //TODO 
-        grid.asSingleSelect().addValueChangeListener(evt -> showTask(evt.getValue()));
-    }
-
-    private void showTask(TaskInfo taskInfo) {
-        if (taskInfo == null) {
-            form.setTask(null);
-        } else
-        try {
-            form.setTask(sbpmEngine.getTasks(taskInfo));
-        } catch (TaskNotFoundException | TaskOutOfDateException | UserNotFoundException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-        form.setVisible(true);
-        addClassName("editing");
-    }
-
-    private void closeEditor() {
-        form.setTask(null);
-        form.setVisible(false);
-        removeClassName("editing");
+        grid.setItemDetailsRenderer(new ComponentRenderer<>(
+                taskInfo -> {
+                    Button execute = new Button("Execute");
+                    execute.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+                    execute.addClickShortcut(Key.ENTER);
+                    execute.addClickListener(click -> {
+                        execute.getUI().ifPresent(ui -> ui.navigate(TaskEditor.class, new RouteParameters("taskId", String.valueOf(taskInfo.getId()))));
+                    });
+                    return new HorizontalLayout(execute);
+                }));
     }
 
     private void updateList() {
@@ -133,7 +87,6 @@ public class TasksView extends VerticalLayout {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
-        //grid.setItems(contactService.findAll(filterText.getValue()));
     }
 
 }

@@ -3,7 +3,6 @@ package at.softwaremacherei.jsbpm.webui.ui.views;
 import java.util.Optional;
 
 import org.springframework.context.annotation.Scope;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
 import com.vaadin.flow.component.Key;
@@ -19,16 +18,18 @@ import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAlias;
+import com.vaadin.flow.router.RouteParameters;
 
-import at.softwaremacherei.jsbpm.engine.api.EngineService;
 import at.softwaremacherei.jsbpm.engine.api.ModelNotFoundException;
 import at.softwaremacherei.jsbpm.engine.api.UserNotFoundException;
-import at.softwaremacherei.jsbpm.engine.api.UserTokenService;
-import at.softwaremacherei.jsbpm.engine.api.instance.UserToken;
+import at.softwaremacherei.jsbpm.engine.api.instance.TaskInfo;
 import at.softwaremacherei.jsbpm.engine.api.model.ProcessModelInfo;
 import at.softwaremacherei.jsbpm.engine.api.model.ProcessModelState;
-import at.softwaremacherei.jsbpm.springauthentication.SpringAuthentication;
+import at.softwaremacherei.jsbpm.webui.backend.SbpmEngine;
 import at.softwaremacherei.jsbpm.webui.ui.MainLayout;
+import java.util.Objects;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 @Component
 @Scope("prototype")
@@ -37,17 +38,13 @@ import at.softwaremacherei.jsbpm.webui.ui.MainLayout;
 @PageTitle("Workflows | SBPM Engine")
 public class WorkflowsView extends VerticalLayout {
 
-    private final EngineService engineService;
-    private final UserTokenService userTokenService;
+    private final SbpmEngine sbpmEngine;
 
     private Grid<ProcessModelInfo> grid = new Grid<>(ProcessModelInfo.class);
     private TextField filterText = new TextField();
 
-    public WorkflowsView(
-            EngineService engineService,
-            UserTokenService userTokenService) {
-        this.engineService = engineService;
-        this.userTokenService = userTokenService;
+    public WorkflowsView(SbpmEngine sbpmEngine) {
+        this.sbpmEngine = Objects.requireNonNull(sbpmEngine, "sbpmEngine must be non null");
 
         // addClassName("workflows-view");
         addClassName("list-view");
@@ -86,44 +83,34 @@ public class WorkflowsView extends VerticalLayout {
                     Button start = new Button("Start");
                     start.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
                     start.addClickShortcut(Key.ENTER);
-                    start.addClickListener(click -> startProcess(processModel));
+                    start.addClickListener(click -> {
+                        try {
+                            TaskInfo taskInfo = sbpmEngine.startProcess(processModel);
+                            start.getUI().ifPresent(ui -> ui.navigate(TaskEditor.class, new RouteParameters("taskId", String.valueOf(taskInfo.getId()))));
+                        } catch (UserNotFoundException | ModelNotFoundException ex) {
+                            Logger.getLogger(WorkflowsView.class.getName()).log(Level.SEVERE, ex.getMessage(), ex);
+                        }
+                    });
                     if (Optional.ofNullable(processModel.getDescription())
                             .filter(description -> !description.isEmpty())
                             .isPresent()) {
                         return new VerticalLayout(
                                 new Pre(processModel.getDescription()),
                                 new HorizontalLayout(start));
-                    } else
+                    } else {
                         return new HorizontalLayout(start);
+                    }
                 }));
     }
 
     private void updateList() {
         try {
-            UserToken userToken = getCurrentUserToken();
-            grid.setItems(engineService.findStartableProcessModels(userToken).stream()
+            grid.setItems(sbpmEngine.findStartableProcessModels().stream()
                     .filter(processModel -> processModel.getName().contains(filterText.getValue())));
         } catch (UserNotFoundException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
-    }
-
-    private void startProcess(ProcessModelInfo modelInfo) {
-        try {
-            engineService.startProcess(getCurrentUserToken(), modelInfo);
-        } catch (UserNotFoundException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (ModelNotFoundException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-    }
-
-    private UserToken getCurrentUserToken() throws UserNotFoundException {
-        return userTokenService
-                .retrieveToken(SpringAuthentication.of(SecurityContextHolder.getContext().getAuthentication()));
     }
 
 }
