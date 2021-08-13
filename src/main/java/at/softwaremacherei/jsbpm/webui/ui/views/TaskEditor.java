@@ -70,7 +70,8 @@ public class TaskEditor extends VerticalLayout implements BeforeEnterObserver {
         formContent.removeAll();
         toolbar.removeAll();
         try {
-            String taskId = event.getRouteParameters().get("taskId").get();
+            String taskId = event.getRouteParameters().get("taskId")
+                    .orElseThrow(() -> new IllegalStateException("no route-parameter 'taskId' given"));
             TaskInfo taskInfo = sbpmEngine.getTasks("")
                     .filter(task -> String.valueOf(task.getId()).equals(taskId))
                     .findFirst()
