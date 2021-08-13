@@ -47,11 +47,11 @@ import org.springframework.context.annotation.Scope;
 public class TaskEditor extends VerticalLayout implements BeforeEnterObserver {
 
     private final SbpmEngine sbpmEngine;
-    private HorizontalLayout toolbar = new HorizontalLayout();
-    private Label stateLabel = new Label();
+    private final HorizontalLayout toolbar = new HorizontalLayout();
+    private final Label stateLabel = new Label();
 
-    private Button start = new Button("Start");
-    private Button close = new Button("Cancel");
+    private final Button start = new Button("Start");
+    private final Button close = new Button("Cancel");
 
     private final Div formContent = new Div();
 
