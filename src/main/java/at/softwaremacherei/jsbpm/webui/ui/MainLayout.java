@@ -11,18 +11,15 @@ import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.router.HighlightConditions;
 import com.vaadin.flow.router.RouterLink;
 import com.vaadin.flow.server.PWA;
 
 import at.softwaremacherei.jsbpm.webui.ui.views.TasksView;
 import at.softwaremacherei.jsbpm.webui.ui.views.WorkflowsView;
-import at.softwaremacherei.jsbpm.webui.ui.views.dashboard.DashboardView;
-import at.softwaremacherei.jsbpm.webui.ui.views.list.ListView;
 
 @PWA(name = "SBPM Engine", shortName = "SBPM", offlineResources = {
-        "./styles/offline.css",
-        "./images/offline.png"
+    "./styles/offline.css",
+    "./images/offline.png"
 }, enableInstallPrompt = false)
 @CssImport("./styles/shared-styles.css")
 public class MainLayout extends AppLayout {
@@ -37,8 +34,8 @@ public class MainLayout extends AppLayout {
         logo.addClassName("logo");
 
         Anchor logout = new Anchor("/logout", "Log out");
-        
-        Text username = new Text("User:"+ SecurityContextHolder.getContext().getAuthentication().getName());
+
+        Text username = new Text("User:" + SecurityContextHolder.getContext().getAuthentication().getName());
 
         HorizontalLayout header = new HorizontalLayout(new DrawerToggle(), logo, username, logout);
         header.addClassName("header");
@@ -50,14 +47,10 @@ public class MainLayout extends AppLayout {
     }
 
     private void createDrawer() {
-        RouterLink listLink = new RouterLink("List", ListView.class);
-        listLink.setHighlightCondition(HighlightConditions.sameLocation());
-
         addToDrawer(new VerticalLayout(
                 new RouterLink("Workflows", WorkflowsView.class),
-                new RouterLink("Tasks", TasksView.class),
-                listLink,
-                new RouterLink("Dashboard", DashboardView.class)));
+                new RouterLink("Tasks", TasksView.class)
+        ));
     }
 
 }

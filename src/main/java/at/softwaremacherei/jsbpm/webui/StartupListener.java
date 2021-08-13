@@ -40,7 +40,7 @@ public class StartupListener {
     @Transactional
     public void onApplicationEvent(ContextRefreshedEvent event) throws JAXBException {
         storeModel(ExampleModels.getDienstreiseantrag());
-        storeModel(ExampleModels.findResource("Dienstreiseantrag_Angestellte.xml"));
+        storeModel(ExampleModels.findResource("Rechnungslegung_Kunden.xml"));
         storeModel(ExampleModels.getRechungslegung());
         for (ProviderResource jasperreport : getRechungslegungReports()) {
             TaskProviderInfo taskProviderInfo = taskProviderService.getProviders().stream()
