@@ -95,7 +95,7 @@ public class ComponentFactory {
                     public Integer apply(String filter) {
                         try {
                             //determine item count
-                            return new Long(autocompleteQuery.query(taskInfo, filter).count()).intValue();
+                            return (int)autocompleteQuery.query(taskInfo, filter).count();
                         } catch (UserNotFoundException | TaskNotFoundException | TaskOutOfDateException ex) {
                             //Logger.getLogger(ComponentFactory.class.getName()).log(Level.SEVERE, ex.getMessage(), ex);
                             throw new IllegalStateException(ex);
@@ -232,7 +232,7 @@ public class ComponentFactory {
                         public Integer apply(String filter) {
                             try {
                                 //determine item count
-                                return new Long(autocompleteQuery.query(taskInfo, filter).count()).intValue();
+                                return (int)autocompleteQuery.query(taskInfo, filter).count();
                             } catch (UserNotFoundException | TaskNotFoundException | TaskOutOfDateException ex) {
                                 //Logger.getLogger(ComponentFactory.class.getName()).log(Level.SEVERE, ex.getMessage(), ex);
                                 throw new IllegalStateException(ex);
