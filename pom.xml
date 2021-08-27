@@ -91,12 +91,6 @@
         </dependency>
 
         <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>examples</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-  
-        <dependency>
             <groupId>com.vaadin</groupId>
             <artifactId>vaadin-core</artifactId>
             <exclusions>

@@ -16,9 +16,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.stereotype.Component;
 
-import at.softwaremacherei.jsbpm.examples.ExampleModels;
-import static at.softwaremacherei.jsbpm.examples.ExampleModels.findResource;
-import at.softwaremacherei.jsbpm.jasperreports.JasperReportsProvider;
 import java.io.InputStream;
 import org.springframework.transaction.annotation.Transactional;
 import at.softwaremacherei.jsbpm.xmlmodel.ProcessModel;
@@ -39,9 +36,9 @@ public class StartupListener {
     @EventListener
     @Transactional
     public void onApplicationEvent(ContextRefreshedEvent event) throws JAXBException {
-        storeModel(ExampleModels.getDienstreiseantrag());
-        storeModel(ExampleModels.findResource("Rechnungslegung_Kunden.xml"));
-        storeModel(ExampleModels.getRechungslegung());
+        storeModel("Rechnungslegung_Kunden.xml");
+        storeModel("Rechnungslegung_Wizard.xml");
+        storeModel("Rechnungslegung.xml");
         for (ProviderResource jasperreport : getRechungslegungReports()) {
             TaskProviderInfo taskProviderInfo = taskProviderService.getProviders().stream()
                     .filter(providerInfo -> providerInfo.getName().equals("JasperReports"))
@@ -50,18 +47,21 @@ public class StartupListener {
 
             taskProviderService.addResource(taskProviderInfo, jasperreport);
         }
-        storeModel(ExampleModels.getRechungslegungWizard());
     }
 
     public static ProviderResource[] getRechungslegungReports() {
         return new ProviderResource[]{
-            new ProviderResource("rechnung", "application/jrxml", findResource("jasperreports/rechnung.jrxml")),
-            new ProviderResource("rechnung_subreport1", "application/jrxml", findResource("jasperreports/rechnung_subreport1.jrxml"))
+            new ProviderResource("rechnung", "application/jrxml", loadResource("jasperreports/rechnung.jrxml")),
+            new ProviderResource("rechnung_subreport1", "application/jrxml", loadResource("jasperreports/rechnung_subreport1.jrxml"))
         };
     }
 
-    private void storeModel(InputStream inputStream) throws JAXBException {
-        modelService.save(new ProcessModel().unmarshal(inputStream));
+    private static InputStream loadResource(String resource) {
+        return StartupListener.class.getResourceAsStream("/at/softwaremacherei/jsbpm/webui/models/" + resource);
+    }
+
+    private void storeModel(String model) throws JAXBException {
+        modelService.save(new ProcessModel().unmarshal(loadResource(model)));
     }
 
 }
