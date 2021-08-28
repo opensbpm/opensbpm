@@ -6,20 +6,25 @@ import at.softwaremacherei.jsbpm.engine.api.instance.ObjectBean;
 import at.softwaremacherei.jsbpm.engine.api.instance.AttributeStore;
 import at.softwaremacherei.jsbpm.engine.api.instance.TaskInfo;
 import at.softwaremacherei.jsbpm.webui.backend.SbpmEngine;
+import at.softwaremacherei.jsbpm.webui.ui.views.model.ComponentFactory.FormHelper;
 import at.softwaremacherei.jsbpm.webui.ui.views.model.EmbeddedGrid.GridEditor;
 import com.vaadin.flow.component.AbstractCompositeField;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Composite;
-import com.vaadin.flow.component.HasValue;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.grid.Grid;
-import com.vaadin.flow.component.grid.Grid.Column;
 import com.vaadin.flow.component.grid.Grid.SelectionMode;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.data.binder.Binder;
-import com.vaadin.flow.data.binder.Setter;
+import com.vaadin.flow.data.provider.DataKeyMapper;
 import com.vaadin.flow.data.provider.DataProvider;
+import com.vaadin.flow.data.renderer.ComponentRenderer;
+import com.vaadin.flow.data.renderer.Renderer;
+import com.vaadin.flow.data.renderer.Rendering;
+import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.function.SerializableBiConsumer;
+import com.vaadin.flow.function.SerializableSupplier;
 import com.vaadin.flow.function.ValueProvider;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -29,25 +34,21 @@ import java.util.Set;
 
 public class EmbeddedGrid extends AbstractCompositeField<GridEditor, EmbeddedGrid, List<ObjectBean>> {
 
+    private SbpmEngine sbpmEngine;
+    private TaskInfo taskInfo;
     private final NestedAttributeSchema nestedAttributeSchema;
 
-    public EmbeddedGrid(SbpmEngine sbpmEngine, TaskInfo taskInfo,NestedAttributeSchema nestedAttributeSchema) {
+    public EmbeddedGrid(SbpmEngine sbpmEngine, TaskInfo taskInfo, NestedAttributeSchema nestedAttributeSchema) {
         super(null);
+        this.sbpmEngine = sbpmEngine;
+        this.taskInfo = taskInfo;
         this.nestedAttributeSchema = nestedAttributeSchema;
-
-        for (AttributeSchema attribute : nestedAttributeSchema.getAttributes()) {
-            getContent().addColumn(
-                    bean -> bean.get(attribute),
-                    (ObjectBean bean, Object vaue) -> bean.set(attribute, vaue),
-                    new ComponentFactory(sbpmEngine).createEditorComponent(taskInfo, attribute) )
-                    .setHeader(attribute.getName());
-        }
 
     }
 
     @Override
     protected GridEditor initContent() {
-        return new GridEditor();
+        return new GridEditor(sbpmEngine, taskInfo, nestedAttributeSchema);
     }
 
     @Override
@@ -62,12 +63,21 @@ public class EmbeddedGrid extends AbstractCompositeField<GridEditor, EmbeddedGri
 //        private final Button addRowButton;
         private transient List<ObjectBean> interalStore = new ArrayList<>();
 
-        public GridEditor() {
+        public GridEditor(SbpmEngine sbpmEngine, TaskInfo taskInfo, NestedAttributeSchema parentSchema) {
             super();
-            grid = new Grid<ObjectBean>();
+            grid = new Grid<>();
             grid.setDataProvider(DataProvider.ofCollection(interalStore));
 
-            binder = new Binder<>(ObjectBean.class);
+            FormHelper formHelper = new FormHelper(sbpmEngine, null);
+            for (AttributeSchema attribute : parentSchema.getAttributes()) {
+                Component field = formHelper.createField(taskInfo, attribute);
+
+                grid.addColumn(bean -> bean.get(attribute))
+                        .setEditorComponent(field)
+                        .setHeader(attribute.getName());
+            }
+            binder = formHelper.getBinder();
+
             grid.getEditor().setBinder(binder);
             grid.getEditor().setBuffered(true);
             grid.setSelectionMode(SelectionMode.NONE);
@@ -134,12 +144,24 @@ public class EmbeddedGrid extends AbstractCompositeField<GridEditor, EmbeddedGri
             getContent().add(grid/*, addRowButton*/);
         }
 
-        public <V, C extends Component & HasValue<?, V>> Column<ObjectBean> addColumn(ValueProvider<ObjectBean, V> getter, Setter<ObjectBean, V> setter, C editorComponent) {
-            binder.forField(editorComponent).bind(getter, setter);
-            return grid.addColumn(getter)
-                    .setEditorComponent(editorComponent);
-        }
-
+//        private void buildColumns(NestedAttributeSchema parentAttributeSchema, SbpmEngine sbpmEngine, TaskInfo taskInfo) {
+//            for (AttributeSchema attribute : parentAttributeSchema.getAttributes()) {
+//                new ComponentFactory.FormHelper(sbpmEngine, null).createForm(taskInfo, parentAttributeSchema);
+//
+//                ValueProvider<ObjectBean, Object> getter = bean -> bean.get(attribute);
+//                Setter<ObjectBean, Object> setter = (ObjectBean bean, Object vaue) -> bean.set(attribute, vaue);
+//                addColumn(getter, setter,
+//                        new ComponentFactory(sbpmEngine).createEditorComponent(taskInfo, attribute))
+//                        .setHeader(attribute.getName());
+//            }
+//        }
+//
+//        public <V, C extends Component & HasValue<?, V>> Column<ObjectBean> addColumn(ValueProvider<ObjectBean, V> getter, Setter<ObjectBean, V> setter, C editorComponent) {
+//            binder.forField(editorComponent)
+//                    .bind(getter, setter);
+//            return grid.addColumn(getter)
+//                    .setEditorComponent(editorComponent);
+//        }
         private ObjectBean createItem() {
             return new ObjectBean(nestedAttributeSchema, new AttributeStore(nestedAttributeSchema));
         }

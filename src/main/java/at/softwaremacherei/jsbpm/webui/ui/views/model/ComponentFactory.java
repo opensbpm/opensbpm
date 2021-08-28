@@ -23,8 +23,7 @@ import at.softwaremacherei.jsbpm.engine.api.instance.AttributeSchema;
 import at.softwaremacherei.jsbpm.engine.api.instance.AutocompleteResponse.Autocomplete;
 import at.softwaremacherei.jsbpm.engine.api.instance.IsAttributesContainer;
 import at.softwaremacherei.jsbpm.engine.api.instance.ObjectBean;
-import at.softwaremacherei.jsbpm.webui.ui.views.TaskEditor;
-import at.softwaremacherei.jsbpm.webui.ui.views.TaskEditor.EmbeddedForm;
+import at.softwaremacherei.jsbpm.engine.api.instance.ObjectData;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasValue;
 import com.vaadin.flow.component.formlayout.FormLayout;
@@ -36,6 +35,7 @@ import com.vaadin.flow.data.binder.ValueContext;
 import com.vaadin.flow.data.converter.Converter;
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.util.HashMap;
 
 public class ComponentFactory {
 
@@ -43,83 +43,6 @@ public class ComponentFactory {
 
     public ComponentFactory(SbpmEngine sbpmEngine) {
         this.sbpmEngine = sbpmEngine;
-    }
-
-    public <V, C extends Component & HasValue<?, V>> C createEditorComponent(TaskInfo taskInfo, AttributeSchema attributeSchema) {
-        switch (attributeSchema.getFieldType()) {
-            case STRING:
-                return (C) new TextField();
-            case NUMBER:
-                return (C) new NumberField();
-            case DECIMAL:
-                return (C) new NumberField();
-            case DATE:
-                return (C) new DatePicker();
-            case TIME:
-                return (C) new TimePicker();
-            case BOOLEAN:
-                return (C) new Checkbox();
-            case LIST:
-                if (attributeSchema instanceof NestedAttributeSchema) {
-                    if (Occurs.UNBOUND == ((NestedAttributeSchema) attributeSchema).getOccurs()) {
-                        return (C) new EmbeddedGrid(sbpmEngine, taskInfo, (NestedAttributeSchema) attributeSchema);
-                    } else {
-                        throw new UnsupportedOperationException("Occurs " + ((NestedAttributeSchema) attributeSchema).getOccurs() + " not supported yet");
-                    }
-                } else {
-                    throw new UnsupportedOperationException("FieldType.LIST must use NestedAttributeSchema");
-                }
-            case REFERENCE:
-                ObjectSchema referenceSchema = attributeSchema.getAutocompleteReference()
-                        .orElseThrow(() -> new IllegalStateException("no AutocompleteReference for attribute '" + attributeSchema.getName() + "'"));
-                AutocompleteQuery autocompleteQuery = new AutocompleteQuery(ComponentFactory.this.sbpmEngine, referenceSchema);
-                ComboBox<AttributeItem> comboBox = new ComboBox<AttributeItem>();
-                comboBox.setDataProvider(new FetchItemsCallback<AttributeItem>() {
-                    @Override
-                    public Stream<AttributeItem> fetchItems(String filter, int offset, int limit) {
-                        try {
-                            return autocompleteQuery.query(taskInfo, filter)
-                                    .map(autocomplete -> new AttributeItem() {
-                                public String toString() {
-                                    return autocomplete.getObjectData().getDisplayName()
-                                            .orElse(autocomplete.getObjectData().toString());
-                                }
-                            });
-                        } catch (UserNotFoundException | TaskNotFoundException | TaskOutOfDateException ex) {
-                            //Logger.getLogger(ComponentFactory.class.getName()).log(Level.SEVERE, ex.getMessage(), ex);
-                            throw new IllegalStateException(ex);
-                        }
-                    }
-                }, new SerializableFunction<String, Integer>() {
-                    @Override
-                    public Integer apply(String filter) {
-                        try {
-                            //determine item count
-                            return (int)autocompleteQuery.query(taskInfo, filter).count();
-                        } catch (UserNotFoundException | TaskNotFoundException | TaskOutOfDateException ex) {
-                            //Logger.getLogger(ComponentFactory.class.getName()).log(Level.SEVERE, ex.getMessage(), ex);
-                            throw new IllegalStateException(ex);
-                        }
-                    }
-                });
-
-                return (C) comboBox;
-            case NESTED:
-                if (attributeSchema instanceof NestedAttributeSchema) {
-                    if (Occurs.ONE == ((NestedAttributeSchema) attributeSchema).getOccurs()) {
-                        FormLayout formLayout = new FormHelper(sbpmEngine, null).createForm(taskInfo, ((NestedAttributeSchema) attributeSchema));
-                        return (C) new EmbeddedForm(formLayout);
-                    } else if (Occurs.UNBOUND == ((NestedAttributeSchema) attributeSchema).getOccurs()) {
-                        return (C) new EmbeddedGrid(sbpmEngine, taskInfo, (NestedAttributeSchema) attributeSchema);
-                    } else {
-                        throw new UnsupportedOperationException("Occurs " + ((NestedAttributeSchema) attributeSchema).getOccurs() + " not supported yet");
-                    }
-                } else {
-                    throw new UnsupportedOperationException("FieldType.NESTED must use NestedAttributeSchema");
-                }
-            default:
-                throw new UnsupportedOperationException("no component binding for " + attributeSchema.getFieldType());
-        }
     }
 
     public static class FormHelper {
@@ -147,7 +70,7 @@ public class ComponentFactory {
             return formLayout;
         }
 
-        private <V, C extends Component & HasValue<?, V>> C createField(TaskInfo taskInfo, AttributeSchema attributeSchema) {
+        public <V, C extends Component & HasValue<?, V>> C createField(TaskInfo taskInfo, AttributeSchema attributeSchema) {
             Binder.BindingBuilder<ObjectBean, ?> bindingBuilder = null;
             switch (attributeSchema.getFieldType()) {
                 case STRING:
@@ -193,7 +116,7 @@ public class ComponentFactory {
                     bindingBuilder = binder.forField(new Checkbox(attributeSchema.getName()));
                     break;
                 case BINARY:
-                    bindingBuilder = binder.forField(new TaskEditor.BinaryViewer(/*attributeSchema.getName()*/));
+                    bindingBuilder = binder.forField(new BinaryViewer(/*attributeSchema.getName()*/));
                     break;
                 case LIST:
                     if (attributeSchema instanceof NestedAttributeSchema) {
@@ -210,18 +133,13 @@ public class ComponentFactory {
                     ObjectSchema referenceSchema = attributeSchema.getAutocompleteReference()
                             .orElseThrow(() -> new IllegalStateException("no AutocompleteReference for attribute '" + attributeSchema.getName() + "'"));
                     AutocompleteQuery autocompleteQuery = new AutocompleteQuery(sbpmEngine, referenceSchema);
-                    ComboBox<ComponentFactory.AttributeItem> comboBox = new ComboBox<ComponentFactory.AttributeItem>();
-                    comboBox.setDataProvider(new FetchItemsCallback<ComponentFactory.AttributeItem>() {
+                    ComboBox<AttributeItem> comboBox = new ComboBox<>();
+                    comboBox.setDataProvider(new FetchItemsCallback<AttributeItem>() {
                         @Override
-                        public Stream<ComponentFactory.AttributeItem> fetchItems(String filter, int offset, int limit) {
+                        public Stream<AttributeItem> fetchItems(String filter, int offset, int limit) {
                             try {
                                 return autocompleteQuery.query(taskInfo, filter)
-                                        .map(autocomplete -> new ComponentFactory.AttributeItem() {
-                                    public String toString() {
-                                        return autocomplete.getObjectData().getDisplayName()
-                                                .orElse(autocomplete.getObjectData().toString());
-                                    }
-                                });
+                                        .map(autocomplete -> new AttributeItem(autocomplete.getObjectData()));
                             } catch (UserNotFoundException | TaskNotFoundException | TaskOutOfDateException ex) {
                                 //Logger.getLogger(ComponentFactory.class.getName()).log(Level.SEVERE, ex.getMessage(), ex);
                                 throw new IllegalStateException(ex);
@@ -232,20 +150,30 @@ public class ComponentFactory {
                         public Integer apply(String filter) {
                             try {
                                 //determine item count
-                                return (int)autocompleteQuery.query(taskInfo, filter).count();
+                                return (int) autocompleteQuery.query(taskInfo, filter).count();
                             } catch (UserNotFoundException | TaskNotFoundException | TaskOutOfDateException ex) {
                                 //Logger.getLogger(ComponentFactory.class.getName()).log(Level.SEVERE, ex.getMessage(), ex);
                                 throw new IllegalStateException(ex);
                             }
                         }
                     });
-                    bindingBuilder = binder.forField(comboBox);
+                    bindingBuilder = binder.forField(comboBox)
+                            .withConverter(new Converter<AttributeItem, HashMap<Long, Serializable>>() {
+                                @Override
+                                public Result<HashMap<Long, Serializable>> convertToModel(AttributeItem value, ValueContext context) {
+                                    return Result.ok(value == null ? null : value.toSourceMap());
+                                }
+
+                                @Override
+                                public AttributeItem convertToPresentation(HashMap<Long, Serializable> value, ValueContext context) {
+                                    return null;
+                                }
+                            });
                     break;
                 case NESTED:
                     if (attributeSchema instanceof NestedAttributeSchema) {
                         if (Occurs.ONE == ((NestedAttributeSchema) attributeSchema).getOccurs()) {
-                            FormLayout formLayout = new FormHelper(sbpmEngine, null).createForm(taskInfo, ((NestedAttributeSchema) attributeSchema));
-                            bindingBuilder = binder.forField(new TaskEditor.EmbeddedForm(formLayout));
+                            bindingBuilder = binder.forField(new EmbeddedForm(sbpmEngine, taskInfo, (NestedAttributeSchema) attributeSchema, objectSchema));
                         } else if (Occurs.UNBOUND == ((NestedAttributeSchema) attributeSchema).getOccurs()) {
                             bindingBuilder = binder.forField(new EmbeddedGrid(sbpmEngine, taskInfo, (NestedAttributeSchema) attributeSchema));
                         } else {
@@ -271,13 +199,28 @@ public class ComponentFactory {
         private <T> Binder.Binding<ObjectBean, T> bind(AttributeSchema attributeSchema, Binder.BindingBuilder<ObjectBean, T> bindingBuilder) {
             Setter<ObjectBean, T> setter = null;
             if (!attributeSchema.isReadonly()) {
-                setter = (ObjectBean bean, T fieldvalue) -> bean.set(attributeSchema.getName(), (Serializable) fieldvalue);
+                setter = (ObjectBean bean, T fieldvalue) -> bean.set(attributeSchema, (Serializable) fieldvalue);
             }
-            return bindingBuilder.bind((ObjectBean bean) -> (T) bean.get(attributeSchema.getName()), setter);
+            return bindingBuilder.bind(bean -> (T) bean.get(attributeSchema), setter);
         }
     }
 
     public static class AttributeItem implements Serializable {
+
+        private final ObjectData objectData;
+
+        public AttributeItem(ObjectData objectData) {
+            this.objectData = objectData;
+        }
+
+        public HashMap<Long, Serializable> toSourceMap() {
+            return (HashMap<Long, Serializable>) objectData.getData();
+        }
+
+        @Override
+        public String toString() {
+            return objectData.getDisplayName().orElse(objectData.toString());
+        }
     }
 
     public static class AutocompleteQuery {

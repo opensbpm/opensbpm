@@ -1,13 +1,9 @@
 package at.softwaremacherei.jsbpm.webui.ui.views;
 
-import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentEvent;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
-import com.vaadin.flow.data.binder.BeanValidationBinder;
-import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.shared.Registration;
 
 import at.softwaremacherei.jsbpm.engine.api.UserNotFoundException;
@@ -19,13 +15,9 @@ import at.softwaremacherei.jsbpm.engine.api.instance.TaskInfo;
 import at.softwaremacherei.jsbpm.engine.api.instance.TaskNotFoundException;
 import at.softwaremacherei.jsbpm.engine.api.instance.TaskOutOfDateException;
 import at.softwaremacherei.jsbpm.engine.api.instance.TaskRequest;
-import at.softwaremacherei.jsbpm.engine.api.model.Binary;
 import at.softwaremacherei.jsbpm.webui.backend.SbpmEngine;
 import at.softwaremacherei.jsbpm.webui.ui.MainLayout;
-import at.softwaremacherei.jsbpm.webui.ui.components.ContentViewer;
 import at.softwaremacherei.jsbpm.webui.ui.views.model.ComponentFactory.FormHelper;
-import com.vaadin.flow.component.AbstractCompositeField;
-import com.vaadin.flow.component.formlayout.FormLayout.FormItem;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -33,8 +25,6 @@ import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteParameters;
-import com.vaadin.flow.server.StreamResource;
-import java.io.ByteArrayInputStream;
 import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -115,7 +105,7 @@ public class TaskEditor extends VerticalLayout implements BeforeEnterObserver {
             formHelper.getBinder().setBean(new ObjectBean(objectSchema, attributeStore));
 
         } catch (TaskNotFoundException | TaskOutOfDateException | UserNotFoundException ex) {
-            Logger.getLogger(TaskEditor.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(TaskEditor.class.getName()).log(Level.SEVERE, ex.getMessage(), ex);
         }
     }
 
@@ -134,7 +124,6 @@ public class TaskEditor extends VerticalLayout implements BeforeEnterObserver {
 //
 //        return new HorizontalLayout(start, close);
 //    }
-    
     // Events
     public static abstract class TaskFormEvent extends ComponentEvent<TaskEditor> {
 
@@ -183,47 +172,6 @@ public class TaskEditor extends VerticalLayout implements BeforeEnterObserver {
     public <T extends ComponentEvent<?>> Registration addListener(Class<T> eventType,
             ComponentEventListener<T> listener) {
         return getEventBus().addListener(eventType, listener);
-    }
-
-    public static class BinaryViewer extends AbstractCompositeField<ContentViewer, BinaryViewer, Binary> {
-
-        public BinaryViewer() {
-            super(null);
-            getContent().setSizeFull();
-        }
-
-        @Override
-        protected void setPresentationValue(Binary binary) {
-            StreamResource resource = new StreamResource(binary.toString(), () -> new ByteArrayInputStream(binary.getValue()));
-            resource.setContentType(binary.getMimeType());
-            getContent().setValue(binary.getMimeType(), resource);
-        }
-    }
-
-    public static class EmbeddedForm extends AbstractCompositeField<FormLayout, EmbeddedForm, ObjectBean> {
-
-        private final Binder<ObjectBean> binder = new BeanValidationBinder<>(ObjectBean.class);
-        private final FormLayout formLayout;
-
-        public EmbeddedForm(FormLayout formLayout) {
-            super(null);
-            this.formLayout = formLayout;
-        }
-
-        @Override
-        protected FormLayout initContent() {
-            return formLayout;
-        }
-
-        public FormItem addFormItem(Component field, String label) {
-            return getContent().addFormItem(field, label);
-        }
-
-        @Override
-        protected void setPresentationValue(ObjectBean newPresentationValue) {
-            binder.setBean(newPresentationValue);
-        }
-
     }
 
 }
