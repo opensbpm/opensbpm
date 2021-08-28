@@ -33,6 +33,7 @@ import com.vaadin.flow.data.binder.Result;
 import com.vaadin.flow.data.binder.Setter;
 import com.vaadin.flow.data.binder.ValueContext;
 import com.vaadin.flow.data.converter.Converter;
+import com.vaadin.flow.data.provider.CallbackDataProvider;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.HashMap;
@@ -134,29 +135,7 @@ public class ComponentFactory {
                             .orElseThrow(() -> new IllegalStateException("no AutocompleteReference for attribute '" + attributeSchema.getName() + "'"));
                     AutocompleteQuery autocompleteQuery = new AutocompleteQuery(sbpmEngine, referenceSchema);
                     ComboBox<AttributeItem> comboBox = new ComboBox<>();
-                    comboBox.setDataProvider(new FetchItemsCallback<AttributeItem>() {
-                        @Override
-                        public Stream<AttributeItem> fetchItems(String filter, int offset, int limit) {
-                            try {
-                                return autocompleteQuery.query(taskInfo, filter)
-                                        .map(autocomplete -> new AttributeItem(autocomplete.getObjectData()));
-                            } catch (UserNotFoundException | TaskNotFoundException | TaskOutOfDateException ex) {
-                                //Logger.getLogger(ComponentFactory.class.getName()).log(Level.SEVERE, ex.getMessage(), ex);
-                                throw new IllegalStateException(ex);
-                            }
-                        }
-                    }, new SerializableFunction<String, Integer>() {
-                        @Override
-                        public Integer apply(String filter) {
-                            try {
-                                //determine item count
-                                return (int) autocompleteQuery.query(taskInfo, filter).count();
-                            } catch (UserNotFoundException | TaskNotFoundException | TaskOutOfDateException ex) {
-                                //Logger.getLogger(ComponentFactory.class.getName()).log(Level.SEVERE, ex.getMessage(), ex);
-                                throw new IllegalStateException(ex);
-                            }
-                        }
-                    });
+                    comboBox.setDataProvider(autocompleteQuery.createDataProvider(taskInfo));
                     bindingBuilder = binder.forField(comboBox)
                             .withConverter(new Converter<AttributeItem, HashMap<Long, Serializable>>() {
                                 @Override
@@ -233,7 +212,38 @@ public class ComponentFactory {
             this.objectSchema = objectSchema;
         }
 
-        public Stream<Autocomplete> query(TaskInfo taskInfo, String filter) throws UserNotFoundException, TaskNotFoundException, TaskOutOfDateException {
+        CallbackDataProvider<AttributeItem, String> createDataProvider(TaskInfo taskInfo) {
+            return new CallbackDataProvider<>(
+                    q -> createFetchItems(taskInfo).fetchItems(q.getFilter().orElse(""),
+                            q.getOffset(), q.getLimit()),
+                    q -> createSizeCallback(taskInfo).apply(q.getFilter().orElse(""))
+            );
+        }
+
+        private FetchItemsCallback<AttributeItem> createFetchItems(TaskInfo taskInfo) {
+            return (String filter, int offset, int limit) -> {
+                try {
+                    return query(taskInfo, filter).map(autocomplete -> new AttributeItem(autocomplete.getObjectData()));
+                } catch (UserNotFoundException | TaskNotFoundException | TaskOutOfDateException ex) {
+                    //Logger.getLogger(ComponentFactory.class.getName()).log(Level.SEVERE, ex.getMessage(), ex);
+                    throw new IllegalStateException(ex);
+                }
+            };
+        }
+
+        private SerializableFunction<String, Integer> createSizeCallback(TaskInfo taskInfo) {
+            return filter -> {
+                try {
+                    //determine item count
+                    return (int) query(taskInfo, filter).count();
+                } catch (UserNotFoundException | TaskNotFoundException | TaskOutOfDateException ex) {
+                    //Logger.getLogger(ComponentFactory.class.getName()).log(Level.SEVERE, ex.getMessage(), ex);
+                    throw new IllegalStateException(ex);
+                }
+            };
+        }
+
+        private Stream<Autocomplete> query(TaskInfo taskInfo, String filter) throws UserNotFoundException, TaskNotFoundException, TaskOutOfDateException {
             ObjectRequest objectRequest = ObjectRequest.of(objectSchema.getId());
             return sbpmEngine.getAutocompleteResponse(taskInfo, objectRequest, filter).getAutocompletes().stream();
         }
