@@ -59,24 +59,12 @@ public class EmbeddedGrid extends AbstractCompositeField<GridEditor, EmbeddedGri
             grid = new Grid<>();
             grid.setDataProvider(DataProvider.ofCollection(interalStore));
 
-            ComponentFactory componentFactory = new ComponentFactory(sbpmEngine, null);
-            for (AttributeSchema attribute : parentSchema.getAttributes()) {
-                Component field = componentFactory.createField(taskInfo, attribute);
-
-                grid.addColumn(bean -> bean.get(attribute))
-                        .setEditorComponent(field)
-                        .setHeader(attribute.getName());
-            }
-            binder = componentFactory.getBinder();
-
-            grid.getEditor().setBinder(binder);
-            grid.getEditor().setBuffered(true);
             grid.setSelectionMode(SelectionMode.NONE);
-            grid.addItemClickListener(evt -> grid.getEditor().editItem(evt.getItem()));
+            grid.addItemClickListener(evt -> editItem(evt.getItem()));
 
             Set<Button> actionButtons = new HashSet<>();
             Grid.Column<ObjectBean> actionsColumn = grid.addComponentColumn(item -> {
-                final Button editButton = new Button(VaadinIcon.EDIT.create(), e -> grid.getEditor().editItem(item));
+                final Button editButton = new Button(VaadinIcon.EDIT.create(), e -> editItem(item));
                 editButton.setId("edit");
                 editButton.setEnabled(!grid.getEditor().isOpen());
                 actionButtons.add(editButton);
@@ -95,7 +83,7 @@ public class EmbeddedGrid extends AbstractCompositeField<GridEditor, EmbeddedGri
             final Button addButton = new Button(VaadinIcon.PLUS.create(), e -> {
                 final ObjectBean newItem = createItem();
                 addItem(newItem);
-                grid.getEditor().editItem(newItem);
+                editItem(newItem);
             });
             addButton.setId("add");
             actionButtons.add(addButton);
@@ -129,10 +117,23 @@ public class EmbeddedGrid extends AbstractCompositeField<GridEditor, EmbeddedGri
             getElement().addEventListener("keyup",
                     e -> grid.getEditor().cancel()).setFilter("event.key === 'Escape' || event.key === 'Esc'");
 
-//            addRowButton = new Button(VaadinIcon.PLUS.create(),
-//                    evt -> addItem(createItem())
-//            );
-            getContent().add(grid/*, addRowButton*/);
+            ComponentFactory componentFactory = new ComponentFactory(sbpmEngine, null);
+            for (AttributeSchema attribute : parentSchema.getAttributes()) {
+                Component field = componentFactory.createField(taskInfo, attribute);
+
+                grid.addColumn(bean -> bean.get(attribute))
+                        .setEditorComponent(field)
+                        .setHeader(attribute.getName());
+            }
+            binder = componentFactory.getBinder();
+
+            getContent().add(grid);
+        }
+
+        private void editItem(final ObjectBean newItem) {
+            grid.getEditor().setBinder(binder);
+            grid.getEditor().setBuffered(true);
+            grid.getEditor().editItem(newItem);
         }
 
 //        private void buildColumns(NestedAttributeSchema parentAttributeSchema, SbpmEngine sbpmEngine, TaskInfo taskInfo) {

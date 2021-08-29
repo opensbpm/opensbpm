@@ -67,10 +67,10 @@ public class ComponentFactory {
         Binder.BindingBuilder<ObjectBean, ?> bindingBuilder = null;
         switch (attributeSchema.getFieldType()) {
             case STRING:
-                bindingBuilder = binder.forField(new TextField(attributeSchema.getName()));
+                bindingBuilder = binder.forField(new TextField());
                 break;
             case NUMBER:
-                bindingBuilder = binder.forField(new NumberField(attributeSchema.getName()))
+                bindingBuilder = binder.forField(new NumberField())
                         .withConverter(new Converter<Double, Integer>() {
 
                             @Override
@@ -85,7 +85,7 @@ public class ComponentFactory {
                         });
                 break;
             case DECIMAL:
-                bindingBuilder = binder.forField(new NumberField(attributeSchema.getName()))
+                bindingBuilder = binder.forField(new NumberField())
                         .withConverter(new Converter<Double, BigDecimal>() {
 
                             @Override
@@ -100,16 +100,16 @@ public class ComponentFactory {
                         });
                 break;
             case DATE:
-                bindingBuilder = binder.forField(new DatePicker(attributeSchema.getName()));
+                bindingBuilder = binder.forField(new DatePicker());
                 break;
             case TIME:
-                bindingBuilder = binder.forField(new TimePicker(attributeSchema.getName()));
+                bindingBuilder = binder.forField(new TimePicker());
                 break;
             case BOOLEAN:
-                bindingBuilder = binder.forField(new Checkbox(attributeSchema.getName()));
+                bindingBuilder = binder.forField(new Checkbox());
                 break;
             case BINARY:
-                bindingBuilder = binder.forField(new BinaryViewer(/*attributeSchema.getName()*/));
+                bindingBuilder = binder.forField(new BinaryViewer());
                 break;
             case LIST:
                 if (attributeSchema instanceof NestedAttributeSchema) {
