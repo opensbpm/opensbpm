@@ -47,16 +47,32 @@ public class EmbeddedGrid extends AbstractCompositeField<GridEditor, EmbeddedGri
         getContent().setItems(objectBeans);
     }
 
-    public class GridEditor extends Composite<Div> {
+    public class GridEditor extends Composite<Grid<ObjectBean>> {
 
         private final Binder<ObjectBean> binder;
-        private final Grid<ObjectBean> grid;
-//        private final Button addRowButton;
         private transient List<ObjectBean> interalStore = new ArrayList<>();
 
         public GridEditor(SbpmEngine sbpmEngine, TaskInfo taskInfo, NestedAttributeSchema parentSchema) {
             super();
-            grid = new Grid<>();
+
+            ComponentFactory componentFactory = new ComponentFactory(sbpmEngine, null);
+            for (AttributeSchema attribute : parentSchema.getAttributes()) {
+                Component field = componentFactory.createField(taskInfo, attribute);
+
+                getContent().addColumn(bean -> bean.get(attribute))
+                        .setEditorComponent(field)
+                        .setHeader(attribute.getName())
+                        .setFlexGrow(1)
+                        .setAutoWidth(true);
+            }
+            binder = componentFactory.getBinder();
+
+            getContent().setWidthFull();
+        }
+
+        @Override
+        protected Grid<ObjectBean> initContent() {
+            Grid<ObjectBean> grid = new Grid<>();
             grid.setDataProvider(DataProvider.ofCollection(interalStore));
 
             grid.setSelectionMode(SelectionMode.NONE);
@@ -114,26 +130,16 @@ public class EmbeddedGrid extends AbstractCompositeField<GridEditor, EmbeddedGri
 
             // Add a keypress listener that listens for an escape key up event.
             // Note! some browsers return key as Escape and some as Esc
-            getElement().addEventListener("keyup",
+            grid.getElement().addEventListener("keyup",
                     e -> grid.getEditor().cancel()).setFilter("event.key === 'Escape' || event.key === 'Esc'");
 
-            ComponentFactory componentFactory = new ComponentFactory(sbpmEngine, null);
-            for (AttributeSchema attribute : parentSchema.getAttributes()) {
-                Component field = componentFactory.createField(taskInfo, attribute);
-
-                grid.addColumn(bean -> bean.get(attribute))
-                        .setEditorComponent(field)
-                        .setHeader(attribute.getName());
-            }
-            binder = componentFactory.getBinder();
-
-            getContent().add(grid);
+            return grid;
         }
 
         private void editItem(final ObjectBean newItem) {
-            grid.getEditor().setBinder(binder);
-            grid.getEditor().setBuffered(true);
-            grid.getEditor().editItem(newItem);
+            getContent().getEditor().setBinder(binder);
+            getContent().getEditor().setBuffered(true);
+            getContent().getEditor().editItem(newItem);
         }
 
 //        private void buildColumns(NestedAttributeSchema parentAttributeSchema, SbpmEngine sbpmEngine, TaskInfo taskInfo) {
@@ -161,13 +167,13 @@ public class EmbeddedGrid extends AbstractCompositeField<GridEditor, EmbeddedGri
         public void setItems(List<ObjectBean> objectBeans) {
             interalStore.clear();
             interalStore.addAll(objectBeans);
-            grid.getDataProvider().refreshAll();
+            getContent().getDataProvider().refreshAll();
         }
 
         private void addItem(ObjectBean objectBean) {
             interalStore.add(objectBean);
-            grid.getDataProvider().refreshAll();
-            grid.getDataProvider().refreshItem(objectBean);
+            getContent().getDataProvider().refreshAll();
+            getContent().getDataProvider().refreshItem(objectBean);
         }
 
         private void saveItem(ObjectBean item) {
@@ -176,8 +182,8 @@ public class EmbeddedGrid extends AbstractCompositeField<GridEditor, EmbeddedGri
 
         private void removeItem(ObjectBean objectBean) {
             interalStore.remove(objectBean);
-            grid.getDataProvider().refreshAll();
-            grid.getDataProvider().refreshItem(objectBean);
+            getContent().getDataProvider().refreshAll();
+            getContent().getDataProvider().refreshItem(objectBean);
             updateStore(interalStore);
         }
 

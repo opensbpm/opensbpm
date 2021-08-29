@@ -47,12 +47,11 @@ public class TaskEditor extends VerticalLayout implements BeforeEnterObserver {
 
     public TaskEditor(SbpmEngine sbpmEngine) {
         this.sbpmEngine = Objects.requireNonNull(sbpmEngine, "sbpmEngine must be non null");
-        addClassName("contact-form");
+        addClassName("task-form");
 
-        formContent.setSizeFull();
-        add(stateLabel,
-                formContent,
-                toolbar);
+        setSizeFull();
+        formContent.setWidthFull();
+        add(stateLabel,formContent,toolbar);
     }
 
     @Override

@@ -24,9 +24,11 @@ import at.softwaremacherei.jsbpm.engine.api.instance.AutocompleteResponse.Autoco
 import at.softwaremacherei.jsbpm.engine.api.instance.IsAttributesContainer;
 import at.softwaremacherei.jsbpm.engine.api.instance.ObjectBean;
 import at.softwaremacherei.jsbpm.engine.api.instance.ObjectData;
+import at.softwaremacherei.jsbpm.engine.api.model.FieldType;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasValue;
 import com.vaadin.flow.component.formlayout.FormLayout;
+import com.vaadin.flow.component.formlayout.FormLayout.FormItem;
 import com.vaadin.flow.data.binder.BeanValidationBinder;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.binder.Result;
@@ -57,7 +59,12 @@ public class ComponentFactory {
         FormLayout formLayout = new FormLayout();
         for (AttributeSchema attributeSchema : attributesContainer.getAttributes()) {
             Component field = createField(taskInfo, attributeSchema);
-            formLayout.addFormItem(field, attributeSchema.getName());
+            FormItem formItem = formLayout.addFormItem(field, attributeSchema.getName());
+            //?? formItem.getElement().setAttribute("label-position", "top");
+            if (FieldType.LIST == attributeSchema.getFieldType()
+                    || FieldType.NESTED == attributeSchema.getFieldType()) {
+                formLayout.setColspan(formItem, 2);
+            }
         }
         formLayout.setSizeFull();
         return formLayout;
