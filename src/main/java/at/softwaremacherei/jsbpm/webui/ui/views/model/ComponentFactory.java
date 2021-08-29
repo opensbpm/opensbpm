@@ -41,165 +41,138 @@ import java.util.HashMap;
 public class ComponentFactory {
 
     private final SbpmEngine sbpmEngine;
+    private final ObjectSchema objectSchema;
+    private final Binder<ObjectBean> binder = new BeanValidationBinder<>(ObjectBean.class);
 
-    public ComponentFactory(SbpmEngine sbpmEngine) {
+    public ComponentFactory(SbpmEngine sbpmEngine, ObjectSchema objectSchema) {
         this.sbpmEngine = sbpmEngine;
+        this.objectSchema = objectSchema;
     }
 
-    public static class FormHelper {
-
-        private final SbpmEngine sbpmEngine;
-        private final Binder<ObjectBean> binder = new BeanValidationBinder<>(ObjectBean.class);
-        private final ObjectSchema objectSchema;
-
-        public FormHelper(SbpmEngine sbpmEngine, ObjectSchema objectSchema) {
-            this.sbpmEngine = sbpmEngine;
-            this.objectSchema = objectSchema;
-        }
-
-        public Binder<ObjectBean> getBinder() {
-            return binder;
-        }
-
-        public FormLayout createForm(TaskInfo taskInfo, IsAttributesContainer attributesContainer) {
-            FormLayout formLayout = new FormLayout();
-            for (AttributeSchema attributeSchema : attributesContainer.getAttributes()) {
-                Component field = createField(taskInfo, attributeSchema);
-                formLayout.addFormItem(field, attributeSchema.getName());
-            }
-            formLayout.setSizeFull();
-            return formLayout;
-        }
-
-        public <V, C extends Component & HasValue<?, V>> C createField(TaskInfo taskInfo, AttributeSchema attributeSchema) {
-            Binder.BindingBuilder<ObjectBean, ?> bindingBuilder = null;
-            switch (attributeSchema.getFieldType()) {
-                case STRING:
-                    bindingBuilder = binder.forField(new TextField(attributeSchema.getName()));
-                    break;
-                case NUMBER:
-                    bindingBuilder = binder.forField(new NumberField(attributeSchema.getName()))
-                            .withConverter(new Converter<Double, Integer>() {
-
-                                @Override
-                                public Result<Integer> convertToModel(Double value, ValueContext context) {
-                                    return Result.ok(value == null ? null : value.intValue());
-                                }
-
-                                @Override
-                                public Double convertToPresentation(Integer value, ValueContext context) {
-                                    return value == null ? null : value.doubleValue();
-                                }
-                            });
-                    break;
-                case DECIMAL:
-                    bindingBuilder = binder.forField(new NumberField(attributeSchema.getName()))
-                            .withConverter(new Converter<Double, BigDecimal>() {
-
-                                @Override
-                                public Result<BigDecimal> convertToModel(Double value, ValueContext context) {
-                                    return Result.ok(value == null ? null : BigDecimal.valueOf(value));
-                                }
-
-                                @Override
-                                public Double convertToPresentation(BigDecimal value, ValueContext context) {
-                                    return value == null ? null : value.doubleValue();
-                                }
-                            });
-                    break;
-                case DATE:
-                    bindingBuilder = binder.forField(new DatePicker(attributeSchema.getName()));
-                    break;
-                case TIME:
-                    bindingBuilder = binder.forField(new TimePicker(attributeSchema.getName()));
-                    break;
-                case BOOLEAN:
-                    bindingBuilder = binder.forField(new Checkbox(attributeSchema.getName()));
-                    break;
-                case BINARY:
-                    bindingBuilder = binder.forField(new BinaryViewer(/*attributeSchema.getName()*/));
-                    break;
-                case LIST:
-                    if (attributeSchema instanceof NestedAttributeSchema) {
-                        if (Occurs.UNBOUND == ((NestedAttributeSchema) attributeSchema).getOccurs()) {
-                            bindingBuilder = binder.forField(new EmbeddedGrid(sbpmEngine, taskInfo, (NestedAttributeSchema) attributeSchema));
-                        } else {
-                            throw new UnsupportedOperationException("Occurs " + ((NestedAttributeSchema) attributeSchema).getOccurs() + " not supported yet");
-                        }
-                    } else {
-                        throw new UnsupportedOperationException("FieldType.LIST must use NestedAttributeSchema");
-                    }
-                    break;
-                case REFERENCE:
-                    ObjectSchema referenceSchema = attributeSchema.getAutocompleteReference()
-                            .orElseThrow(() -> new IllegalStateException("no AutocompleteReference for attribute '" + attributeSchema.getName() + "'"));
-                    AutocompleteQuery autocompleteQuery = new AutocompleteQuery(sbpmEngine, referenceSchema);
-                    ComboBox<AttributeItem> comboBox = new ComboBox<>();
-                    comboBox.setDataProvider(autocompleteQuery.createDataProvider(taskInfo));
-                    bindingBuilder = binder.forField(comboBox)
-                            .withConverter(new Converter<AttributeItem, HashMap<Long, Serializable>>() {
-                                @Override
-                                public Result<HashMap<Long, Serializable>> convertToModel(AttributeItem value, ValueContext context) {
-                                    return Result.ok(value == null ? null : value.toSourceMap());
-                                }
-
-                                @Override
-                                public AttributeItem convertToPresentation(HashMap<Long, Serializable> value, ValueContext context) {
-                                    return null;
-                                }
-                            });
-                    break;
-                case NESTED:
-                    if (attributeSchema instanceof NestedAttributeSchema) {
-                        if (Occurs.ONE == ((NestedAttributeSchema) attributeSchema).getOccurs()) {
-                            bindingBuilder = binder.forField(new EmbeddedForm(sbpmEngine, taskInfo, (NestedAttributeSchema) attributeSchema, objectSchema));
-                        } else if (Occurs.UNBOUND == ((NestedAttributeSchema) attributeSchema).getOccurs()) {
-                            bindingBuilder = binder.forField(new EmbeddedGrid(sbpmEngine, taskInfo, (NestedAttributeSchema) attributeSchema));
-                        } else {
-                            throw new UnsupportedOperationException("Occurs " + ((NestedAttributeSchema) attributeSchema).getOccurs() + " not supported yet");
-                        }
-                    } else {
-                        throw new UnsupportedOperationException("FieldType.NESTED must use NestedAttributeSchema");
-                    }
-                    break;
-                default:
-                    throw new UnsupportedOperationException("no component binding for " + attributeSchema.getFieldType());
-            }
-            if (attributeSchema.isRequired()) {
-                bindingBuilder.asRequired();
-            }
-            Binder.Binding<ObjectBean, ?> binding = bind(attributeSchema, bindingBuilder);
-            Component field = (Component) binding.getField();
-            field.setId(String.valueOf(attributeSchema.getId()));
-            return (C) field;
-        }
-
-        @SuppressWarnings("unchecked")
-        private <T> Binder.Binding<ObjectBean, T> bind(AttributeSchema attributeSchema, Binder.BindingBuilder<ObjectBean, T> bindingBuilder) {
-            Setter<ObjectBean, T> setter = null;
-            if (!attributeSchema.isReadonly()) {
-                setter = (ObjectBean bean, T fieldvalue) -> bean.set(attributeSchema, (Serializable) fieldvalue);
-            }
-            return bindingBuilder.bind(bean -> (T) bean.get(attributeSchema), setter);
-        }
+    public Binder<ObjectBean> getBinder() {
+        return binder;
     }
 
-    public static class AttributeItem implements Serializable {
-
-        private final ObjectData objectData;
-
-        public AttributeItem(ObjectData objectData) {
-            this.objectData = objectData;
+    public FormLayout createForm(TaskInfo taskInfo, IsAttributesContainer attributesContainer) {
+        FormLayout formLayout = new FormLayout();
+        for (AttributeSchema attributeSchema : attributesContainer.getAttributes()) {
+            Component field = createField(taskInfo, attributeSchema);
+            formLayout.addFormItem(field, attributeSchema.getName());
         }
+        formLayout.setSizeFull();
+        return formLayout;
+    }
 
-        public HashMap<Long, Serializable> toSourceMap() {
-            return (HashMap<Long, Serializable>) objectData.getData();
-        }
+    public <V, C extends Component & HasValue<?, V>> C createField(TaskInfo taskInfo, AttributeSchema attributeSchema) {
+        Binder.BindingBuilder<ObjectBean, ?> bindingBuilder = null;
+        switch (attributeSchema.getFieldType()) {
+            case STRING:
+                bindingBuilder = binder.forField(new TextField(attributeSchema.getName()));
+                break;
+            case NUMBER:
+                bindingBuilder = binder.forField(new NumberField(attributeSchema.getName()))
+                        .withConverter(new Converter<Double, Integer>() {
 
-        @Override
-        public String toString() {
-            return objectData.getDisplayName().orElse(objectData.toString());
+                            @Override
+                            public Result<Integer> convertToModel(Double value, ValueContext context) {
+                                return Result.ok(value == null ? null : value.intValue());
+                            }
+
+                            @Override
+                            public Double convertToPresentation(Integer value, ValueContext context) {
+                                return value == null ? null : value.doubleValue();
+                            }
+                        });
+                break;
+            case DECIMAL:
+                bindingBuilder = binder.forField(new NumberField(attributeSchema.getName()))
+                        .withConverter(new Converter<Double, BigDecimal>() {
+
+                            @Override
+                            public Result<BigDecimal> convertToModel(Double value, ValueContext context) {
+                                return Result.ok(value == null ? null : BigDecimal.valueOf(value));
+                            }
+
+                            @Override
+                            public Double convertToPresentation(BigDecimal value, ValueContext context) {
+                                return value == null ? null : value.doubleValue();
+                            }
+                        });
+                break;
+            case DATE:
+                bindingBuilder = binder.forField(new DatePicker(attributeSchema.getName()));
+                break;
+            case TIME:
+                bindingBuilder = binder.forField(new TimePicker(attributeSchema.getName()));
+                break;
+            case BOOLEAN:
+                bindingBuilder = binder.forField(new Checkbox(attributeSchema.getName()));
+                break;
+            case BINARY:
+                bindingBuilder = binder.forField(new BinaryViewer(/*attributeSchema.getName()*/));
+                break;
+            case LIST:
+                if (attributeSchema instanceof NestedAttributeSchema) {
+                    if (Occurs.UNBOUND == ((NestedAttributeSchema) attributeSchema).getOccurs()) {
+                        bindingBuilder = binder.forField(new EmbeddedGrid(sbpmEngine, taskInfo, (NestedAttributeSchema) attributeSchema));
+                    } else {
+                        throw new UnsupportedOperationException("Occurs " + ((NestedAttributeSchema) attributeSchema).getOccurs() + " not supported yet");
+                    }
+                } else {
+                    throw new UnsupportedOperationException("FieldType.LIST must use NestedAttributeSchema");
+                }
+                break;
+            case REFERENCE:
+                ObjectSchema referenceSchema = attributeSchema.getAutocompleteReference()
+                        .orElseThrow(() -> new IllegalStateException("no AutocompleteReference for attribute '" + attributeSchema.getName() + "'"));
+                AutocompleteQuery autocompleteQuery = new AutocompleteQuery(sbpmEngine, referenceSchema);
+                ComboBox<AttributeItem> comboBox = new ComboBox<>();
+                comboBox.setDataProvider(autocompleteQuery.createDataProvider(taskInfo));
+                bindingBuilder = binder.forField(comboBox)
+                        .withConverter(new Converter<AttributeItem, HashMap<Long, Serializable>>() {
+                            @Override
+                            public Result<HashMap<Long, Serializable>> convertToModel(AttributeItem value, ValueContext context) {
+                                return Result.ok(value == null ? null : value.toSourceMap());
+                            }
+
+                            @Override
+                            public AttributeItem convertToPresentation(HashMap<Long, Serializable> value, ValueContext context) {
+                                return null;
+                            }
+                        });
+                break;
+            case NESTED:
+                if (attributeSchema instanceof NestedAttributeSchema) {
+                    if (Occurs.ONE == ((NestedAttributeSchema) attributeSchema).getOccurs()) {
+                        bindingBuilder = binder.forField(new EmbeddedForm(sbpmEngine, taskInfo, (NestedAttributeSchema) attributeSchema, objectSchema));
+                    } else if (Occurs.UNBOUND == ((NestedAttributeSchema) attributeSchema).getOccurs()) {
+                        bindingBuilder = binder.forField(new EmbeddedGrid(sbpmEngine, taskInfo, (NestedAttributeSchema) attributeSchema));
+                    } else {
+                        throw new UnsupportedOperationException("Occurs " + ((NestedAttributeSchema) attributeSchema).getOccurs() + " not supported yet");
+                    }
+                } else {
+                    throw new UnsupportedOperationException("FieldType.NESTED must use NestedAttributeSchema");
+                }
+                break;
+            default:
+                throw new UnsupportedOperationException("no component binding for " + attributeSchema.getFieldType());
         }
+        if (attributeSchema.isRequired()) {
+            bindingBuilder.asRequired();
+        }
+        Binder.Binding<ObjectBean, ?> binding = bind(attributeSchema, bindingBuilder);
+        Component field = (Component) binding.getField();
+        field.setId(String.valueOf(attributeSchema.getId()));
+        return (C) field;
+    }
+
+    @SuppressWarnings("unchecked")
+    private <T> Binder.Binding<ObjectBean, T> bind(AttributeSchema attributeSchema, Binder.BindingBuilder<ObjectBean, T> bindingBuilder) {
+        Setter<ObjectBean, T> setter = null;
+        if (!attributeSchema.isReadonly()) {
+            setter = (ObjectBean bean, T fieldvalue) -> bean.set(attributeSchema, (Serializable) fieldvalue);
+        }
+        return bindingBuilder.bind(bean -> (T) bean.get(attributeSchema), setter);
     }
 
     public static class AutocompleteQuery {
@@ -249,4 +222,23 @@ public class ComponentFactory {
         }
 
     }
+
+    public static class AttributeItem implements Serializable {
+
+        private final ObjectData objectData;
+
+        public AttributeItem(ObjectData objectData) {
+            this.objectData = objectData;
+        }
+
+        public HashMap<Long, Serializable> toSourceMap() {
+            return (HashMap<Long, Serializable>) objectData.getData();
+        }
+
+        @Override
+        public String toString() {
+            return objectData.getDisplayName().orElse(objectData.toString());
+        }
+    }
+
 }

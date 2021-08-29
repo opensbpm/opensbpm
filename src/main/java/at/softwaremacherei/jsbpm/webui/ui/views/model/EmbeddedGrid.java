@@ -6,7 +6,6 @@ import at.softwaremacherei.jsbpm.engine.api.instance.ObjectBean;
 import at.softwaremacherei.jsbpm.engine.api.instance.AttributeStore;
 import at.softwaremacherei.jsbpm.engine.api.instance.TaskInfo;
 import at.softwaremacherei.jsbpm.webui.backend.SbpmEngine;
-import at.softwaremacherei.jsbpm.webui.ui.views.model.ComponentFactory.FormHelper;
 import at.softwaremacherei.jsbpm.webui.ui.views.model.EmbeddedGrid.GridEditor;
 import com.vaadin.flow.component.AbstractCompositeField;
 import com.vaadin.flow.component.icon.VaadinIcon;
@@ -17,15 +16,7 @@ import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.Grid.SelectionMode;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.data.binder.Binder;
-import com.vaadin.flow.data.provider.DataKeyMapper;
 import com.vaadin.flow.data.provider.DataProvider;
-import com.vaadin.flow.data.renderer.ComponentRenderer;
-import com.vaadin.flow.data.renderer.Renderer;
-import com.vaadin.flow.data.renderer.Rendering;
-import com.vaadin.flow.dom.Element;
-import com.vaadin.flow.function.SerializableBiConsumer;
-import com.vaadin.flow.function.SerializableSupplier;
-import com.vaadin.flow.function.ValueProvider;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -34,8 +25,8 @@ import java.util.Set;
 
 public class EmbeddedGrid extends AbstractCompositeField<GridEditor, EmbeddedGrid, List<ObjectBean>> {
 
-    private SbpmEngine sbpmEngine;
-    private TaskInfo taskInfo;
+    private final SbpmEngine sbpmEngine;
+    private final TaskInfo taskInfo;
     private final NestedAttributeSchema nestedAttributeSchema;
 
     public EmbeddedGrid(SbpmEngine sbpmEngine, TaskInfo taskInfo, NestedAttributeSchema nestedAttributeSchema) {
@@ -68,15 +59,15 @@ public class EmbeddedGrid extends AbstractCompositeField<GridEditor, EmbeddedGri
             grid = new Grid<>();
             grid.setDataProvider(DataProvider.ofCollection(interalStore));
 
-            FormHelper formHelper = new FormHelper(sbpmEngine, null);
+            ComponentFactory componentFactory = new ComponentFactory(sbpmEngine, null);
             for (AttributeSchema attribute : parentSchema.getAttributes()) {
-                Component field = formHelper.createField(taskInfo, attribute);
+                Component field = componentFactory.createField(taskInfo, attribute);
 
                 grid.addColumn(bean -> bean.get(attribute))
                         .setEditorComponent(field)
                         .setHeader(attribute.getName());
             }
-            binder = formHelper.getBinder();
+            binder = componentFactory.getBinder();
 
             grid.getEditor().setBinder(binder);
             grid.getEditor().setBuffered(true);

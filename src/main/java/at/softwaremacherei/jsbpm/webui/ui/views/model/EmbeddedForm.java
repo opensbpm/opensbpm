@@ -5,9 +5,7 @@ import at.softwaremacherei.jsbpm.engine.api.instance.ObjectBean;
 import at.softwaremacherei.jsbpm.engine.api.instance.ObjectSchema;
 import at.softwaremacherei.jsbpm.engine.api.instance.TaskInfo;
 import at.softwaremacherei.jsbpm.webui.backend.SbpmEngine;
-import at.softwaremacherei.jsbpm.webui.ui.views.model.ComponentFactory.FormHelper;
 import com.vaadin.flow.component.AbstractCompositeField;
-import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.data.binder.Binder;
 
@@ -30,9 +28,9 @@ public class EmbeddedForm extends AbstractCompositeField<FormLayout, EmbeddedFor
 
     @Override
     protected FormLayout initContent() {
-        FormHelper formHelper = new FormHelper(sbpmEngine, null);
-        FormLayout formLayout = formHelper.createForm(taskInfo, attributesContainer);
-        binder = formHelper.getBinder();
+        ComponentFactory componentFactory = new ComponentFactory(sbpmEngine, null);
+        FormLayout formLayout = componentFactory.createForm(taskInfo, attributesContainer);
+        binder = componentFactory.getBinder();
         return formLayout;
     }
 

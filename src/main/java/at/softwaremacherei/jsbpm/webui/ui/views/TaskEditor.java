@@ -17,7 +17,7 @@ import at.softwaremacherei.jsbpm.engine.api.instance.TaskOutOfDateException;
 import at.softwaremacherei.jsbpm.engine.api.instance.TaskRequest;
 import at.softwaremacherei.jsbpm.webui.backend.SbpmEngine;
 import at.softwaremacherei.jsbpm.webui.ui.MainLayout;
-import at.softwaremacherei.jsbpm.webui.ui.views.model.ComponentFactory.FormHelper;
+import at.softwaremacherei.jsbpm.webui.ui.views.model.ComponentFactory;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -73,8 +73,8 @@ public class TaskEditor extends VerticalLayout implements BeforeEnterObserver {
             ObjectSchema objectSchema = task.getTaskDocument().getSchemas().stream()
                     .findFirst()
                     .orElseThrow(() -> new IllegalStateException("only one business-object allowed"));
-            FormHelper formHelper = new FormHelper(sbpmEngine, objectSchema);
-            formContent.add(formHelper.createForm(taskInfo, objectSchema));
+            ComponentFactory componentFactory = new ComponentFactory(sbpmEngine, objectSchema);
+            formContent.add(componentFactory.createForm(taskInfo, objectSchema));
 
             AttributeStore attributeStore = task.createAttributeStore(objectSchema);
 
@@ -82,7 +82,7 @@ public class TaskEditor extends VerticalLayout implements BeforeEnterObserver {
                     .map(nextState -> {
                         Button nextStateButton = new Button(nextState.getName());
                         nextStateButton.addClickListener(click -> {
-                            if (formHelper.getBinder().validate().isOk()) {
+                            if (componentFactory.getBinder().validate().isOk()) {
                                 try {
                                     TaskRequest taskRequest = task.createTaskRequest(nextState, objectSchema, attributeStore);
                                     sbpmEngine.executeTask(taskRequest);
@@ -97,12 +97,12 @@ public class TaskEditor extends VerticalLayout implements BeforeEnterObserver {
                                 }
                             }
                         });
-                        formHelper.getBinder().addStatusChangeListener(evt -> nextStateButton.setEnabled(formHelper.getBinder().isValid()));
+                        componentFactory.getBinder().addStatusChangeListener(evt -> nextStateButton.setEnabled(componentFactory.getBinder().isValid()));
                         return nextStateButton;
                     })
                     .forEach(nextStateButton -> toolbar.add(nextStateButton));
 
-            formHelper.getBinder().setBean(new ObjectBean(objectSchema, attributeStore));
+            componentFactory.getBinder().setBean(new ObjectBean(objectSchema, attributeStore));
 
         } catch (TaskNotFoundException | TaskOutOfDateException | UserNotFoundException ex) {
             Logger.getLogger(TaskEditor.class.getName()).log(Level.SEVERE, ex.getMessage(), ex);
