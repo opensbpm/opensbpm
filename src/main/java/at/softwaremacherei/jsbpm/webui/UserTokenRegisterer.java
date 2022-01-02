@@ -31,7 +31,7 @@ import org.springframework.stereotype.Component;
 public class UserTokenRegisterer {
 
     private static final Logger LOGGER = Logger.getLogger(UserTokenRegisterer.class.getName());
-    
+
     private final UserTokenService userTokenService;
 
     public UserTokenRegisterer(UserTokenService userTokenService) {

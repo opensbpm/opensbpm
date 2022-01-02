@@ -7,7 +7,7 @@ import com.vaadin.flow.server.StreamResource;
 import java.io.ByteArrayInputStream;
 
 public class BinaryViewer extends AbstractCompositeField<ContentViewer, BinaryViewer, Binary> {
-    
+
     public BinaryViewer() {
         super(null);
         getContent().setSizeFull();
@@ -19,5 +19,5 @@ public class BinaryViewer extends AbstractCompositeField<ContentViewer, BinaryVi
         resource.setContentType(binary.getMimeType());
         getContent().setValue(binary.getMimeType(), resource);
     }
-    
+
 }

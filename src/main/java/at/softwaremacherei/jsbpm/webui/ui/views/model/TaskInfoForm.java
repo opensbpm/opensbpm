@@ -35,8 +35,8 @@ public class TaskInfoForm extends FormLayout {
 
         add(
                 processName,
-            stateName,
-            createButtonsLayout()
+                stateName,
+                createButtonsLayout()
         );
     }
 
@@ -63,48 +63,52 @@ public class TaskInfoForm extends FormLayout {
 
     private void validateAndSave() {
 
-      try {
-        binder.writeBean(taskInfo);
-        fireEvent(new SaveEvent(this, taskInfo));
-      } catch (ValidationException e) {
-        e.printStackTrace();
-      }
+        try {
+            binder.writeBean(taskInfo);
+            fireEvent(new SaveEvent(this, taskInfo));
+        } catch (ValidationException e) {
+            e.printStackTrace();
+        }
     }
 
     // Events
     public static abstract class TaskInfoFormEvent extends ComponentEvent<TaskInfoForm> {
-      private TaskInfo taskInfo;
 
-      protected TaskInfoFormEvent(TaskInfoForm source, TaskInfo modelInfo) {
-        super(source, false);
-        this.taskInfo = modelInfo;
-      }
+        private TaskInfo taskInfo;
 
-      public TaskInfo getTaskInfo() {
-        return taskInfo;
-      }
+        protected TaskInfoFormEvent(TaskInfoForm source, TaskInfo modelInfo) {
+            super(source, false);
+            this.taskInfo = modelInfo;
+        }
+
+        public TaskInfo getTaskInfo() {
+            return taskInfo;
+        }
     }
 
     public static class SaveEvent extends TaskInfoFormEvent {
-      SaveEvent(TaskInfoForm source, TaskInfo modelInfo) {
-        super(source, modelInfo);
-      }
+
+        SaveEvent(TaskInfoForm source, TaskInfo modelInfo) {
+            super(source, modelInfo);
+        }
     }
 
     public static class DeleteEvent extends TaskInfoFormEvent {
-      DeleteEvent(TaskInfoForm source, TaskInfo modelInfo) {
-        super(source, modelInfo);
-      }
+
+        DeleteEvent(TaskInfoForm source, TaskInfo modelInfo) {
+            super(source, modelInfo);
+        }
 
     }
 
     public static class CloseEvent extends TaskInfoFormEvent {
-      CloseEvent(TaskInfoForm source) {
-        super(source, null);
-      }
+
+        CloseEvent(TaskInfoForm source) {
+            super(source, null);
+        }
     }
 
     public <T extends ComponentEvent<?>> Registration addListener(Class<T> eventType, ComponentEventListener<T> listener) {
-      return getEventBus().addListener(eventType, listener);
+        return getEventBus().addListener(eventType, listener);
     }
 }

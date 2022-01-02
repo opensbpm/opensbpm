@@ -51,7 +51,7 @@ public class TaskEditor extends VerticalLayout implements BeforeEnterObserver {
 
         setSizeFull();
         formContent.setWidthFull();
-        add(stateLabel,formContent,toolbar);
+        add(stateLabel, formContent, toolbar);
     }
 
     @Override

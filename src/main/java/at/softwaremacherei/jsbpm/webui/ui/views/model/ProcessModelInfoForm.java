@@ -34,9 +34,9 @@ public class ProcessModelInfoForm extends FormLayout {
         binder.bindInstanceFields(this);
 
         add(
-            name,
-            description,
-            createButtonsLayout()
+                name,
+                description,
+                createButtonsLayout()
         );
     }
 
@@ -63,49 +63,53 @@ public class ProcessModelInfoForm extends FormLayout {
 
     private void validateAndSave() {
 
-      try {
-        binder.writeBean(modelInfo);
-        fireEvent(new SaveEvent(this, modelInfo));
-      } catch (ValidationException e) {
-        e.printStackTrace();
-      }
+        try {
+            binder.writeBean(modelInfo);
+            fireEvent(new SaveEvent(this, modelInfo));
+        } catch (ValidationException e) {
+            e.printStackTrace();
+        }
     }
 
     // Events
     public static abstract class ProcessModelInfoFormEvent extends ComponentEvent<ProcessModelInfoForm> {
-      private ProcessModelInfo modelInfo;
 
-      protected ProcessModelInfoFormEvent(ProcessModelInfoForm source, ProcessModelInfo modelInfo) {
-        super(source, false);
-        this.modelInfo = modelInfo;
-      }
+        private ProcessModelInfo modelInfo;
 
-      public ProcessModelInfo getProcessModelInfo() {
-        return modelInfo;
-      }
+        protected ProcessModelInfoFormEvent(ProcessModelInfoForm source, ProcessModelInfo modelInfo) {
+            super(source, false);
+            this.modelInfo = modelInfo;
+        }
+
+        public ProcessModelInfo getProcessModelInfo() {
+            return modelInfo;
+        }
     }
 
     public static class SaveEvent extends ProcessModelInfoFormEvent {
-      SaveEvent(ProcessModelInfoForm source, ProcessModelInfo modelInfo) {
-        super(source, modelInfo);
-      }
+
+        SaveEvent(ProcessModelInfoForm source, ProcessModelInfo modelInfo) {
+            super(source, modelInfo);
+        }
     }
 
     public static class DeleteEvent extends ProcessModelInfoFormEvent {
-      DeleteEvent(ProcessModelInfoForm source, ProcessModelInfo modelInfo) {
-        super(source, modelInfo);
-      }
+
+        DeleteEvent(ProcessModelInfoForm source, ProcessModelInfo modelInfo) {
+            super(source, modelInfo);
+        }
 
     }
 
     public static class CloseEvent extends ProcessModelInfoFormEvent {
-      CloseEvent(ProcessModelInfoForm source) {
-        super(source, null);
-      }
+
+        CloseEvent(ProcessModelInfoForm source) {
+            super(source, null);
+        }
     }
 
     public <T extends ComponentEvent<?>> Registration addListener(Class<T> eventType,
-                                                                  ComponentEventListener<T> listener) {
-      return getEventBus().addListener(eventType, listener);
+            ComponentEventListener<T> listener) {
+        return getEventBus().addListener(eventType, listener);
     }
 }
