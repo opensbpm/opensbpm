@@ -2,30 +2,73 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <parent>
-        <groupId>at.softwaremacherei.jsbpm</groupId>
-        <artifactId>parent</artifactId>
-        <version>0.1-SNAPSHOT</version>
-    </parent>
+    <groupId>org.opensbpm</groupId>
+    <artifactId>webui</artifactId>
+    <version>0.1-SNAPSHOT</version>
 
-    <artifactId>sbpm-webui</artifactId>
-    <packaging>jar</packaging>
+    <name>OpenSBPM - WebUI</name>
+    <description>Vaadin WebUI for OpenSBPM Engine</description>
 
-    <name>SBPM - Vaadin WebUI</name>
+    <organization>
+        <name>OpenSBPM</name>
+        <url>http://openSBPM.org</url>
+    </organization>
+
+    <developers>
+        <developer>
+            <name>Stefan Sedelmaier</name>
+            <email>stefan@sedelmaier.at</email>                       
+        </developer>
+    </developers>
 
     <properties>
         <!-- java.version>11</java.version -->
         <java.version>1.8</java.version>
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+
+        <!-- dependency versions -->
+        <spring.boot.version>2.3.12.RELEASE</spring.boot.version>
+        <opensbpm.version>0.1-SNAPSHOT</opensbpm.version>
+        <jsbpm.version>0.1-SNAPSHOT</jsbpm.version>
 
         <vaadin.version>14.6.7</vaadin.version>
         <karibu.version>1.3.8</karibu.version>
         <kotlin.version>1.6.0</kotlin.version>
+        
+        <junit.jupiter.version>5.8.2</junit.jupiter.version>
     </properties>
+
+    <distributionManagement>
+        <repository>
+            <id>opensbpm</id>
+            <name>OpenSBPM GitHub Packages</name>
+            <url>https://maven.pkg.github.com/opensbpm/engine</url>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+    </distributionManagement>
+
 
     <dependencyManagement>
         <dependencies>
+            <!-- 
+            ===================
+            Import Dependencies 
+            ===================
+            --> 
+            
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-dependencies</artifactId>
+                <version>${spring.boot.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+                    
             <dependency>
                 <groupId>com.vaadin</groupId>
                 <artifactId>vaadin-bom</artifactId>
@@ -44,48 +87,51 @@
         <dependency>
             <groupId>org.opensbpm</groupId>
             <artifactId>api</artifactId>
+            <version>${opensbpm.version}</version>
         </dependency>
 
         <dependency>
             <groupId>org.opensbpm</groupId>
             <artifactId>core</artifactId>
+            <version>${opensbpm.version}</version>
         </dependency>
 
         <dependency>
             <groupId>org.opensbpm</groupId>
             <artifactId>xmlmodel</artifactId>
+            <version>${opensbpm.version}</version>
         </dependency>
 
         <dependency>
-            <groupId>${project.groupId}</groupId>
+            <groupId>at.softwaremacherei.jsbpm</groupId>
             <artifactId>sbpm-server-rbac-api</artifactId>
-            <version>${project.version}</version>
+            <version>${jsbpm.version}</version>
         </dependency>
 
         <dependency>
-            <groupId>${project.groupId}</groupId>
+            <groupId>at.softwaremacherei.jsbpm</groupId>
             <artifactId>sbpm-plugin-springauthentication</artifactId>
-            <version>${project.version}</version>
+            <version>${jsbpm.version}</version>
         </dependency>
 
         <!-- sbpm plugins -->
         <dependency>
-            <groupId>${project.groupId}</groupId>
+            <groupId>at.softwaremacherei.jsbpm</groupId>
             <artifactId>sbpm-plugin-jasperreports</artifactId>
-            <version>${project.version}</version>
+            <version>${jsbpm.version}</version>
         </dependency>
         <dependency>
-            <groupId>${project.groupId}</groupId>
+            <groupId>at.softwaremacherei.jsbpm</groupId>
             <artifactId>sbpm-plugin-elasticsearch</artifactId>
-            <version>${project.version}</version>
+            <version>${jsbpm.version}</version>
         </dependency>
         
     
         <!-- user database -->
         <dependency>
-            <groupId>${project.groupId}</groupId>
+            <groupId>at.softwaremacherei.jsbpm</groupId>
             <artifactId>sbpm-server-rbac</artifactId>
-            <version>${project.version}</version>
+            <version>${jsbpm.version}</version>
         </dependency>
 
         <dependency>
@@ -245,6 +291,15 @@
                 <enabled>false</enabled>
             </snapshots>
         </repository>
+
+        <repository>
+            <id>opensbpm</id>
+            <url>https://maven.pkg.github.com/opensbpm/engine</url>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+
         <!-- Repository used by many Vaadin add-ons -->
         <repository>
             <id>Vaadin Directory</id>
