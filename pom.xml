@@ -42,21 +42,18 @@
         =======================
         -->
         <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>sbpm-engine-api</artifactId>
-            <version>${project.version}</version>
+            <groupId>org.opensbpm</groupId>
+            <artifactId>api</artifactId>
         </dependency>
 
         <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>sbpm-engine-core</artifactId>
-            <version>${project.version}</version>
+            <groupId>org.opensbpm</groupId>
+            <artifactId>core</artifactId>
         </dependency>
 
         <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>sbpm-engine-xmlmodel</artifactId>
-            <version>${project.version}</version>
+            <groupId>org.opensbpm</groupId>
+            <artifactId>xmlmodel</artifactId>
         </dependency>
 
         <dependency>
