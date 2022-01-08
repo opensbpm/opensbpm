@@ -104,12 +104,6 @@
             <version>${jsbpm.version}</version>
         </dependency>
 
-        <dependency>
-            <groupId>at.softwaremacherei.jsbpm</groupId>
-            <artifactId>sbpm-plugin-springauthentication</artifactId>
-            <version>${jsbpm.version}</version>
-        </dependency>
-
         <!-- sbpm plugins -->
         <dependency>
             <groupId>at.softwaremacherei.jsbpm</groupId>
