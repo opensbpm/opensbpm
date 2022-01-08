@@ -17,9 +17,9 @@
 -->
 <pm:process
     xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
-    xmlns:pm='http://api.softwaremacherei.at/sbpm/processmodel'>
+    xmlns:pm='http://api.opensbpm.org/processmodel'>
     
-    <name>Rechnungslegung</name>
+    <name>Rechnungslegung (Wizard)</name>
     <version>1</version>
 
     <userSubject starter="true">
@@ -29,28 +29,41 @@
             <name>Rechnung erfassen</name>
             <permission>
                 <object>Rechnung</object>
+                <field permission="WRITE" mandatory="true">Datum</field>
+                <field permission="WRITE" mandatory="true">Nummer</field>
+            </permission>
+            <toState>Empfänger erfassen</toState>
+        </functionState>
+        <functionState>
+            <name>Empfänger erfassen</name>
+            <permission>
+                <object>Rechnung</object>
                 <toOne permission="WRITE">
                     <name>Empfänger</name>
                     <field permission="WRITE" mandatory="true">Kunde</field>
+                    <!--
+                    <field permission="WRITE" mandatory="true">Name</field>
+                    <field permission="WRITE" mandatory="true">Adresse</field>
+                    -->
                 </toOne>
-                <field permission="WRITE" mandatory="true">Datum</field>
-                <field permission="WRITE" mandatory="true">Nummer</field>
-                <toMany permission="WRITE">
-                    <name>Position</name>
-                    <field permission="WRITE" mandatory="true">Text</field>
-                    <!--toOne>
-                        <name>Artikel</name>
-                        <field type="STRING">Nummer</field>
-                        <field type="STRING">Bezeichnung</field>
-                    </toOne-->
-                    <field permission="WRITE" mandatory="true">Wert</field>
-                </toMany>
             </permission>
             <permission>
                 <object>Kunde</object>
                 <field permission="READ">Nummer</field>
                 <field permission="READ">Name</field>
             </permission>
+            <toState>Position erfassen</toState>
+        </functionState>
+        <functionState>
+            <name>Position erfassen</name>
+            <permission>
+                <object>Rechnung</object>
+                <toMany permission="WRITE">
+                    <name>Position</name>
+                    <field permission="WRITE" mandatory="true">Text</field>
+                </toMany>
+            </permission>
+            <toState>Position erfassen</toState>
             <toState>Vorschau</toState>
         </functionState>
         <sendState>
@@ -194,7 +207,10 @@
         <toOne>
             <name>Empfänger</name>
             <reference object="Kunde">Kunde</reference>
-            <!--field type="STRING">Adresse</field-->
+            <!--
+            <field type="STRING">Name</field>
+            <field type="STRING">Adresse</field>
+            -->
         </toOne>
         <field type="DATE">Datum</field>        
         <field type="NUMBER">Nummer</field>
@@ -209,6 +225,7 @@
             <field type="DECIMAL">Wert</field>
         </toMany>
     </object>
+    
     <object>
         <name>Kunde</name>
         <displayName>${Nummer} - ${Name}</displayName>

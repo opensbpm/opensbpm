@@ -17,7 +17,7 @@
 -->
 <pm:process
     xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
-    xmlns:pm='http://api.softwaremacherei.at/sbpm/processmodel'>
+    xmlns:pm='http://api.opensbpm.org/processmodel'>
 
     <name>Kunden erfassen Rechnung</name>
     <version>1</version>

@@ -57,7 +57,7 @@ public class StartupListener {
     }
 
     private static InputStream loadResource(String resource) {
-        return StartupListener.class.getResourceAsStream("/at/softwaremacherei/jsbpm/webui/models/" + resource);
+        return StartupListener.class.getResourceAsStream("/org/opensbpm/webui/models/" + resource);
     }
 
     private void storeModel(String model) throws JAXBException {
