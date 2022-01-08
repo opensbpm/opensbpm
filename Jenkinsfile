@@ -23,6 +23,17 @@ node{
                 mavenSettingsConfig: '05894f91-85e1-4e6d-8eb5-a101d90c62e3',
                 options: [junitPublisher(), jacocoPublisher()]
             ) {
+                sh "mvn -U -DskipTests clean package"
+            }
+        }
+        
+        stage('Test'){
+            withMaven(
+                jdk: 'OpenJDK 11',
+                maven: 'default', 
+                mavenSettingsConfig: '05894f91-85e1-4e6d-8eb5-a101d90c62e3',
+                options: [junitPublisher(), jacocoPublisher()]
+            ) {
                 sh "mvn verify"
             }
         }
@@ -64,9 +75,6 @@ node{
         throw ex
     }finally{
         stage("Collect Results"){
-            junit '**/target/*-reports/TEST-*.xml'
-            jacoco execPattern: '**/target/jacoco*.exec'
-    
             recordIssues enabledForFailure: true, tools: [
                 mavenConsole(),
                 java(),
