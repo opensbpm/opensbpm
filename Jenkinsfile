@@ -49,7 +49,7 @@ node{
                             openTasksPublisher(highPriorityTaskIdentifiers: 'FIXME', lowPriorityTaskIdentifiers: 'TODO', normalPriorityTaskIdentifiers: 'PENDING', pattern: '**/*.*',excludePattern: '**/target/**')
                         ]
                     ) {                            
-                        sh "-DskipTests \
+                        sh "mvn -DskipTests \
                                 -Dsonar.projectKey=${model.getGroupId()}:${model.getArtifactId()}:${BRANCH_NAME} \
                                 -Dsonar.projectName=\"${model.getName()} ($BRANCH_NAME)\" \
                                 pmd:cpd pmd:pmd sonar:sonar"
