@@ -308,6 +308,16 @@
                 <enabled>false</enabled>
             </snapshots>
         </repository>
+
+        <repository>
+            <id>softwaremacherei-snapshots</id>
+            <name>Softwaremacherei Snapshot Repository</name>
+            <url>https://team.softwaremacherei.at/archiva/repository/snapshots/</url>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>        
+        
     </repositories>
     <pluginRepositories>
         <!-- Main Maven repository -->
