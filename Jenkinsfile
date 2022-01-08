@@ -37,7 +37,7 @@ node{
                     sh "mvn verify"
                 }
             }finally{
-                junit '**/target/*-reports/TEST-*.xml'
+                junit 'target/*-reports/TEST-*.xml'
                 jacoco execPattern: '**/target/jacoco*.exec'    
             }
         }
