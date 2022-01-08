@@ -16,9 +16,9 @@ node{
             checkout scm
         }
         
-        stage('Assemble & Test'){
+        stage('Assemble'){
             withMaven(
-                jdk: 'JDK 1.8',
+                jdk: 'OpenJDK 11',
                 maven: 'default', 
                 mavenSettingsConfig: '05894f91-85e1-4e6d-8eb5-a101d90c62e3'
             ) {
@@ -29,7 +29,7 @@ node{
         stage('Test'){
             try{
                 withMaven(
-                    jdk: 'JDK 1.8',
+                    jdk: 'OpenJDK 11',
                     maven: 'default', 
                     mavenSettingsConfig: '05894f91-85e1-4e6d-8eb5-a101d90c62e3',
                     options: [junitPublisher(disabled:true),jacocoPublisher(disabled:true)]
@@ -83,7 +83,7 @@ node{
 
         stage('Deploy'){
             retry(3) {
-                withMaven(jdk: 'JDK 1.8',
+                withMaven(jdk: 'OpenJDK 11',
                     maven: 'default', 
                     mavenSettingsConfig: '05894f91-85e1-4e6d-8eb5-a101d90c62e3') {
                     sh "mvn -DskipTests deploy"
