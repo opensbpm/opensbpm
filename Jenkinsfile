@@ -18,22 +18,27 @@ node{
         
         stage('Assemble & Test'){
             withMaven(
-                jdk: 'OpenJDK 11',
+                jdk: 'JDK 1.8',
                 maven: 'default', 
                 mavenSettingsConfig: '05894f91-85e1-4e6d-8eb5-a101d90c62e3'
             ) {
-                sh "mvn -U -DskipTests clean package"
+                sh "mvn -U -DskipTests clean install"
             }
         }
         
         stage('Test'){
-            withMaven(
-                jdk: 'OpenJDK 11',
-                maven: 'default', 
-                mavenSettingsConfig: '05894f91-85e1-4e6d-8eb5-a101d90c62e3',
-                options: [junitPublisher(), jacocoPublisher()]
-            ) {
-                sh "mvn verify"
+            try{
+                withMaven(
+                    jdk: 'JDK 1.8',
+                    maven: 'default', 
+                    mavenSettingsConfig: '05894f91-85e1-4e6d-8eb5-a101d90c62e3',
+                    options: [junitPublisher(disabled:true),jacocoPublisher(disabled:true)]
+                ) {
+                    sh "mvn verify"
+                }
+            }finally{
+                junit '**/target/*-reports/TEST-*.xml'
+                jacoco execPattern: '**/target/jacoco*.exec'    
             }
         }
         
