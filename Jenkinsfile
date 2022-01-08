@@ -90,32 +90,20 @@ node{
         currentBuild.result = 'FAILED'
         throw ex
     }finally{
-        stage("Collect Results"){
+        stage("Inform"){
             recordIssues enabledForFailure: true, tools: [
                 mavenConsole(),
                 java(),
                 javaDoc()
-            ]
-        }
-        emailext (recipientProviders: [culprits()], 
-            subject: "OpenSBPM Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]' ${currentBuild.result}",
-            body: """
+            ]        
+            emailext (recipientProviders: [culprits()], 
+                subject: "OpenSBPM Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]' ${currentBuild.result}",
+                body: """
                 <p>${currentBuild.result}: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]':</p>
                 <p>Check console output at "<a href="${env.BUILD_URL}">${env.JOB_NAME} [${env.BUILD_NUMBER}]</a>"</p>\n\
             """,
-            attachLog: true
-        )
+                attachLog: true
+            )
+        }
     }
 }
-
-def mvn(String goals){
-    withMaven(
-        jdk: 'JDK 1.8',
-        maven: 'default', 
-        mavenSettingsConfig: '05894f91-85e1-4e6d-8eb5-a101d90c62e3',
-        options: [junitPublisher(disabled: true), jacocoPublisher(disabled: true), openTasksPublisher(disabled: true)]
-    ) {
-        sh "mvn -U $goals"
-    }    
-}
-
