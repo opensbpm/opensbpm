@@ -20,8 +20,7 @@ node{
             withMaven(
                 jdk: 'OpenJDK 11',
                 maven: 'default', 
-                mavenSettingsConfig: '05894f91-85e1-4e6d-8eb5-a101d90c62e3',
-                options: [junitPublisher(), jacocoPublisher()]
+                mavenSettingsConfig: '05894f91-85e1-4e6d-8eb5-a101d90c62e3'
             ) {
                 sh "mvn -U -DskipTests clean package"
             }
@@ -38,18 +37,35 @@ node{
             }
         }
         
-        timeout(time: 15, unit: 'MINUTES') {
-            stage('Static Analysis'){
+        stage('Static Analysis'){
+            try{
                 withSonarQubeEnv('Sonarqube') {
                     def model = readMavenPom(file: 'pom.xml')
-                    mvn "-DskipTests \
-                        -Dsonar.projectKey=${model.getGroupId()}:${model.getArtifactId()}:${BRANCH_NAME} \
-                        -Dsonar.projectName=\"${model.getName()} ($BRANCH_NAME)\" \
-                        pmd:cpd pmd:pmd sonar:sonar"
+                    withMaven(
+                        jdk: 'OpenJDK 11',
+                        maven: 'default', 
+                        mavenSettingsConfig: '05894f91-85e1-4e6d-8eb5-a101d90c62e3',
+                        options: [
+                            openTasksPublisher(highPriorityTaskIdentifiers: 'FIXME', lowPriorityTaskIdentifiers: 'TODO', normalPriorityTaskIdentifiers: 'PENDING', pattern: '**/*.*',excludePattern: '**/target/**')
+                        ]
+                    ) {                            
+                        sh "-DskipTests \
+                                -Dsonar.projectKey=${model.getGroupId()}:${model.getArtifactId()}:${BRANCH_NAME} \
+                                -Dsonar.projectName=\"${model.getName()} ($BRANCH_NAME)\" \
+                                pmd:cpd pmd:pmd sonar:sonar"
+                    }
                 }
+            }finally{
+                recordIssues (enabledForFailure: true, 
+                    tools: [
+                        cpd(pattern: '**/target/cpd.xml'), 
+                        pmdParser(pattern: '**/target/pmd.xml')
+                    ])
             }
+        }
         
-            stage("Quality Gate"){
+        stage("Quality Gate"){
+            timeout(time: 15, unit: 'MINUTES') {
                 def qg = waitForQualityGate()
                 if (qg.status == 'ERROR') {
                     error "Pipeline aborted due to quality gate failure: ${qg.status}"
@@ -78,10 +94,7 @@ node{
             recordIssues enabledForFailure: true, tools: [
                 mavenConsole(),
                 java(),
-                javaDoc(),
-                cpd(pattern: '**/target/cpd.xml'), 
-                pmdParser(pattern: '**/target/pmd.xml'),
-                taskScanner(highTags: 'FIXME', lowTags: 'PENDING', normalTags: 'TODO', includePattern: '**/*.java', excludePattern: '**/target/**')
+                javaDoc()
             ]
         }
         emailext (recipientProviders: [culprits()], 
