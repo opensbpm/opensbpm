@@ -16,22 +16,15 @@ node{
             checkout scm
         }
         
-        stage('Assemble'){
-            mvn '-DskipTests clean verify install'
-        }
-        
-        stage('Unit Tests'){
-            //run surefire tests only
-            mvn '-Dskip.failsafe.tests test'
-            //junit '**/target/surefire-reports/TEST-*.xml'
-            //jacoco execPattern: '**/target/jacoco.exec'
-        }
-    
-        stage('Integration Tests'){
-            //run failsafe tests only
-            mvn '-Dskip.surefire.tests verify'
-            //junit '**/target/failsafe-reports/TEST-*.xml'
-            //jacoco execPattern: '**/target/jacoco-it.exec'
+        stage('Assemble & Test'){
+            withMaven(
+                jdk: 'OpenJDK 11',
+                maven: 'default', 
+                mavenSettingsConfig: '05894f91-85e1-4e6d-8eb5-a101d90c62e3',
+                options: [junitPublisher(), jacocoPublisher()]
+            ) {
+                sh "mvn verify"
+            }
         }
         
         timeout(time: 15, unit: 'MINUTES') {
@@ -96,7 +89,7 @@ node{
 
 def mvn(String goals){
     withMaven(
-        jdk: 'JDK 1.8',
+        jdk: 'OpenJDK 11',
         maven: 'default', 
         mavenSettingsConfig: '05894f91-85e1-4e6d-8eb5-a101d90c62e3',
         options: [junitPublisher(disabled: true), jacocoPublisher(disabled: true), openTasksPublisher(disabled: true)]
