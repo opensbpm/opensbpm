@@ -20,11 +20,11 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAlias;
 import com.vaadin.flow.router.RouteParameters;
 
-import at.softwaremacherei.jsbpm.engine.api.ModelNotFoundException;
-import at.softwaremacherei.jsbpm.engine.api.UserNotFoundException;
-import at.softwaremacherei.jsbpm.engine.api.instance.TaskInfo;
-import at.softwaremacherei.jsbpm.engine.api.model.ProcessModelInfo;
-import at.softwaremacherei.jsbpm.engine.api.model.ProcessModelState;
+import org.opensbpm.engine.api.ModelNotFoundException;
+import org.opensbpm.engine.api.UserNotFoundException;
+import org.opensbpm.engine.api.instance.TaskInfo;
+import org.opensbpm.engine.api.model.ProcessModelInfo;
+import org.opensbpm.engine.api.model.ProcessModelState;
 import at.softwaremacherei.jsbpm.webui.backend.SbpmEngine;
 import at.softwaremacherei.jsbpm.webui.ui.MainLayout;
 import java.util.Objects;

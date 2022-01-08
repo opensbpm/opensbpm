@@ -11,8 +11,8 @@ import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 
-import at.softwaremacherei.jsbpm.engine.api.UserNotFoundException;
-import at.softwaremacherei.jsbpm.engine.api.instance.TaskInfo;
+import org.opensbpm.engine.api.UserNotFoundException;
+import org.opensbpm.engine.api.instance.TaskInfo;
 import at.softwaremacherei.jsbpm.webui.backend.SbpmEngine;
 import at.softwaremacherei.jsbpm.webui.ui.MainLayout;
 import com.vaadin.flow.component.Key;

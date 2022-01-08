@@ -1,10 +1,10 @@
 package at.softwaremacherei.jsbpm.webui.ui.views.model;
 
-import at.softwaremacherei.jsbpm.engine.api.instance.AttributeSchema;
-import at.softwaremacherei.jsbpm.engine.api.instance.NestedAttributeSchema;
-import at.softwaremacherei.jsbpm.engine.api.instance.ObjectBean;
-import at.softwaremacherei.jsbpm.engine.api.instance.AttributeStore;
-import at.softwaremacherei.jsbpm.engine.api.instance.TaskInfo;
+import org.opensbpm.engine.api.instance.AttributeSchema;
+import org.opensbpm.engine.api.instance.NestedAttributeSchema;
+import org.opensbpm.engine.api.instance.ObjectBean;
+import org.opensbpm.engine.api.instance.AttributeStore;
+import org.opensbpm.engine.api.instance.TaskInfo;
 import at.softwaremacherei.jsbpm.webui.backend.SbpmEngine;
 import at.softwaremacherei.jsbpm.webui.ui.views.model.EmbeddedGrid.GridEditor;
 import com.vaadin.flow.component.AbstractCompositeField;

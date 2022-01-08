@@ -15,7 +15,7 @@ import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.binder.ValidationException;
 import com.vaadin.flow.shared.Registration;
 
-import at.softwaremacherei.jsbpm.engine.api.model.ProcessModelInfo;
+import org.opensbpm.engine.api.model.ProcessModelInfo;
 
 public class ProcessModelInfoForm extends FormLayout {
 

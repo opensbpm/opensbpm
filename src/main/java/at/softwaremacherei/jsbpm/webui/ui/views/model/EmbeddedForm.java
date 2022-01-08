@@ -1,9 +1,9 @@
 package at.softwaremacherei.jsbpm.webui.ui.views.model;
 
-import at.softwaremacherei.jsbpm.engine.api.instance.IsAttributesContainer;
-import at.softwaremacherei.jsbpm.engine.api.instance.ObjectBean;
-import at.softwaremacherei.jsbpm.engine.api.instance.ObjectSchema;
-import at.softwaremacherei.jsbpm.engine.api.instance.TaskInfo;
+import org.opensbpm.engine.api.instance.IsAttributesContainer;
+import org.opensbpm.engine.api.instance.ObjectBean;
+import org.opensbpm.engine.api.instance.ObjectSchema;
+import org.opensbpm.engine.api.instance.TaskInfo;
 import at.softwaremacherei.jsbpm.webui.backend.SbpmEngine;
 import com.vaadin.flow.component.AbstractCompositeField;
 import com.vaadin.flow.component.formlayout.FormLayout;

@@ -15,7 +15,7 @@ import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.binder.ValidationException;
 import com.vaadin.flow.shared.Registration;
 
-import at.softwaremacherei.jsbpm.engine.api.instance.TaskInfo;
+import org.opensbpm.engine.api.instance.TaskInfo;
 
 public class TaskInfoForm extends FormLayout {
 

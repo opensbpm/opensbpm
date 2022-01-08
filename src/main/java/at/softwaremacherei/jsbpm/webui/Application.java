@@ -8,7 +8,7 @@ import org.springframework.boot.web.servlet.support.SpringBootServletInitializer
 import org.springframework.context.annotation.Import;
 
 import at.softwaremacherei.jsbpm.elasticsearch.ElasticSearchConfig;
-import at.softwaremacherei.jsbpm.engine.core.EngineConfig;
+import org.opensbpm.engine.core.EngineConfig;
 import at.softwaremacherei.jsbpm.jasperreports.JasperReportsConfig;
 import at.softwaremacherei.jsbpm.server.rbac.RbacConfig;
 

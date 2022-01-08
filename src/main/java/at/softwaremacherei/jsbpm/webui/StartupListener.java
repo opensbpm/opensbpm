@@ -6,10 +6,10 @@
  */
 package at.softwaremacherei.jsbpm.webui;
 
-import at.softwaremacherei.jsbpm.engine.api.ModelService;
-import at.softwaremacherei.jsbpm.engine.api.TaskProviderService;
-import at.softwaremacherei.jsbpm.engine.api.taskprovider.TaskProviderInfo;
-import at.softwaremacherei.jsbpm.engine.api.taskprovider.TaskProviderInfo.ProviderResource;
+import org.opensbpm.engine.api.ModelService;
+import org.opensbpm.engine.api.TaskProviderService;
+import org.opensbpm.engine.api.taskprovider.TaskProviderInfo;
+import org.opensbpm.engine.api.taskprovider.TaskProviderInfo.ProviderResource;
 import java.util.logging.Logger;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,7 +18,7 @@ import org.springframework.stereotype.Component;
 
 import java.io.InputStream;
 import org.springframework.transaction.annotation.Transactional;
-import at.softwaremacherei.jsbpm.xmlmodel.ProcessModel;
+import org.opensbpm.engine.xmlmodel.ProcessModel;
 import javax.xml.bind.JAXBException;
 import org.springframework.context.event.EventListener;
 

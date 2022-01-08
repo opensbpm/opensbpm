@@ -1,6 +1,6 @@
 package at.softwaremacherei.jsbpm.webui.ui.views.model;
 
-import at.softwaremacherei.jsbpm.engine.api.model.Binary;
+import org.opensbpm.engine.api.model.Binary;
 import at.softwaremacherei.jsbpm.webui.ui.components.ContentViewer;
 import com.vaadin.flow.component.AbstractCompositeField;
 import com.vaadin.flow.server.StreamResource;

@@ -1,8 +1,8 @@
 package at.softwaremacherei.jsbpm.webui;
 
-import at.softwaremacherei.jsbpm.engine.api.instance.TaskInfo;
-import at.softwaremacherei.jsbpm.engine.core.engine.UserService;
-import at.softwaremacherei.jsbpm.engine.core.engine.entities.User;
+import org.opensbpm.engine.api.instance.TaskInfo;
+import org.opensbpm.engine.core.engine.UserService;
+import org.opensbpm.engine.core.engine.entities.User;
 import at.softwaremacherei.jsbpm.webui.backend.SbpmEngine;
 import at.softwaremacherei.jsbpm.webui.ui.MainLayout;
 import at.softwaremacherei.jsbpm.webui.ui.views.TasksView;
@@ -23,9 +23,11 @@ import org.springframework.test.annotation.DirtiesContext;
 
 import static com.github.mvysny.kaributesting.v10.GridKt.*;
 import static com.github.mvysny.kaributesting.v10.LocatorJ.*;
+
 import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.stream.Stream;
+
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsNull.notNullValue;
@@ -33,6 +35,7 @@ import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
+
 import org.springframework.boot.test.mock.mockito.MockBean;
 
 @SpringBootTest

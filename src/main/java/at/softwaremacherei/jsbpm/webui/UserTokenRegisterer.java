@@ -17,7 +17,7 @@
  */
 package at.softwaremacherei.jsbpm.webui;
 
-import at.softwaremacherei.jsbpm.engine.api.UserTokenService;
+import org.opensbpm.engine.api.UserTokenService;
 import at.softwaremacherei.jsbpm.springauthentication.SpringAuthentication;
 
 import java.util.Objects;
