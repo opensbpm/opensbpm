@@ -60,15 +60,14 @@
             Import Dependencies 
             ===================
             --> 
-            
             <dependency>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-dependencies</artifactId>
-                <version>${spring.boot.version}</version>
+                <groupId>org.opensbpm.engine</groupId>
+                <artifactId>engine-bom</artifactId>
+                <version>${opensbpm.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
-                    
+
             <dependency>
                 <groupId>com.vaadin</groupId>
                 <artifactId>vaadin-bom</artifactId>
@@ -87,19 +86,16 @@
         <dependency>
             <groupId>org.opensbpm.engine</groupId>
             <artifactId>api</artifactId>
-            <version>${opensbpm.version}</version>
         </dependency>
 
         <dependency>
             <groupId>org.opensbpm.engine</groupId>
-            <artifactId>core</artifactId>
-            <version>${opensbpm.version}</version>
+            <artifactId>core</artifactId>            
         </dependency>
 
         <dependency>
             <groupId>org.opensbpm.engine</groupId>
-            <artifactId>xmlmodel</artifactId>
-            <version>${opensbpm.version}</version>
+            <artifactId>xmlmodel</artifactId>            
         </dependency>
 
         <dependency>
@@ -336,6 +332,7 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+                <version>${spring.boot.version}</version>
                 <!-- Clean build and startup time for Vaadin apps sometimes may exceed
                 the default Spring Boot's 30sec timeout.  -->
                 <configuration>
