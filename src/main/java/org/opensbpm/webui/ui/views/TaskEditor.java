@@ -69,13 +69,11 @@ public class TaskEditor extends VerticalLayout implements BeforeEnterObserver {
 
             stateLabel.setText(task.getProcessName() + ":" + task.getStateName());
 
-            ObjectSchema objectSchema = task.getTaskDocument().getSchemas().stream()
+            ObjectSchema objectSchema = task.getSchemas().stream()
                     .findFirst()
                     .orElseThrow(() -> new IllegalStateException("only one business-object allowed"));
             ComponentFactory componentFactory = new ComponentFactory(sbpmEngine, objectSchema);
             formContent.add(componentFactory.createForm(taskInfo, objectSchema));
-
-            AttributeStore attributeStore = task.createAttributeStore(objectSchema);
 
             task.getNextStates().stream()
                     .map(nextState -> {
@@ -83,7 +81,7 @@ public class TaskEditor extends VerticalLayout implements BeforeEnterObserver {
                         nextStateButton.addClickListener(click -> {
                             if (componentFactory.getBinder().validate().isOk()) {
                                 try {
-                                    TaskRequest taskRequest = task.createTaskRequest(nextState, objectSchema, attributeStore);
+                                    TaskRequest taskRequest = task.createTaskRequest(nextState);
                                     sbpmEngine.executeTask(taskRequest);
                                     if (nextState.isEnd()) {
                                         nextStateButton.getUI().ifPresent(ui -> ui.navigate(TasksView.class));
@@ -101,7 +99,7 @@ public class TaskEditor extends VerticalLayout implements BeforeEnterObserver {
                     })
                     .forEach(nextStateButton -> toolbar.add(nextStateButton));
 
-            componentFactory.getBinder().setBean(new ObjectBean(objectSchema, attributeStore));
+            componentFactory.getBinder().setBean(task.getObjectBean(objectSchema));
 
         } catch (TaskNotFoundException | TaskOutOfDateException | UserNotFoundException ex) {
             Logger.getLogger(TaskEditor.class.getName()).log(Level.SEVERE, ex.getMessage(), ex);

@@ -6,7 +6,6 @@ import org.opensbpm.engine.api.ModelNotFoundException;
 import org.opensbpm.engine.api.UserNotFoundException;
 import org.opensbpm.engine.api.UserTokenService;
 import org.opensbpm.engine.api.instance.AutocompleteResponse;
-import org.opensbpm.engine.api.instance.Task;
 import org.opensbpm.engine.api.instance.TaskInfo;
 import org.opensbpm.engine.api.instance.TaskNotFoundException;
 import org.opensbpm.engine.api.instance.TaskOutOfDateException;
@@ -16,6 +15,7 @@ import org.opensbpm.engine.api.model.ProcessModelInfo;
 import org.opensbpm.webui.backend.authentication.SpringAuthentication;
 import java.util.Collection;
 import java.util.stream.Stream;
+import org.opensbpm.engine.api.instance.Task;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
