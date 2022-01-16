@@ -106,9 +106,9 @@
 
         <!-- sbpm plugins -->
         <dependency>
-            <groupId>at.softwaremacherei.jsbpm</groupId>
-            <artifactId>sbpm-plugin-jasperreports</artifactId>
-            <version>${jsbpm.version}</version>
+            <groupId>org.opensbpm.plugins</groupId>
+            <artifactId>jasperreports-plugin</artifactId>
+            <version>${opensbpm.version}</version>
         </dependency>
         <dependency>
             <groupId>at.softwaremacherei.jsbpm</groupId>
