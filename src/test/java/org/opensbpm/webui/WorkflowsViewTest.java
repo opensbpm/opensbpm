@@ -99,6 +99,6 @@ public class WorkflowsViewTest {
 
         //then
         expectRows(_get(Grid.class), 1);
-        expectRow(_get(Grid.class), 0, "Test ProcessModel", "1.0", "ACTIVE", "ACTIVE");
+        expectRow(_get(Grid.class), 0, "Test ProcessModel", "1.0");
     }
 }

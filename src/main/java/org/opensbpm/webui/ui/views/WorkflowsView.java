@@ -24,7 +24,6 @@ import org.opensbpm.engine.api.ModelNotFoundException;
 import org.opensbpm.engine.api.UserNotFoundException;
 import org.opensbpm.engine.api.instance.TaskInfo;
 import org.opensbpm.engine.api.model.ProcessModelInfo;
-import org.opensbpm.engine.api.model.ProcessModelState;
 import org.opensbpm.webui.backend.SbpmEngine;
 import org.opensbpm.webui.ui.MainLayout;
 import java.util.Objects;
@@ -40,7 +39,7 @@ public class WorkflowsView extends VerticalLayout {
 
     private final SbpmEngine sbpmEngine;
 
-    private Grid<ProcessModelInfo> grid = new Grid<>(ProcessModelInfo.class);
+    private Grid<ProcessModelInfo> grid = new Grid<>();
     private TextField filterText = new TextField();
 
     public WorkflowsView(SbpmEngine sbpmEngine) {
@@ -70,12 +69,10 @@ public class WorkflowsView extends VerticalLayout {
         grid.addClassName("contact-grid");
         grid.setSizeFull();
         // grid.removeColumnByKey("company");
-        grid.setColumns("name", "version", "state");
-        grid.addColumn(processModel -> {
-            ProcessModelState state = processModel.getState();
-            return state == null ? "-" : state.toString();
-        }).setHeader("State");
-
+        grid.addColumn(ProcessModelInfo::getName).setHeader("Name");
+        grid.addColumn(ProcessModelInfo::getVersion).setHeader("Version");
+        //grid.addColumn(ProcessModelInfo::getDescription).setHeader("Description");        
+        
         grid.getColumns().forEach(col -> col.setAutoWidth(true));
 
         grid.setItemDetailsRenderer(new ComponentRenderer<>(
