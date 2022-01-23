@@ -20,6 +20,7 @@ import java.io.InputStream;
 import org.springframework.transaction.annotation.Transactional;
 import org.opensbpm.engine.xmlmodel.ProcessModel;
 import javax.xml.bind.JAXBException;
+import org.opensbpm.engine.examples.ExampleModels;
 import org.springframework.context.event.EventListener;
 
 @Component
@@ -36,6 +37,8 @@ public class StartupListener {
     @EventListener
     @Transactional
     public void onApplicationEvent(ContextRefreshedEvent event) throws JAXBException {
+        storeModel(ExampleModels.getDienstreiseantrag());
+        
         storeModel("Rechnungslegung_Kunden.xml");
         storeModel("Rechnungslegung_Wizard.xml");
         storeModel("Rechnungslegung.xml");
@@ -56,12 +59,16 @@ public class StartupListener {
         };
     }
 
-    private static InputStream loadResource(String resource) {
-        return StartupListener.class.getResourceAsStream("/org/opensbpm/webui/models/" + resource);
+    private void storeModel(InputStream loadResource) throws JAXBException {
+        modelService.save(new ProcessModel().unmarshal(loadResource));
     }
 
     private void storeModel(String model) throws JAXBException {
-        modelService.save(new ProcessModel().unmarshal(loadResource(model)));
+        storeModel(loadResource(model));
+    }
+
+    private static InputStream loadResource(String resource) {
+        return StartupListener.class.getResourceAsStream("/org/opensbpm/webui/models/" + resource);
     }
 
 }
