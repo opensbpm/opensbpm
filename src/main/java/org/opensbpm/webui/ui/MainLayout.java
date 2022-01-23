@@ -1,5 +1,6 @@
 package org.opensbpm.webui.ui;
 
+import com.vaadin.flow.component.Component;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import com.vaadin.flow.component.Text;
@@ -14,13 +15,20 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.RouterLink;
 import com.vaadin.flow.server.PWA;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import org.opensbpm.webui.ui.views.ProcessModelsView;
 import org.opensbpm.webui.ui.views.TasksView;
 import org.opensbpm.webui.ui.views.WorkflowsView;
 
-@PWA(name = "SBPM Engine", shortName = "SBPM", offlineResources = {
-    "./styles/offline.css",
-    "./images/offline.png"
-}, enableInstallPrompt = false)
+@PWA(name = "OpenSBPM Vaadin Demo",
+        shortName = "OpenSBPM",
+        offlineResources = {
+            "./styles/offline.css",
+            "./images/offline.png"
+        },
+        enableInstallPrompt = false)
 @CssImport("./styles/shared-styles.css")
 public class MainLayout extends AppLayout {
 
@@ -47,10 +55,16 @@ public class MainLayout extends AppLayout {
     }
 
     private void createDrawer() {
-        addToDrawer(new VerticalLayout(
-                new RouterLink("Workflows", WorkflowsView.class),
-                new RouterLink("Tasks", TasksView.class)
-        ));
+        List<Component> components = new ArrayList<>(
+                Arrays.asList(
+                        new RouterLink("Workflows", WorkflowsView.class),
+                        new RouterLink("Tasks", TasksView.class)
+                )
+        );
+        if (true) {
+            components.add(new RouterLink("Models", ProcessModelsView.class));
+        }
+        addToDrawer(new VerticalLayout(components.toArray(Component[]::new)));
     }
 
 }
