@@ -30,7 +30,7 @@ public class TasksView extends VerticalLayout {
 
     private final SbpmEngine sbpmEngine;
 
-    private Grid<TaskInfo> grid = new Grid<>(TaskInfo.class);
+    private Grid<TaskInfo> grid = new Grid<>();
     private TextField filterText = new TextField();
 
     public TasksView(SbpmEngine sbpmEngine) {
@@ -57,15 +57,12 @@ public class TasksView extends VerticalLayout {
         return toolbar;
     }
 
-//    private void addContact() {
-//        grid.asSingleSelect().clear();
-//        showProcessModel(new Contact());
-//    }
     private void configureGrid() {
         grid.addClassName("contact-grid");
         grid.setSizeFull();
-        //grid.removeColumnByKey("company");
-        grid.setColumns("processName", "stateName");
+
+        grid.addColumn(TaskInfo::getProcessName).setHeader("Processname");
+        grid.addColumn(TaskInfo::getStateName).setHeader("State");
         grid.getColumns().forEach(col -> col.setAutoWidth(true));
 
         grid.setItemDetailsRenderer(new ComponentRenderer<>(
