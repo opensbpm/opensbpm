@@ -35,7 +35,7 @@ import java.util.logging.Logger;
 @Scope("prototype")
 @RouteAlias(value = "", layout = MainLayout.class)
 @Route(value = "workflows", layout = MainLayout.class)
-@PageTitle("Workflows | SBPM Engine")
+@PageTitle("Workflows | OpenSBPM Vaadin Demo")
 public class WorkflowsView extends VerticalLayout {
 
     private final SbpmEngine sbpmEngine;
@@ -44,7 +44,7 @@ public class WorkflowsView extends VerticalLayout {
     private TextField filterText = new TextField();
 
     public WorkflowsView(SbpmEngine sbpmEngine) {
-        this.sbpmEngine = Objects.requireNonNull(sbpmEngine, "sbpmEngine must be non null");
+        this.sbpmEngine = Objects.requireNonNull(sbpmEngine, "SbpmEngine must be non null");
 
         // addClassName("workflows-view");
         addClassName("list-view");

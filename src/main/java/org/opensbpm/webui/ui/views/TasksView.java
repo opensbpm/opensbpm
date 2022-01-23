@@ -25,7 +25,7 @@ import java.util.Objects;
 @Component
 @Scope("prototype")
 @Route(value = "tasks", layout = MainLayout.class)
-@PageTitle("Tasks | SBPM Engine")
+@PageTitle("Tasks | OpenSBPM Vaadin Demo")
 public class TasksView extends VerticalLayout {
 
     private final SbpmEngine sbpmEngine;
@@ -34,7 +34,7 @@ public class TasksView extends VerticalLayout {
     private TextField filterText = new TextField();
 
     public TasksView(SbpmEngine sbpmEngine) {
-        this.sbpmEngine = Objects.requireNonNull(sbpmEngine, "sbpmEngine must be non null");
+        this.sbpmEngine = Objects.requireNonNull(sbpmEngine, "SbpmEngine must be non null");
 
         //addClassName("workflows-view");
         addClassName("list-view");
