@@ -1,6 +1,8 @@
 package org.opensbpm.webui.ui.views.login;
 
+import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H1;
+import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.component.login.LoginForm;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.BeforeEnterEvent;
@@ -9,7 +11,7 @@ import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 
 @Route("login")
-@PageTitle("Login | SBPM Demo")
+@PageTitle("Login | OpenSBPM Vaadin Demo")
 public class LoginView extends VerticalLayout implements BeforeEnterObserver {
 
     LoginForm login = new LoginForm();
@@ -24,7 +26,12 @@ public class LoginView extends VerticalLayout implements BeforeEnterObserver {
         login.setAction("login");
 
         add(
-                new H1("SBPM Demo"),
+                new H1("OpenSBPM Vaadin Demo"),
+                new Div(
+                        new Paragraph("User julian (julian123): Angestellte"),
+                        new Paragraph("User miriam (miriam123): Angestellte,Abteilungsleiter"),
+                        new Paragraph("User emilia (emilia123): Reisestelle")
+                ),
                 login
         );
     }
