@@ -108,6 +108,11 @@
             <version>${jsbpm.version}</version>
         </dependency>
         
+        <dependency>
+            <!-- opensbpm examples -->
+            <groupId>org.opensbpm.engine</groupId>
+            <artifactId>examples</artifactId>
+        </dependency>
     
         <dependency>
             <groupId>com.vaadin</groupId>

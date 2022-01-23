@@ -10,6 +10,7 @@ import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 
 @EnableWebSecurity
@@ -47,16 +48,36 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     }
 
     @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+        //return NoOpPasswordEncoder.getInstance();
+    }
+
+    @Bean
     @Override
     public UserDetailsService userDetailsService() {
-        UserDetails user = User.withUsername("user")
-                .password("password")
-                .passwordEncoder(rawPassword -> new BCryptPasswordEncoder().encode(rawPassword))
+        //subject "Mitarbeiter" needs role "Angestellte"
+        UserDetails julianUser = User.withUsername("julian")
+                .password(passwordEncoder().encode("julian123"))
                 .roles("USER")
                 .authorities("Angestellte")
                 .build();
 
-        return new InMemoryUserDetailsManager(user);
+        //subject "Vorgesetzter" needs role "Abteilungsleiter"
+        UserDetails miriamUser = User.withUsername("miriam")
+                .password(passwordEncoder().encode("miriam123"))
+                .roles("USER")
+                .authorities("Angestellte", "Abteilungsleiter")
+                .build();
+
+        //subject "Reisestelle" needs role "Reisestelle"
+        UserDetails emiliaUser = User.withUsername("emilia")
+                .password(passwordEncoder().encode("emilia123"))
+                .roles("USER")
+                .authorities("Reisestelle")
+                .build();
+
+        return new InMemoryUserDetailsManager(julianUser, miriamUser, emiliaUser);
     }
 
     /**
