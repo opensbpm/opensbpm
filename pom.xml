@@ -98,13 +98,7 @@
             <artifactId>xmlmodel</artifactId>            
         </dependency>
 
-        <dependency>
-            <groupId>at.softwaremacherei.jsbpm</groupId>
-            <artifactId>sbpm-server-rbac-api</artifactId>
-            <version>${jsbpm.version}</version>
-        </dependency>
-
-        <!-- sbpm plugins -->
+        <!-- opensbpm plugins -->
         <dependency>
             <groupId>org.opensbpm.plugins</groupId>
             <artifactId>jasperreports-plugin</artifactId>
@@ -117,13 +111,6 @@
         </dependency>
         
     
-        <!-- user database -->
-        <dependency>
-            <groupId>at.softwaremacherei.jsbpm</groupId>
-            <artifactId>sbpm-server-rbac</artifactId>
-            <version>${jsbpm.version}</version>
-        </dependency>
-
         <dependency>
             <groupId>com.vaadin</groupId>
             <artifactId>vaadin-core</artifactId>
