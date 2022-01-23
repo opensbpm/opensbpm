@@ -8,7 +8,6 @@
 
     <name>OpenSBPM - WebUI</name>
     <description>Vaadin WebUI for OpenSBPM Engine</description>
-
     <organization>
         <name>OpenSBPM</name>
         <url>http://opensbpm.org</url>
@@ -20,6 +19,17 @@
             <email>stefan@sedelmaier.at</email>                       
         </developer>
     </developers>
+
+    <distributionManagement>
+        <repository>
+            <id>opensbpm</id>
+            <name>OpenSBPM WebUI GitHub Packages</name>
+            <url>https://maven.pkg.github.com/opensbpm/webui</url>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+    </distributionManagement>
 
     <properties>
         <!-- java.version>11</java.version -->
@@ -40,18 +50,6 @@
         
         <junit.jupiter.version>5.8.2</junit.jupiter.version>
     </properties>
-
-    <distributionManagement>
-        <repository>
-            <id>opensbpm</id>
-            <name>OpenSBPM WebUI GitHub Packages</name>
-            <url>https://maven.pkg.github.com/opensbpm/webui</url>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
-        </repository>
-    </distributionManagement>
-
 
     <dependencyManagement>
         <dependencies>
@@ -90,12 +88,12 @@
 
         <dependency>
             <groupId>org.opensbpm.engine</groupId>
-            <artifactId>core</artifactId>            
+            <artifactId>core</artifactId>
         </dependency>
 
         <dependency>
             <groupId>org.opensbpm.engine</groupId>
-            <artifactId>xmlmodel</artifactId>            
+            <artifactId>xmlmodel</artifactId>
         </dependency>
 
         <!-- opensbpm plugins -->
@@ -310,8 +308,7 @@
     <build>
         <defaultGoal>spring-boot:run</defaultGoal>
         <plugins>
-            <plugin>
-                <!--
+            <plugin><!--
                     Take care of synchronizing java dependencies and imports in
                     package.json and main.js files.
                     It also creates webpack.config.js if not exists yet.
