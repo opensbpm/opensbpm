@@ -14,5 +14,5 @@ jobs:
     steps:
       - uses: actions/delete-package-versions@v2.0.1
         with:
-          package-name: 'org.opensbpm.webui.webui'
+          package-name: 'org.opensbpm.webui.webui-xxx'
           min-versions-to-keep: 2
