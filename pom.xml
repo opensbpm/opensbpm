@@ -98,11 +98,11 @@
             <artifactId>jasperreports-plugin</artifactId>
             <version>${opensbpm.version}</version>
         </dependency>
-        <dependency>
+        <!--dependency>
             <groupId>at.softwaremacherei.jsbpm</groupId>
             <artifactId>sbpm-plugin-elasticsearch</artifactId>
             <version>${jsbpm.version}</version>
-        </dependency>
+        </dependency-->
         
         <dependency><!-- opensbpm examples -->
             <groupId>org.opensbpm.engine</groupId>
