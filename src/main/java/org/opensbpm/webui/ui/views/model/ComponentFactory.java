@@ -142,12 +142,13 @@ public class ComponentFactory {
             case NESTED:
             case LIST:
                 if (attributeSchema instanceof NestedAttributeSchema) {
-                    if (Occurs.ONE == ((NestedAttributeSchema) attributeSchema).getOccurs()) {
-                        bindingBuilder = binder.forField(new EmbeddedForm(sbpmEngine, taskInfo, (NestedAttributeSchema) attributeSchema, objectSchema));
-                    } else if (Occurs.UNBOUND == ((NestedAttributeSchema) attributeSchema).getOccurs()) {
-                        bindingBuilder = binder.forField(new EmbeddedGrid(sbpmEngine, taskInfo, (NestedAttributeSchema) attributeSchema));
+                    NestedAttributeSchema nestedSchema = (NestedAttributeSchema) attributeSchema;
+                    if (Occurs.ONE == nestedSchema.getOccurs()) {
+                        bindingBuilder = binder.forField(new EmbeddedForm(sbpmEngine, taskInfo, nestedSchema, objectSchema));
+                    } else if (Occurs.UNBOUND == nestedSchema.getOccurs()) {
+                        bindingBuilder = binder.forField(new EmbeddedGrid(sbpmEngine, taskInfo, nestedSchema));
                     } else {
-                        throw new UnsupportedOperationException("Occurs " + ((NestedAttributeSchema) attributeSchema).getOccurs() + " not supported yet");
+                        throw new UnsupportedOperationException("Occurs " + nestedSchema.getOccurs() + " not supported yet");
                     }
                 } else {
                     throw new UnsupportedOperationException("FieldType.NESTED must use NestedAttributeSchema");
