@@ -31,6 +31,8 @@ import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.formlayout.FormLayout.FormItem;
 import com.vaadin.flow.data.binder.BeanValidationBinder;
 import com.vaadin.flow.data.binder.Binder;
+import com.vaadin.flow.data.binder.Binder.Binding;
+import com.vaadin.flow.data.binder.Binder.BindingBuilder;
 import com.vaadin.flow.data.binder.Result;
 import com.vaadin.flow.data.binder.Setter;
 import com.vaadin.flow.data.binder.ValueContext;
@@ -71,7 +73,7 @@ public class ComponentFactory {
     }
 
     public <V, C extends Component & HasValue<?, V>> C createField(TaskInfo taskInfo, AttributeSchema attributeSchema) {
-        Binder.BindingBuilder<ObjectBean, ?> bindingBuilder = null;
+        BindingBuilder<ObjectBean, ?> bindingBuilder = null;
         switch (attributeSchema.getFieldType()) {
             case STRING:
                 bindingBuilder = binder.forField(new TextField());
@@ -157,14 +159,14 @@ public class ComponentFactory {
         if (attributeSchema.isRequired()) {
             bindingBuilder.asRequired();
         }
-        Binder.Binding<ObjectBean, ?> binding = bind(attributeSchema, bindingBuilder);
+        Binding<ObjectBean, ?> binding = bind(attributeSchema, bindingBuilder);
         Component field = (Component) binding.getField();
         field.setId(String.valueOf(attributeSchema.getId()));
         return (C) field;
     }
 
     @SuppressWarnings("unchecked")
-    private <T> Binder.Binding<ObjectBean, T> bind(AttributeSchema attributeSchema, Binder.BindingBuilder<ObjectBean, T> bindingBuilder) {
+    private <T> Binding<ObjectBean, T> bind(AttributeSchema attributeSchema, BindingBuilder<ObjectBean, T> bindingBuilder) {
         Setter<ObjectBean, T> setter = null;
         if (!attributeSchema.isReadonly()) {
             setter = (ObjectBean bean, T fieldvalue) -> bean.set(attributeSchema, (Serializable) fieldvalue);
