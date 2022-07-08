@@ -7,8 +7,6 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.shared.Registration;
 
 import org.opensbpm.engine.api.UserNotFoundException;
-import org.opensbpm.engine.api.instance.AttributeStore;
-import org.opensbpm.engine.api.instance.ObjectBean;
 import org.opensbpm.engine.api.instance.ObjectSchema;
 import org.opensbpm.engine.api.instance.Task;
 import org.opensbpm.engine.api.instance.TaskInfo;
@@ -28,25 +26,26 @@ import com.vaadin.flow.router.RouteParameters;
 import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.annotation.PostConstruct;
 import org.springframework.context.annotation.Scope;
 
 @org.springframework.stereotype.Component
 @Scope("prototype")
 @Route(value = "tasks/:taskId/execute", layout = MainLayout.class)
-
 public class TaskEditor extends VerticalLayout implements BeforeEnterObserver {
 
-    private final SbpmEngine sbpmEngine;
+    private final transient SbpmEngine sbpmEngine;
     private final HorizontalLayout toolbar = new HorizontalLayout();
     private final Label stateLabel = new Label();
-
-    private final Button start = new Button("Start");
-    private final Button close = new Button("Cancel");
 
     private final Div formContent = new Div();
 
     public TaskEditor(SbpmEngine sbpmEngine) {
         this.sbpmEngine = Objects.requireNonNull(sbpmEngine, "sbpmEngine must be non null");
+    }
+
+    @PostConstruct
+    public void postConstruct() {
         addClassName("task-form");
 
         setSizeFull();
@@ -106,25 +105,15 @@ public class TaskEditor extends VerticalLayout implements BeforeEnterObserver {
         }
     }
 
-//    private Component createButtonsLayout() {
-//        start.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
-//        close.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
-//
-//        start.addClickShortcut(Key.ENTER);
-//        close.addClickShortcut(Key.ESCAPE);
-//
-//        //start.addClickListener(click -> validateAndSave());
-//        // delete.addClickListener(click -> fireEvent(new DeleteEvent(this, modelInfo)));
-//        close.addClickListener(click -> fireEvent(new CloseEvent(this)));
-//
-//        binder.addStatusChangeListener(evt -> start.setEnabled(binder.isValid()));
-//
-//        return new HorizontalLayout(start, close);
-//    }
-    // Events
+    @Override
+    public <T extends ComponentEvent<?>> Registration addListener(Class<T> eventType,
+            ComponentEventListener<T> listener) {
+        return getEventBus().addListener(eventType, listener);
+    }
+
     public static abstract class TaskFormEvent extends ComponentEvent<TaskEditor> {
 
-        private Task task;
+        private final Task task;
 
         protected TaskFormEvent(TaskEditor source, Task task) {
             super(source, false);
@@ -164,11 +153,6 @@ public class TaskEditor extends VerticalLayout implements BeforeEnterObserver {
         CloseEvent(TaskEditor source) {
             super(source, null);
         }
-    }
-
-    public <T extends ComponentEvent<?>> Registration addListener(Class<T> eventType,
-            ComponentEventListener<T> listener) {
-        return getEventBus().addListener(eventType, listener);
     }
 
 }
