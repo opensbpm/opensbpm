@@ -21,6 +21,7 @@ import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.router.RouteParameters;
 import java.util.Objects;
+import javax.annotation.PostConstruct;
 
 @Component
 @Scope("prototype")
@@ -28,14 +29,17 @@ import java.util.Objects;
 @PageTitle("Tasks | OpenSBPM Vaadin Demo")
 public class TasksView extends VerticalLayout {
 
-    private final SbpmEngine sbpmEngine;
+    private final transient SbpmEngine sbpmEngine;
 
-    private Grid<TaskInfo> grid = new Grid<>();
-    private TextField filterText = new TextField();
+    private final Grid<TaskInfo> grid = new Grid<>();
+    private final TextField filterText = new TextField();
 
     public TasksView(SbpmEngine sbpmEngine) {
         this.sbpmEngine = Objects.requireNonNull(sbpmEngine, "SbpmEngine must be non null");
+    }
 
+    @PostConstruct
+    public void postConstruct() {
         //addClassName("workflows-view");
         addClassName("list-view");
         setSizeFull();
