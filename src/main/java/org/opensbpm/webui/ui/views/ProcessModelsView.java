@@ -34,6 +34,7 @@ import java.util.EnumSet;
 import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.annotation.PostConstruct;
 import javax.xml.bind.JAXBException;
 import org.opensbpm.webui.ui.MainLayout;
 import org.springframework.context.annotation.Scope;
@@ -45,12 +46,15 @@ import org.springframework.stereotype.Component;
 @PageTitle("Models | OpenSBPM Vaadin Demo")
 public class ProcessModelsView extends VerticalLayout {
 
-    private final ModelService modelService;
+    private final transient ModelService modelService;
     private final Grid<ProcessModelInfo> grid = new Grid<>();
 
     public ProcessModelsView(ModelService modelService) {
         this.modelService = Objects.requireNonNull(modelService, "ModelService must be non null");
-        
+    }
+    
+    @PostConstruct
+    public void postConstruct() {
         HorizontalLayout horizontalLayout = new HorizontalLayout();
         MemoryBuffer buffer = new MemoryBuffer();
         Upload upload = new Upload(buffer);
