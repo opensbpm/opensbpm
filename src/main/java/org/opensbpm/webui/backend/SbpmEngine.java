@@ -14,6 +14,7 @@ import org.opensbpm.engine.api.instance.UserToken;
 import org.opensbpm.engine.api.model.ProcessModelInfo;
 import org.opensbpm.webui.backend.authentication.SpringAuthentication;
 import java.util.Collection;
+import java.util.Objects;
 import java.util.stream.Stream;
 import org.opensbpm.engine.api.instance.Task;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -47,13 +48,21 @@ public class SbpmEngine {
     }
 
     public Stream<TaskInfo> getTasks(String filter) throws UserNotFoundException {
-        UserToken userToken = getCurrentUserToken();
-        return engineService.getTasks(userToken).stream()
+        return getAllTasks()
                 .filter(taskInfo -> taskInfo.getProcessName().contains(filter));
     }
 
-    public Task getTask(TaskInfo taskInfo) throws UserNotFoundException, TaskNotFoundException, TaskOutOfDateException {
+    public Task getTask(Long taskId) throws TaskOutOfDateException, TaskNotFoundException, UserNotFoundException {
+        TaskInfo taskInfo = getAllTasks()
+                .filter(task -> Objects.equals(task.getId(), taskId))
+                .findFirst()
+                .orElseThrow(() -> new TaskOutOfDateException(String.valueOf(taskId)));
         return new Task(taskInfo, engineService.getTaskResponse(getCurrentUserToken(), taskInfo));
+    }
+
+    private Stream<TaskInfo> getAllTasks() throws UserNotFoundException {
+        UserToken userToken = getCurrentUserToken();
+        return engineService.getTasks(userToken).stream();
     }
 
     public TaskInfo getNextTask(TaskInfo taskInfo) throws UserNotFoundException {
@@ -64,7 +73,7 @@ public class SbpmEngine {
                 .orElseThrow(() -> new IllegalStateException("No next Task found for ProcessId " + taskInfo.getProcessId()));
     }
 
-    public AutocompleteResponse getAutocompleteResponse(TaskInfo taskInfo, ObjectRequest objectRequest, String queryString) throws UserNotFoundException, TaskNotFoundException, TaskOutOfDateException {
+    public AutocompleteResponse getAutocompleteResponse(TaskInfo taskInfo, ObjectRequest objectRequest, String queryString) throws TaskOutOfDateException, TaskNotFoundException, UserNotFoundException {
         return engineService.getAutocompleteResponse(getCurrentUserToken(), taskInfo, objectRequest, queryString);
     }
 
