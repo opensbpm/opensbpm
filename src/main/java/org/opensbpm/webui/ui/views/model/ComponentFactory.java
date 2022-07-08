@@ -118,17 +118,6 @@ public class ComponentFactory {
             case BINARY:
                 bindingBuilder = binder.forField(new BinaryViewer());
                 break;
-            case LIST:
-                if (attributeSchema instanceof NestedAttributeSchema) {
-                    if (Occurs.UNBOUND == ((NestedAttributeSchema) attributeSchema).getOccurs()) {
-                        bindingBuilder = binder.forField(new EmbeddedGrid(sbpmEngine, taskInfo, (NestedAttributeSchema) attributeSchema));
-                    } else {
-                        throw new UnsupportedOperationException("Occurs " + ((NestedAttributeSchema) attributeSchema).getOccurs() + " not supported yet");
-                    }
-                } else {
-                    throw new UnsupportedOperationException("FieldType.LIST must use NestedAttributeSchema");
-                }
-                break;
             case REFERENCE:
                 ObjectSchema referenceSchema = attributeSchema.getAutocompleteReference()
                         .orElseThrow(() -> new IllegalStateException("no AutocompleteReference for attribute '" + attributeSchema.getName() + "'"));
@@ -147,6 +136,17 @@ public class ComponentFactory {
                                 return null;
                             }
                         });
+                break;
+            case LIST:
+                if (attributeSchema instanceof NestedAttributeSchema) {
+                    if (Occurs.UNBOUND == ((NestedAttributeSchema) attributeSchema).getOccurs()) {
+                        bindingBuilder = binder.forField(new EmbeddedGrid(sbpmEngine, taskInfo, (NestedAttributeSchema) attributeSchema));
+                    } else {
+                        throw new UnsupportedOperationException("Occurs " + ((NestedAttributeSchema) attributeSchema).getOccurs() + " not supported yet");
+                    }
+                } else {
+                    throw new UnsupportedOperationException("FieldType.LIST must use NestedAttributeSchema");
+                }
                 break;
             case NESTED:
                 if (attributeSchema instanceof NestedAttributeSchema) {
