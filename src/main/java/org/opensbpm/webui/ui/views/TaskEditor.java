@@ -106,9 +106,9 @@ public class TaskEditor extends VerticalLayout implements BeforeEnterObserver {
         return new RouteParameters("taskId", String.valueOf(taskInfo.getId()));
     }
 
-    private Long getTaskId(RouteParameters routeParameters) {
+    private static Long getTaskId(RouteParameters routeParameters) {
         return routeParameters.get("taskId")
-                .map(id -> Long.valueOf(id))
+                .map(Long::valueOf)
                 .orElseThrow(() -> new IllegalStateException("no route-parameter 'taskId' given"));
     }
 
@@ -120,7 +120,7 @@ public class TaskEditor extends VerticalLayout implements BeforeEnterObserver {
 
     public static abstract class TaskFormEvent extends ComponentEvent<TaskEditor> {
 
-        private final Task task;
+        private final transient Task task;
 
         protected TaskFormEvent(TaskEditor source, Task task) {
             super(source, false);
