@@ -75,7 +75,8 @@ public class TasksView extends VerticalLayout {
                     execute.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
                     execute.addClickShortcut(Key.ENTER);
                     execute.addClickListener(click -> {
-                        execute.getUI().ifPresent(ui -> ui.navigate(TaskEditor.class, new RouteParameters("taskId", String.valueOf(taskInfo.getId()))));
+                        execute.getUI().ifPresent(ui
+                                -> ui.navigate(TaskEditor.class, createTaskParameter(taskInfo)));
                     });
                     return new HorizontalLayout(execute);
                 }));
@@ -88,6 +89,10 @@ public class TasksView extends VerticalLayout {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
+    }
+
+    private static RouteParameters createTaskParameter(TaskInfo taskInfo) {
+        return new RouteParameters("taskId", String.valueOf(taskInfo.getId()));
     }
 
 }
