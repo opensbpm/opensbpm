@@ -12,10 +12,12 @@ import org.opensbpm.engine.api.model.definition.Occurs;
 import org.opensbpm.webui.backend.SbpmEngine;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.annotation.DirtiesContext;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 @SpringBootTest
+@DirtiesContext
 public class ComponentFactoryTest {
 
     @MockBean

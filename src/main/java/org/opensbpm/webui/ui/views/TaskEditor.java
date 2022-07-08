@@ -83,10 +83,12 @@ public class TaskEditor extends VerticalLayout implements BeforeEnterObserver {
                                     TaskRequest taskRequest = task.createTaskRequest(nextState);
                                     sbpmEngine.executeTask(taskRequest);
                                     if (nextState.isEnd()) {
-                                        nextStateButton.getUI().ifPresent(ui -> ui.navigate(TasksView.class));
+                                        nextStateButton.getUI().ifPresent(ui
+                                                -> ui.navigate(TasksView.class));
                                     } else {
                                         TaskInfo nextTaskInfo = sbpmEngine.getNextTask(taskInfo);
-                                        nextStateButton.getUI().ifPresent(ui -> ui.navigate(TaskEditor.class, new RouteParameters("taskId", String.valueOf(nextTaskInfo.getId()))));
+                                        nextStateButton.getUI().ifPresent(ui
+                                                -> ui.navigate(TaskEditor.class, createTaskParameter(nextTaskInfo)));
                                     }
                                 } catch (UserNotFoundException | TaskNotFoundException | TaskOutOfDateException ex) {
                                     Logger.getLogger(TaskEditor.class.getName()).log(Level.SEVERE, ex.getMessage(), ex);
@@ -103,6 +105,10 @@ public class TaskEditor extends VerticalLayout implements BeforeEnterObserver {
         } catch (TaskNotFoundException | TaskOutOfDateException | UserNotFoundException ex) {
             Logger.getLogger(TaskEditor.class.getName()).log(Level.SEVERE, ex.getMessage(), ex);
         }
+    }
+
+    public static RouteParameters createTaskParameter(TaskInfo taskInfo) {
+        return new RouteParameters("taskId", String.valueOf(taskInfo.getId()));
     }
 
     @Override
