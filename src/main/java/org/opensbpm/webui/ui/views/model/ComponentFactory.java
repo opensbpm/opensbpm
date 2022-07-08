@@ -137,18 +137,8 @@ public class ComponentFactory {
                             }
                         });
                 break;
-            case LIST:
-                if (attributeSchema instanceof NestedAttributeSchema) {
-                    if (Occurs.UNBOUND == ((NestedAttributeSchema) attributeSchema).getOccurs()) {
-                        bindingBuilder = binder.forField(new EmbeddedGrid(sbpmEngine, taskInfo, (NestedAttributeSchema) attributeSchema));
-                    } else {
-                        throw new UnsupportedOperationException("Occurs " + ((NestedAttributeSchema) attributeSchema).getOccurs() + " not supported yet");
-                    }
-                } else {
-                    throw new UnsupportedOperationException("FieldType.LIST must use NestedAttributeSchema");
-                }
-                break;
             case NESTED:
+            case LIST:
                 if (attributeSchema instanceof NestedAttributeSchema) {
                     if (Occurs.ONE == ((NestedAttributeSchema) attributeSchema).getOccurs()) {
                         bindingBuilder = binder.forField(new EmbeddedForm(sbpmEngine, taskInfo, (NestedAttributeSchema) attributeSchema, objectSchema));
