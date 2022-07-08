@@ -58,13 +58,8 @@ public class TaskEditor extends VerticalLayout implements BeforeEnterObserver {
         formContent.removeAll();
         toolbar.removeAll();
         try {
-            String taskId = event.getRouteParameters().get("taskId")
-                    .orElseThrow(() -> new IllegalStateException("no route-parameter 'taskId' given"));
-            TaskInfo taskInfo = sbpmEngine.getTasks("")
-                    .filter(task -> String.valueOf(task.getId()).equals(taskId))
-                    .findFirst()
-                    .orElseThrow(() -> new TaskOutOfDateException(taskId));
-            Task task = sbpmEngine.getTask(taskInfo);
+            Long taskId = getTaskId(event.getRouteParameters());
+            Task task = sbpmEngine.getTask(taskId);
 
             stateLabel.setText(task.getProcessName() + ":" + task.getStateName());
 
@@ -72,7 +67,7 @@ public class TaskEditor extends VerticalLayout implements BeforeEnterObserver {
                     .findFirst()
                     .orElseThrow(() -> new IllegalStateException("only one business-object allowed"));
             ComponentFactory componentFactory = new ComponentFactory(sbpmEngine, objectSchema);
-            formContent.add(componentFactory.createForm(taskInfo, objectSchema));
+            formContent.add(componentFactory.createForm(task.getTaskInfo(), objectSchema));
 
             task.getNextStates().stream()
                     .map(nextState -> {
@@ -86,7 +81,7 @@ public class TaskEditor extends VerticalLayout implements BeforeEnterObserver {
                                         nextStateButton.getUI().ifPresent(ui
                                                 -> ui.navigate(TasksView.class));
                                     } else {
-                                        TaskInfo nextTaskInfo = sbpmEngine.getNextTask(taskInfo);
+                                        TaskInfo nextTaskInfo = sbpmEngine.getNextTask(task.getTaskInfo());
                                         nextStateButton.getUI().ifPresent(ui
                                                 -> ui.navigate(TaskEditor.class, createTaskParameter(nextTaskInfo)));
                                     }
@@ -109,6 +104,12 @@ public class TaskEditor extends VerticalLayout implements BeforeEnterObserver {
 
     public static RouteParameters createTaskParameter(TaskInfo taskInfo) {
         return new RouteParameters("taskId", String.valueOf(taskInfo.getId()));
+    }
+
+    private Long getTaskId(RouteParameters routeParameters) {
+        return routeParameters.get("taskId")
+                .map(id -> Long.valueOf(id))
+                .orElseThrow(() -> new IllegalStateException("no route-parameter 'taskId' given"));
     }
 
     @Override

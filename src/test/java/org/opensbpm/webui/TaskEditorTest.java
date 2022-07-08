@@ -100,7 +100,7 @@ public class TaskEditorTest {
         ));
         TaskResponse taskResponse = TaskResponse.of(Long.MIN_VALUE, Collections.emptyList(),
                 LocalDateTime.MIN, Arrays.asList(objectSchema), Collections.emptyList());
-        when(sbpmEngine.getTask(any(TaskInfo.class))).thenReturn(new Task(taskInfo, taskResponse));
+        when(sbpmEngine.getTask(anyLong())).thenReturn(new Task(taskInfo, taskResponse));
 
         UI.getCurrent().navigate(TaskEditor.class, TaskEditor.createTaskParameter(taskInfo));
         //expectRows(_get(Grid.class), 0);
