@@ -24,23 +24,26 @@ public class ComponentFactoryTest {
     @Test
     public void testCreateForm() {
         //arrange
-        ObjectSchema objectSchema = ObjectSchema.of(1l, "Test", Arrays.asList(
-                AttributeSchema.of(2l, "string", FieldType.STRING),
-                AttributeSchema.of(3l, "number", FieldType.NUMBER),
-                AttributeSchema.of(4l, "decimal", FieldType.DECIMAL),
-                //                AttributeSchema.of(5l, "date", FieldType.DATE),
-                //                AttributeSchema.of(6l, "time", FieldType.TIME),
-                AttributeSchema.of(7l, "boolean", FieldType.BOOLEAN),
-                AttributeSchema.of(8l, "binary", FieldType.BINARY),
-                //AttributeSchema.of(9l, "list", FieldType.LIST),
-                new NestedAttributeSchema(9l, "lis", Occurs.UNBOUND, Arrays.asList(
-                        AttributeSchema.of(92l, "string", FieldType.STRING)
+        long id=0l;
+        
+        AttributeSchema reference;
+        ObjectSchema objectSchema = ObjectSchema.of(id++, "Test", Arrays.asList(
+                AttributeSchema.of(id++, "string", FieldType.STRING),
+                AttributeSchema.of(id++, "number", FieldType.NUMBER),
+                AttributeSchema.of(id++, "decimal", FieldType.DECIMAL),
+                //                AttributeSchema.of(id++, "date", FieldType.DATE),//ui needed
+                AttributeSchema.of(id++, "time", FieldType.TIME),
+                AttributeSchema.of(id++, "boolean", FieldType.BOOLEAN),
+                AttributeSchema.of(id++, "binary", FieldType.BINARY),
+                reference = AttributeSchema.of(id++, "reference", FieldType.REFERENCE),                
+                new NestedAttributeSchema(id++, "nested", Occurs.ONE, Arrays.asList(
+                        AttributeSchema.of(id++, "string", FieldType.STRING)
                 )),
-//                AttributeSchema.of(10l, "reference", FieldType.REFERENCE),
-                new NestedAttributeSchema(11l, "nested", Occurs.ONE, Arrays.asList(
-                        AttributeSchema.of(12l, "string", FieldType.STRING)
+                new NestedAttributeSchema(id++, "list", Occurs.UNBOUND, Arrays.asList(
+                        AttributeSchema.of(id++, "string", FieldType.STRING)
                 ))
         ));
+        reference.setAutocompleteReference(new ObjectSchema());
 
         TaskInfo taskInfo = new TaskInfo();
         ComponentFactory componentFactory = new ComponentFactory(sbpmEngine, objectSchema);
@@ -49,7 +52,7 @@ public class ComponentFactoryTest {
         FormLayout form = componentFactory.createForm(taskInfo, objectSchema);
 
         //assert
-        assertThat(form.getElement().getChildren().count(), is(7l));
+        assertThat(form.getElement().getChildren().count(), is(9l));
 
     }
 
