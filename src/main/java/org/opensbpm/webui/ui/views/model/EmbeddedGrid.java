@@ -160,7 +160,7 @@ public class EmbeddedGrid extends AbstractCompositeField<GridEditor, EmbeddedGri
 //                    .setEditorComponent(editorComponent);
 //        }
         private ObjectBean createItem() {
-            return ObjectBean.from(nestedAttributeSchema);
+            return new ObjectBean(nestedAttributeSchema);
         }
 
         public void setItems(List<ObjectBean> objectBeans) {
