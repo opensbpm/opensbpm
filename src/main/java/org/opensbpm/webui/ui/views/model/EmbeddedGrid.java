@@ -3,7 +3,6 @@ package org.opensbpm.webui.ui.views.model;
 import org.opensbpm.engine.api.instance.AttributeSchema;
 import org.opensbpm.engine.api.instance.NestedAttributeSchema;
 import org.opensbpm.engine.api.instance.ObjectBean;
-import org.opensbpm.engine.api.instance.AttributeStore;
 import org.opensbpm.engine.api.instance.TaskInfo;
 import org.opensbpm.webui.backend.SbpmEngine;
 import org.opensbpm.webui.ui.views.model.EmbeddedGrid.GridEditor;
@@ -161,7 +160,7 @@ public class EmbeddedGrid extends AbstractCompositeField<GridEditor, EmbeddedGri
 //                    .setEditorComponent(editorComponent);
 //        }
         private ObjectBean createItem() {
-            return new ObjectBean(nestedAttributeSchema, new AttributeStore(nestedAttributeSchema));
+            return ObjectBean.from(nestedAttributeSchema);
         }
 
         public void setItems(List<ObjectBean> objectBeans) {
