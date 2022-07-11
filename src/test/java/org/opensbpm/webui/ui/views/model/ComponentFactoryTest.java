@@ -38,10 +38,10 @@ public class ComponentFactoryTest {
                 AttributeSchema.of(id++, "boolean", FieldType.BOOLEAN),
                 AttributeSchema.of(id++, "binary", FieldType.BINARY),
                 reference = AttributeSchema.of(id++, "reference", FieldType.REFERENCE),                
-                new NestedAttributeSchema(id++, "nested", Occurs.ONE, Arrays.asList(
+                NestedAttributeSchema.create(id++, "nested", Occurs.ONE, Arrays.asList(
                         AttributeSchema.of(id++, "string", FieldType.STRING)
                 )),
-                new NestedAttributeSchema(id++, "list", Occurs.UNBOUND, Arrays.asList(
+                NestedAttributeSchema.create(id++, "list", Occurs.UNBOUND, Arrays.asList(
                         AttributeSchema.of(id++, "string", FieldType.STRING)
                 ))
         ));
