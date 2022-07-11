@@ -41,6 +41,7 @@ import com.vaadin.flow.data.provider.CallbackDataProvider;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.HashMap;
+import org.opensbpm.engine.api.instance.AttributeSchemaVisitor;
 
 public class ComponentFactory {
 
@@ -73,90 +74,105 @@ public class ComponentFactory {
     }
 
     public <V, C extends Component & HasValue<?, V>> C createField(TaskInfo taskInfo, AttributeSchema attributeSchema) {
-        BindingBuilder<ObjectBean, ?> bindingBuilder = null;
-        switch (attributeSchema.getFieldType()) {
-            case STRING:
-                bindingBuilder = binder.forField(new TextField());
-                break;
-            case NUMBER:
-                bindingBuilder = binder.forField(new NumberField())
-                        .withConverter(new Converter<Double, Integer>() {
+        BindingBuilder<ObjectBean, ?> bindingBuilder;
+        bindingBuilder = attributeSchema.accept(new AttributeSchemaVisitor<BindingBuilder<ObjectBean, ?>>() {
+            @Override
+            public BindingBuilder<ObjectBean, ?> visitSimple(AttributeSchema attributeSchema) {
+                switch (attributeSchema.getFieldType()) {
+                    case STRING:
+                        return binder.forField(new TextField());
+                    //break;
+                    case NUMBER:
+                        return binder.forField(new NumberField())
+                                .withConverter(new Converter<Double, Integer>() {
 
-                            @Override
-                            public Result<Integer> convertToModel(Double value, ValueContext context) {
-                                return Result.ok(value == null ? null : value.intValue());
-                            }
+                                    @Override
+                                    public Result<Integer> convertToModel(Double value, ValueContext context) {
+                                        return Result.ok(value == null ? null : value.intValue());
+                                    }
 
-                            @Override
-                            public Double convertToPresentation(Integer value, ValueContext context) {
-                                return value == null ? null : value.doubleValue();
-                            }
-                        });
-                break;
-            case DECIMAL:
-                bindingBuilder = binder.forField(new NumberField())
-                        .withConverter(new Converter<Double, BigDecimal>() {
+                                    @Override
+                                    public Double convertToPresentation(Integer value, ValueContext context) {
+                                        return value == null ? null : value.doubleValue();
+                                    }
+                                });
+                    //break;
+                    case DECIMAL:
+                        return binder.forField(new NumberField())
+                                .withConverter(new Converter<Double, BigDecimal>() {
 
-                            @Override
-                            public Result<BigDecimal> convertToModel(Double value, ValueContext context) {
-                                return Result.ok(value == null ? null : BigDecimal.valueOf(value));
-                            }
+                                    @Override
+                                    public Result<BigDecimal> convertToModel(Double value, ValueContext context) {
+                                        return Result.ok(value == null ? null : BigDecimal.valueOf(value));
+                                    }
 
-                            @Override
-                            public Double convertToPresentation(BigDecimal value, ValueContext context) {
-                                return value == null ? null : value.doubleValue();
-                            }
-                        });
-                break;
-            case DATE:
-                bindingBuilder = binder.forField(new DatePicker());
-                break;
-            case TIME:
-                bindingBuilder = binder.forField(new TimePicker());
-                break;
-            case BOOLEAN:
-                bindingBuilder = binder.forField(new Checkbox());
-                break;
-            case BINARY:
-                bindingBuilder = binder.forField(new BinaryViewer());
-                break;
-            case REFERENCE:
-                ObjectSchema referenceSchema = attributeSchema.getAutocompleteReference()
-                        .orElseThrow(() -> new IllegalStateException("no AutocompleteReference for attribute '" + attributeSchema.getName() + "'"));
-                AutocompleteQuery autocompleteQuery = new AutocompleteQuery(sbpmEngine, referenceSchema);
-                ComboBox<AttributeItem> comboBox = new ComboBox<>();
-                comboBox.setDataProvider(autocompleteQuery.createDataProvider(taskInfo));
-                bindingBuilder = binder.forField(comboBox)
-                        .withConverter(new Converter<AttributeItem, HashMap<Long, Serializable>>() {
-                            @Override
-                            public Result<HashMap<Long, Serializable>> convertToModel(AttributeItem value, ValueContext context) {
-                                return Result.ok(value == null ? null : value.toSourceMap());
-                            }
+                                    @Override
+                                    public Double convertToPresentation(BigDecimal value, ValueContext context) {
+                                        return value == null ? null : value.doubleValue();
+                                    }
+                                });
+                    //break;
+                    case DATE:
+                        return binder.forField(new DatePicker());
+                    //break;
+                    case TIME:
+                        return binder.forField(new TimePicker());
+                    //break;
+                    case BOOLEAN:
+                        return binder.forField(new Checkbox());
+                    //break;
+                    case BINARY:
+                        return binder.forField(new BinaryViewer());
+                    //break;
+                    case REFERENCE:
+                        ObjectSchema referenceSchema = attributeSchema.getAutocompleteReference()
+                                .orElseThrow(() -> new IllegalStateException("no AutocompleteReference for attribute '" + attributeSchema.getName() + "'"));
+                        AutocompleteQuery autocompleteQuery = new AutocompleteQuery(sbpmEngine, referenceSchema);
+                        ComboBox<AttributeItem> comboBox = new ComboBox<>();
+                        comboBox.setDataProvider(autocompleteQuery.createDataProvider(taskInfo));
+                        return binder.forField(comboBox)
+                                .withConverter(new Converter<AttributeItem, HashMap<Long, Serializable>>() {
+                                    @Override
+                                    public Result<HashMap<Long, Serializable>> convertToModel(AttributeItem value, ValueContext context) {
+                                        return Result.ok(value == null ? null : value.toSourceMap());
+                                    }
 
-                            @Override
-                            public AttributeItem convertToPresentation(HashMap<Long, Serializable> value, ValueContext context) {
-                                return null;
-                            }
-                        });
-                break;
-            case NESTED:
-            case LIST:
-                if (attributeSchema instanceof NestedAttributeSchema) {
-                    NestedAttributeSchema nestedSchema = (NestedAttributeSchema) attributeSchema;
-                    if (Occurs.ONE == nestedSchema.getOccurs()) {
-                        bindingBuilder = binder.forField(new EmbeddedForm(sbpmEngine, taskInfo, nestedSchema, objectSchema));
-                    } else if (Occurs.UNBOUND == nestedSchema.getOccurs()) {
-                        bindingBuilder = binder.forField(new EmbeddedGrid(sbpmEngine, taskInfo, nestedSchema));
-                    } else {
-                        throw new UnsupportedOperationException("Occurs " + nestedSchema.getOccurs() + " not supported yet");
-                    }
-                } else {
-                    throw new UnsupportedOperationException("FieldType.NESTED must use NestedAttributeSchema");
+                                    @Override
+                                    public AttributeItem convertToPresentation(HashMap<Long, Serializable> value, ValueContext context) {
+                                        return null;
+                                    }
+                                });
+                    //break;
+//                    case NESTED:
+//                    case LIST:
+//                        if (attributeSchema instanceof NestedAttributeSchema) {
+//                            NestedAttributeSchema nestedSchema = (NestedAttributeSchema) attributeSchema;
+//                            if (Occurs.ONE == nestedSchema.getOccurs()) {
+//                                return binder.forField(new EmbeddedForm(sbpmEngine, taskInfo, nestedSchema, objectSchema));
+//                            } else if (Occurs.UNBOUND == nestedSchema.getOccurs()) {
+//                                return binder.forField(new EmbeddedGrid(sbpmEngine, taskInfo, nestedSchema));
+//                            } else {
+//                                throw new UnsupportedOperationException("Occurs " + nestedSchema.getOccurs() + " not supported yet");
+//                            }
+//                        } else {
+//                            throw new UnsupportedOperationException("FieldType.NESTED must use NestedAttributeSchema");
+//                        }
+//                        //break;
+                    default:
+                        throw new UnsupportedOperationException("no component binding for " + attributeSchema.getFieldType());
                 }
-                break;
-            default:
-                throw new UnsupportedOperationException("no component binding for " + attributeSchema.getFieldType());
-        }
+            }
+
+            @Override
+            public BindingBuilder<ObjectBean, ?> visitNested(NestedAttributeSchema attributeSchema) {
+                return binder.forField(new EmbeddedForm(sbpmEngine, taskInfo, attributeSchema, objectSchema));
+            }
+
+            @Override
+            public BindingBuilder<ObjectBean, ?> visitIndexed(NestedAttributeSchema attributeSchema) {
+                return binder.forField(new EmbeddedGrid(sbpmEngine, taskInfo, attributeSchema));
+            }
+        });
         if (attributeSchema.isRequired()) {
             bindingBuilder.asRequired();
         }
