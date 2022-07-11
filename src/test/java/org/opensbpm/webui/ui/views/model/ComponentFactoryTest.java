@@ -1,18 +1,17 @@
 package org.opensbpm.webui.ui.views.model;
 
 import com.vaadin.flow.component.formlayout.FormLayout;
-import java.util.Arrays;
 import org.junit.jupiter.api.Test;
 import org.opensbpm.engine.api.instance.AttributeSchema;
 import org.opensbpm.engine.api.instance.NestedAttributeSchema;
 import org.opensbpm.engine.api.instance.ObjectSchema;
 import org.opensbpm.engine.api.instance.TaskInfo;
 import org.opensbpm.engine.api.model.FieldType;
-import org.opensbpm.engine.api.model.definition.Occurs;
 import org.opensbpm.webui.backend.SbpmEngine;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.annotation.DirtiesContext;
+import static java.util.Arrays.asList;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 
@@ -26,10 +25,10 @@ public class ComponentFactoryTest {
     @Test
     public void testCreateForm() {
         //arrange
-        long id=0l;
-        
+        long id = 0l;
+
         AttributeSchema reference;
-        ObjectSchema objectSchema = ObjectSchema.of(id++, "Test", Arrays.asList(
+        ObjectSchema objectSchema = ObjectSchema.of(id++, "Test", asList(
                 AttributeSchema.of(id++, "string", FieldType.STRING),
                 AttributeSchema.of(id++, "number", FieldType.NUMBER),
                 AttributeSchema.of(id++, "decimal", FieldType.DECIMAL),
@@ -37,11 +36,11 @@ public class ComponentFactoryTest {
                 AttributeSchema.of(id++, "time", FieldType.TIME),
                 AttributeSchema.of(id++, "boolean", FieldType.BOOLEAN),
                 AttributeSchema.of(id++, "binary", FieldType.BINARY),
-                reference = AttributeSchema.of(id++, "reference", FieldType.REFERENCE),                
-                NestedAttributeSchema.create(id++, "nested", Occurs.ONE, Arrays.asList(
+                reference = AttributeSchema.of(id++, "reference", FieldType.REFERENCE),
+                NestedAttributeSchema.createNested(id++, "nested", asList(
                         AttributeSchema.of(id++, "string", FieldType.STRING)
                 )),
-                NestedAttributeSchema.create(id++, "list", Occurs.UNBOUND, Arrays.asList(
+                NestedAttributeSchema.createIndexed(id++, "list", asList(
                         AttributeSchema.of(id++, "string", FieldType.STRING)
                 ))
         ));
