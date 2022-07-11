@@ -20,7 +20,6 @@ import org.springframework.test.annotation.DirtiesContext;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Optional;
 
 import java.util.stream.Stream;
@@ -28,8 +27,6 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
 import org.opensbpm.engine.api.instance.AttributeSchema;
 import org.opensbpm.engine.api.instance.ObjectSchema;
 import org.opensbpm.engine.api.instance.Task;
@@ -37,12 +34,10 @@ import org.opensbpm.engine.api.instance.TaskResponse;
 import org.opensbpm.engine.api.model.FieldType;
 import org.opensbpm.webui.ui.views.TaskEditor;
 import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.when;
 
 import org.springframework.boot.test.mock.mockito.MockBean;
-import static org.mockito.ArgumentMatchers.any;
+import static java.util.Arrays.asList;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
@@ -95,7 +90,7 @@ public class TaskEditorTest {
 
         when(sbpmEngine.getTasks(anyString())).then(iom -> Stream.of(taskInfo));
 
-        ObjectSchema objectSchema = ObjectSchema.of(id++, "Test", Arrays.asList(
+        ObjectSchema objectSchema = ObjectSchema.of(id++, "Test", asList(
                 AttributeSchema.of(id++, "string", FieldType.STRING)
         ));
         TaskResponse taskResponse = TaskResponse.of(Long.MIN_VALUE, Collections.emptyList(),
