@@ -3,6 +3,7 @@ package org.opensbpm.webui.ui.views.model;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import org.junit.jupiter.api.Test;
 import org.opensbpm.engine.api.instance.AttributeSchema;
+import org.opensbpm.engine.api.instance.IndexedAttributeSchema;
 import org.opensbpm.engine.api.instance.NestedAttributeSchema;
 import org.opensbpm.engine.api.instance.ObjectSchema;
 import org.opensbpm.engine.api.instance.TaskInfo;
@@ -40,7 +41,7 @@ public class ComponentFactoryTest {
                 NestedAttributeSchema.createNested(id++, "nested", asList(
                         AttributeSchema.of(id++, "string", FieldType.STRING)
                 )),
-                NestedAttributeSchema.createIndexed(id++, "list", asList(
+                IndexedAttributeSchema.create(id++, "list", asList(
                         AttributeSchema.of(id++, "string", FieldType.STRING)
                 ))
         ));
