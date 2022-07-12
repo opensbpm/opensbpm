@@ -41,6 +41,7 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.HashMap;
 import org.opensbpm.engine.api.instance.AttributeSchemaVisitor;
+import org.opensbpm.engine.api.instance.IndexedAttributeSchema;
 
 public class ComponentFactory {
 
@@ -168,7 +169,7 @@ public class ComponentFactory {
             }
 
             @Override
-            public BindingBuilder<ObjectBean, ?> visitIndexed(NestedAttributeSchema attributeSchema) {
+            public BindingBuilder<ObjectBean, ?> visitIndexed(IndexedAttributeSchema attributeSchema) {
                 return binder.forField(new EmbeddedGrid(sbpmEngine, taskInfo, attributeSchema));
             }
         });
