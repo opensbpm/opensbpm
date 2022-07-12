@@ -10,7 +10,6 @@ import org.opensbpm.engine.api.instance.ObjectSchema;
 import org.opensbpm.engine.api.instance.TaskInfo;
 import org.opensbpm.engine.api.instance.TaskNotFoundException;
 import org.opensbpm.engine.api.instance.TaskOutOfDateException;
-import org.opensbpm.engine.api.model.definition.Occurs;
 import org.opensbpm.webui.backend.SbpmEngine;
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.combobox.ComboBox;
