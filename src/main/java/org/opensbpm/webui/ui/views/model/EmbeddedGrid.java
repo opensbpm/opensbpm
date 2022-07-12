@@ -21,24 +21,25 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import org.opensbpm.engine.api.instance.IndexedAttributeSchema;
 
 public class EmbeddedGrid extends AbstractCompositeField<GridEditor, EmbeddedGrid, List<ObjectBean>> {
 
     private final SbpmEngine sbpmEngine;
     private final TaskInfo taskInfo;
-    private final NestedAttributeSchema nestedAttributeSchema;
+    private final IndexedAttributeSchema indexedAttributeSchema;
 
-    public EmbeddedGrid(SbpmEngine sbpmEngine, TaskInfo taskInfo, NestedAttributeSchema nestedAttributeSchema) {
+    public EmbeddedGrid(SbpmEngine sbpmEngine, TaskInfo taskInfo, IndexedAttributeSchema indexedAttributeSchema) {
         super(null);
         this.sbpmEngine = sbpmEngine;
         this.taskInfo = taskInfo;
-        this.nestedAttributeSchema = nestedAttributeSchema;
+        this.indexedAttributeSchema = indexedAttributeSchema;
 
     }
 
     @Override
     protected GridEditor initContent() {
-        return new GridEditor(sbpmEngine, taskInfo, nestedAttributeSchema);
+        return new GridEditor(sbpmEngine, taskInfo, indexedAttributeSchema);
     }
 
     @Override
@@ -51,7 +52,7 @@ public class EmbeddedGrid extends AbstractCompositeField<GridEditor, EmbeddedGri
         private final Binder<ObjectBean> binder;
         private transient List<ObjectBean> interalStore = new ArrayList<>();
 
-        public GridEditor(SbpmEngine sbpmEngine, TaskInfo taskInfo, NestedAttributeSchema parentSchema) {
+        public GridEditor(SbpmEngine sbpmEngine, TaskInfo taskInfo, IndexedAttributeSchema parentSchema) {
             super();
 
             ComponentFactory componentFactory = new ComponentFactory(sbpmEngine, null);
@@ -160,7 +161,7 @@ public class EmbeddedGrid extends AbstractCompositeField<GridEditor, EmbeddedGri
 //                    .setEditorComponent(editorComponent);
 //        }
         private ObjectBean createItem() {
-            return new ObjectBean(nestedAttributeSchema);
+            return new ObjectBean(indexedAttributeSchema);
         }
 
         public void setItems(List<ObjectBean> objectBeans) {
