@@ -74,105 +74,7 @@ public class ComponentFactory {
     }
 
     public <V, C extends Component & HasValue<?, V>> C createField(TaskInfo taskInfo, AttributeSchema attributeSchema) {
-        BindingBuilder<ObjectBean, ?> bindingBuilder;
-        bindingBuilder = attributeSchema.accept(new AttributeSchemaVisitor<BindingBuilder<ObjectBean, ?>>() {
-            @Override
-            public BindingBuilder<ObjectBean, ?> visitSimple(AttributeSchema attributeSchema) {
-                switch (attributeSchema.getFieldType()) {
-                    case STRING:
-                        return binder.forField(new TextField());
-                    //break;
-                    case NUMBER:
-                        return binder.forField(new NumberField())
-                                .withConverter(new Converter<Double, Integer>() {
-
-                                    @Override
-                                    public Result<Integer> convertToModel(Double value, ValueContext context) {
-                                        return Result.ok(value == null ? null : value.intValue());
-                                    }
-
-                                    @Override
-                                    public Double convertToPresentation(Integer value, ValueContext context) {
-                                        return value == null ? null : value.doubleValue();
-                                    }
-                                });
-                    //break;
-                    case DECIMAL:
-                        return binder.forField(new NumberField())
-                                .withConverter(new Converter<Double, BigDecimal>() {
-
-                                    @Override
-                                    public Result<BigDecimal> convertToModel(Double value, ValueContext context) {
-                                        return Result.ok(value == null ? null : BigDecimal.valueOf(value));
-                                    }
-
-                                    @Override
-                                    public Double convertToPresentation(BigDecimal value, ValueContext context) {
-                                        return value == null ? null : value.doubleValue();
-                                    }
-                                });
-                    //break;
-                    case DATE:
-                        return binder.forField(new DatePicker());
-                    //break;
-                    case TIME:
-                        return binder.forField(new TimePicker());
-                    //break;
-                    case BOOLEAN:
-                        return binder.forField(new Checkbox());
-                    //break;
-                    case BINARY:
-                        return binder.forField(new BinaryViewer());
-                    //break;
-                    case REFERENCE:
-                        ObjectSchema referenceSchema = attributeSchema.getAutocompleteReference()
-                                .orElseThrow(() -> new IllegalStateException("no AutocompleteReference for attribute '" + attributeSchema.getName() + "'"));
-                        AutocompleteQuery autocompleteQuery = new AutocompleteQuery(sbpmEngine, referenceSchema);
-                        ComboBox<AttributeItem> comboBox = new ComboBox<>();
-                        comboBox.setDataProvider(autocompleteQuery.createDataProvider(taskInfo));
-                        return binder.forField(comboBox)
-                                .withConverter(new Converter<AttributeItem, HashMap<Long, Serializable>>() {
-                                    @Override
-                                    public Result<HashMap<Long, Serializable>> convertToModel(AttributeItem value, ValueContext context) {
-                                        return Result.ok(value == null ? null : value.toSourceMap());
-                                    }
-
-                                    @Override
-                                    public AttributeItem convertToPresentation(HashMap<Long, Serializable> value, ValueContext context) {
-                                        return null;
-                                    }
-                                });
-                    //break;
-//                    case NESTED:
-//                    case LIST:
-//                        if (attributeSchema instanceof NestedAttributeSchema) {
-//                            NestedAttributeSchema nestedSchema = (NestedAttributeSchema) attributeSchema;
-//                            if (Occurs.ONE == nestedSchema.getOccurs()) {
-//                                return binder.forField(new EmbeddedForm(sbpmEngine, taskInfo, nestedSchema, objectSchema));
-//                            } else if (Occurs.UNBOUND == nestedSchema.getOccurs()) {
-//                                return binder.forField(new EmbeddedGrid(sbpmEngine, taskInfo, nestedSchema));
-//                            } else {
-//                                throw new UnsupportedOperationException("Occurs " + nestedSchema.getOccurs() + " not supported yet");
-//                            }
-//                        } else {
-//                            throw new UnsupportedOperationException("FieldType.NESTED must use NestedAttributeSchema");
-//                        }
-//                        //break;
-                    default:
-                        throw new UnsupportedOperationException("no component binding for " + attributeSchema.getFieldType());
-                }
-            }
-
-            @Override
-            public BindingBuilder<ObjectBean, ?> visitNested(NestedAttributeSchema attributeSchema) {
-                return binder.forField(new EmbeddedForm(sbpmEngine, taskInfo, attributeSchema, objectSchema));
-            }
-
-            @Override
-            public BindingBuilder<ObjectBean, ?> visitIndexed(IndexedAttributeSchema attributeSchema) {
-                return binder.forField(new EmbeddedGrid(sbpmEngine, taskInfo, attributeSchema));
-            }
-        });
+        BindingBuilder<ObjectBean, ?> bindingBuilder = attributeSchema.accept(new BindingAttributeVisitor(taskInfo));
         if (attributeSchema.isRequired()) {
             bindingBuilder.asRequired();
         }
@@ -180,6 +82,97 @@ public class ComponentFactory {
         Component field = (Component) binding.getField();
         field.setId(String.valueOf(attributeSchema.getId()));
         return (C) field;
+    }
+
+    private class BindingAttributeVisitor implements AttributeSchemaVisitor<BindingBuilder<ObjectBean, ?>> {
+
+        private final TaskInfo taskInfo;
+
+        public BindingAttributeVisitor(TaskInfo taskInfo) {
+            this.taskInfo = taskInfo;
+        }
+
+        @Override
+        public BindingBuilder<ObjectBean, ?> visitSimple(AttributeSchema attributeSchema) {
+            switch (attributeSchema.getFieldType()) {
+                case STRING:
+                    return binder.forField(new TextField());
+                case NUMBER:
+                    return binder.forField(new NumberField())
+                            .withConverter(toInteger());
+                case DECIMAL:
+                    return binder.forField(new NumberField())
+                            .withConverter(toBigDecimal());
+                case DATE:
+                    return binder.forField(new DatePicker());
+                case TIME:
+                    return binder.forField(new TimePicker());
+                case BOOLEAN:
+                    return binder.forField(new Checkbox());
+                case BINARY:
+                    return binder.forField(new BinaryViewer());
+                case REFERENCE:
+                    ObjectSchema referenceSchema = attributeSchema.getAutocompleteReference()
+                            .orElseThrow(() -> new IllegalStateException("no AutocompleteReference for attribute '" + attributeSchema.getName() + "'"));
+                    AutocompleteQuery autocompleteQuery = new AutocompleteQuery(sbpmEngine, referenceSchema);
+                    ComboBox<AttributeItem> comboBox = new ComboBox<>();
+                    comboBox.setDataProvider(autocompleteQuery.createDataProvider(taskInfo));
+                    return binder.forField(comboBox)
+                            .withConverter(new Converter<AttributeItem, HashMap<Long, Serializable>>() {
+                                @Override
+                                public Result<HashMap<Long, Serializable>> convertToModel(AttributeItem value, ValueContext context) {
+                                    return Result.ok(value == null ? null : value.toSourceMap());
+                                }
+
+                                @Override
+                                public AttributeItem convertToPresentation(HashMap<Long, Serializable> value, ValueContext context) {
+                                    return null;
+                                }
+                            });
+                default:
+                    throw new UnsupportedOperationException("no component binding for " + attributeSchema.getFieldType());
+            }
+        }
+
+        private Converter<Double, Integer> toInteger() {
+            return new Converter<Double, Integer>() {
+
+                @Override
+                public Result<Integer> convertToModel(Double value, ValueContext context) {
+                    return Result.ok(value == null ? null : value.intValue());
+                }
+
+                @Override
+                public Double convertToPresentation(Integer value, ValueContext context) {
+                    return value == null ? null : value.doubleValue();
+                }
+            };
+        }
+
+        private Converter<Double, BigDecimal> toBigDecimal() {
+            return new Converter<Double, BigDecimal>() {
+
+                @Override
+                public Result<BigDecimal> convertToModel(Double value, ValueContext context) {
+                    return Result.ok(value == null ? null : BigDecimal.valueOf(value));
+                }
+
+                @Override
+                public Double convertToPresentation(BigDecimal value, ValueContext context) {
+                    return value == null ? null : value.doubleValue();
+                }
+            };
+        }
+
+        @Override
+        public BindingBuilder<ObjectBean, ?> visitNested(NestedAttributeSchema attributeSchema) {
+            return binder.forField(new EmbeddedForm(sbpmEngine, taskInfo, attributeSchema, objectSchema));
+        }
+
+        @Override
+        public BindingBuilder<ObjectBean, ?> visitIndexed(IndexedAttributeSchema attributeSchema) {
+            return binder.forField(new EmbeddedGrid(sbpmEngine, taskInfo, attributeSchema));
+        }
     }
 
     @SuppressWarnings("unchecked")
