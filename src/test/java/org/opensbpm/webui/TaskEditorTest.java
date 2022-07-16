@@ -27,8 +27,8 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.opensbpm.engine.api.instance.AttributeSchema;
 import org.opensbpm.engine.api.instance.ObjectSchema;
+import org.opensbpm.engine.api.instance.SimpleAttributeSchema;
 import org.opensbpm.engine.api.instance.Task;
 import org.opensbpm.engine.api.instance.TaskResponse;
 import org.opensbpm.engine.api.model.FieldType;
@@ -91,7 +91,7 @@ public class TaskEditorTest {
         when(sbpmEngine.getTasks(anyString())).then(iom -> Stream.of(taskInfo));
 
         ObjectSchema objectSchema = ObjectSchema.of(id++, "Test", asList(
-                AttributeSchema.of(id++, "string", FieldType.STRING)
+                SimpleAttributeSchema.of(id++, "string", FieldType.STRING)
         ));
         TaskResponse taskResponse = TaskResponse.of(Long.MIN_VALUE, Collections.emptyList(),
                 LocalDateTime.MIN, Arrays.asList(objectSchema), Collections.emptyList());
