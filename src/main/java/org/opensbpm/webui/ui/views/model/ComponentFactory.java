@@ -42,6 +42,7 @@ import java.math.BigDecimal;
 import java.util.HashMap;
 import org.opensbpm.engine.api.instance.AttributeSchemaVisitor;
 import org.opensbpm.engine.api.instance.IndexedAttributeSchema;
+import org.opensbpm.engine.api.instance.SimpleAttributeSchema;
 
 public class ComponentFactory {
 
@@ -64,10 +65,28 @@ public class ComponentFactory {
             Component field = createField(taskInfo, attributeSchema);
             FormItem formItem = formLayout.addFormItem(field, attributeSchema.getName());
             //?? formItem.getElement().setAttribute("label-position", "top");
-            if (FieldType.LIST == attributeSchema.getFieldType()
-                    || FieldType.NESTED == attributeSchema.getFieldType()) {
-                formLayout.setColspan(formItem, 2);
-            }
+            attributeSchema.accept(new AttributeSchemaVisitor<Void>() {
+                @Override
+                public Void visitSimple(SimpleAttributeSchema attributeSchema) {
+                return null;
+                }
+
+                @Override
+                public Void visitNested(NestedAttributeSchema attributeSchema) {
+                    formLayout.setColspan(formItem, 2);
+                    return null;
+                }
+
+                @Override
+                public Void visitIndexed(IndexedAttributeSchema attributeSchema) {
+                    formLayout.setColspan(formItem, 2);
+                    return null;
+                }
+            });
+//            if (FieldType.LIST == attributeSchema.getFieldType()
+//                    || FieldType.NESTED == attributeSchema.getFieldType()) {
+//                formLayout.setColspan(formItem, 2);
+//            }
         }
         formLayout.setSizeFull();
         return formLayout;
@@ -93,7 +112,7 @@ public class ComponentFactory {
         }
 
         @Override
-        public BindingBuilder<ObjectBean, ?> visitSimple(AttributeSchema attributeSchema) {
+        public BindingBuilder<ObjectBean, ?> visitSimple(SimpleAttributeSchema attributeSchema) {
             switch (attributeSchema.getFieldType()) {
                 case STRING:
                     return binder.forField(new TextField());

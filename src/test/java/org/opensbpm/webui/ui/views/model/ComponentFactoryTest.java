@@ -6,6 +6,7 @@ import org.opensbpm.engine.api.instance.AttributeSchema;
 import org.opensbpm.engine.api.instance.IndexedAttributeSchema;
 import org.opensbpm.engine.api.instance.NestedAttributeSchema;
 import org.opensbpm.engine.api.instance.ObjectSchema;
+import org.opensbpm.engine.api.instance.SimpleAttributeSchema;
 import org.opensbpm.engine.api.instance.TaskInfo;
 import org.opensbpm.engine.api.model.FieldType;
 import org.opensbpm.webui.backend.SbpmEngine;
@@ -28,21 +29,21 @@ public class ComponentFactoryTest {
         //arrange
         long id = 0l;
 
-        AttributeSchema reference;
+        SimpleAttributeSchema reference;
         ObjectSchema objectSchema = ObjectSchema.of(id++, "Test", asList(
-                AttributeSchema.of(id++, "string", FieldType.STRING),
-                AttributeSchema.of(id++, "number", FieldType.NUMBER),
-                AttributeSchema.of(id++, "decimal", FieldType.DECIMAL),
-                //                AttributeSchema.of(id++, "date", FieldType.DATE),//ui needed
-                AttributeSchema.of(id++, "time", FieldType.TIME),
-                AttributeSchema.of(id++, "boolean", FieldType.BOOLEAN),
-                AttributeSchema.of(id++, "binary", FieldType.BINARY),
-                reference = AttributeSchema.of(id++, "reference", FieldType.REFERENCE),
+                SimpleAttributeSchema.of(id++, "string", FieldType.STRING),
+                SimpleAttributeSchema.of(id++, "number", FieldType.NUMBER),
+                SimpleAttributeSchema.of(id++, "decimal", FieldType.DECIMAL),
+                //                SimpleAttributeSchema.of(id++, "date", FieldType.DATE),//ui needed
+                SimpleAttributeSchema.of(id++, "time", FieldType.TIME),
+                SimpleAttributeSchema.of(id++, "boolean", FieldType.BOOLEAN),
+                SimpleAttributeSchema.of(id++, "binary", FieldType.BINARY),
+                reference = SimpleAttributeSchema.of(id++, "reference", FieldType.REFERENCE),
                 NestedAttributeSchema.createNested(id++, "nested", asList(
-                        AttributeSchema.of(id++, "string", FieldType.STRING)
+                        SimpleAttributeSchema.of(id++, "string", FieldType.STRING)
                 )),
                 IndexedAttributeSchema.create(id++, "list", asList(
-                        AttributeSchema.of(id++, "string", FieldType.STRING)
+                        SimpleAttributeSchema.of(id++, "string", FieldType.STRING)
                 ))
         ));
         reference.setAutocompleteReference(new ObjectSchema());

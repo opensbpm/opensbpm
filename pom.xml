@@ -104,7 +104,7 @@
             <version>${jsbpm.version}</version>
         </dependency-->
         
-        <dependency><!-- opensbpm examples -->
+        <dependency>
             <groupId>org.opensbpm.engine</groupId>
             <artifactId>examples</artifactId>
         </dependency>
