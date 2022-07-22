@@ -16,6 +16,7 @@ import org.opensbpm.webui.backend.authentication.SpringAuthentication;
 import java.util.Collection;
 import java.util.Objects;
 import java.util.stream.Stream;
+import org.opensbpm.engine.api.ModelService.ModelRequest;
 import org.opensbpm.engine.api.instance.Task;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
@@ -40,7 +41,7 @@ public class SbpmEngine {
     }
 
     public TaskInfo startProcess(ProcessModelInfo processModel) throws UserNotFoundException, ModelNotFoundException {
-        return engineService.startProcess(getCurrentUserToken(), processModel);
+        return engineService.startProcess(getCurrentUserToken(), ModelRequest.of(processModel));
     }
 
     public Boolean executeTask(TaskRequest taskRequest) throws UserNotFoundException, TaskNotFoundException, TaskOutOfDateException {
