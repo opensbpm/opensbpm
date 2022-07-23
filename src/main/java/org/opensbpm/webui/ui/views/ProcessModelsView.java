@@ -66,7 +66,7 @@ public class ProcessModelsView extends VerticalLayout {
                 updateItems();
             } catch (JAXBException ex) {
                 Logger.getLogger(ProcessModelsView.class.getName()).log(Level.SEVERE, ex.getMessage(), ex);
-                //Notification.show("This is the caption", "This is the description", Notification.Type.HUMANIZED_MESSAGE);
+                Notification.show(ex.getMessage());
             }
         });
         horizontalLayout.add(upload);
