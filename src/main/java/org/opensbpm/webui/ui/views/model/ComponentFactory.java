@@ -23,7 +23,6 @@ import org.opensbpm.engine.api.instance.AutocompleteResponse.Autocomplete;
 import org.opensbpm.engine.api.instance.IsAttributesContainer;
 import org.opensbpm.engine.api.instance.ObjectBean;
 import org.opensbpm.engine.api.instance.ObjectData;
-import org.opensbpm.engine.api.model.FieldType;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasValue;
 import com.vaadin.flow.component.formlayout.FormLayout;
