@@ -17,6 +17,7 @@ import java.util.Collection;
 import java.util.Objects;
 import java.util.stream.Stream;
 import org.opensbpm.engine.api.ModelService.ModelRequest;
+import org.opensbpm.engine.api.UserTokenService.TokenRequest;
 import org.opensbpm.engine.api.instance.Task;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
@@ -33,7 +34,8 @@ public class SbpmEngine {
     }
 
     private UserToken getCurrentUserToken() throws UserNotFoundException {
-        return userTokenService.retrieveToken(SpringAuthentication.of(SecurityContextHolder.getContext().getAuthentication()));
+        TokenRequest tokenRequest = SpringAuthentication.of(SecurityContextHolder.getContext().getAuthentication());
+        return userTokenService.retrieveToken(tokenRequest);
     }
 
     public Collection<ProcessModelInfo> findStartableProcessModels() throws UserNotFoundException {
@@ -62,13 +64,11 @@ public class SbpmEngine {
     }
 
     private Stream<TaskInfo> getAllTasks() throws UserNotFoundException {
-        UserToken userToken = getCurrentUserToken();
-        return engineService.getTasks(userToken).stream();
+        return engineService.getTasks(getCurrentUserToken()).stream();
     }
 
     public TaskInfo getNextTask(TaskInfo taskInfo) throws UserNotFoundException {
-        UserToken userToken = getCurrentUserToken();
-        return engineService.getTasks(userToken).stream()
+        return engineService.getTasks(getCurrentUserToken()).stream()
                 .filter(task -> task.getProcessId().equals(taskInfo.getProcessId()))
                 .findFirst()
                 .orElseThrow(() -> new IllegalStateException("No next Task found for ProcessId " + taskInfo.getProcessId()));
