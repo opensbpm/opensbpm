@@ -95,7 +95,7 @@ node('jdk11') {
 }
 
 def mvn(String goals){
-    withEnv(["PATH+NODEJS_HOME=$tool(type: 'nodejs', name: 'NodeJS 14.x')"]) {
+    withEnv(["PATH+NODEJS_HOME=${tool(type: 'nodejs', name: 'NodeJS 14.x')}"]) {
         withMaven(
             jdk: 'OpenJDK 11',
             maven: 'default', 
