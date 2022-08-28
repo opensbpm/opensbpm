@@ -31,7 +31,7 @@ node('jdk11') {
                 withSonarQubeEnv('Sonarqube') {
                     def model = readMavenPom(file: 'pom.xml')
                     withMaven(
-                        jdk: 'JDK 1.8',
+                        jdk: 'jdk8',
                         maven: 'default', 
                         mavenSettingsConfig: '05894f91-85e1-4e6d-8eb5-a101d90c62e3',
                         options: [
