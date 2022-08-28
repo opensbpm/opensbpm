@@ -31,14 +31,13 @@ node('jdk11:nodejs12') {
                 withSonarQubeEnv('Sonarqube') {
                     def model = readMavenPom(file: 'pom.xml')
                     withMaven(
-                        jdk: 'jdk8',
+                        jdk: 'jdk11',
                         maven: 'default', 
                         mavenSettingsConfig: '05894f91-85e1-4e6d-8eb5-a101d90c62e3',
                         options: [
                             openTasksPublisher(highPriorityTaskIdentifiers: 'FIXME', lowPriorityTaskIdentifiers: 'TODO', normalPriorityTaskIdentifiers: 'PENDING', pattern: '**/*.*',excludePattern: '**/target/**')
                         ]
                     ) {
-                        //'JDK 1.8' is need for sonarqube (Hostname not verified (no certificates))
                         sh "mvn -DskipTests \
                             -Dsonar.projectKey=${model.getGroupId()}:${model.getArtifactId()}:${BRANCH_NAME.replace('/',"-")} \
                             -Dsonar.projectName=\"${model.getName()} ($BRANCH_NAME)\" \
@@ -97,7 +96,7 @@ node('jdk11:nodejs12') {
 def mvn(String goals){
     withEnv(["PATH+NODEJS_HOME=${tool(type: 'nodejs', name: 'NodeJS 14.x')}"]) {
         withMaven(
-            jdk: 'OpenJDK 11',
+            jdk: 'jdk11',
             maven: 'default', 
             mavenSettingsConfig: '05894f91-85e1-4e6d-8eb5-a101d90c62e3',
             options: [
