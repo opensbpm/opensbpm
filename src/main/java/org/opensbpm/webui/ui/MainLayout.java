@@ -38,7 +38,7 @@ public class MainLayout extends AppLayout {
     }
 
     private void createHeader() {
-        H1 logo = new H1("SBPM Engine");
+        H1 logo = new H1("OpenSBPM:engine");
         logo.addClassName("logo");
 
         Anchor logout = new Anchor("/logout", "Log out");
