@@ -244,7 +244,7 @@ public class ComponentFactory {
         }
 
         private Stream<Autocomplete> query(TaskInfo taskInfo, String filter) throws UserNotFoundException, TaskNotFoundException, TaskOutOfDateException {
-            ObjectRequest objectRequest = ObjectRequest.of(objectSchema.getId());
+            ObjectRequest objectRequest = ObjectRequest.of(objectSchema);
             return sbpmEngine.getAutocompleteResponse(taskInfo, objectRequest, filter).getAutocompletes().stream();
         }
 
