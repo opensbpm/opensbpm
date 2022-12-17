@@ -7,7 +7,7 @@
     <version>0.1-SNAPSHOT</version>
 
     <name>OpenSBPM - WebUI</name>
-    <description>Vaadin WebUI for OpenSBPM Engine</description>
+    <description>Vaadin WebUI for OpenSBPM:engine</description>
     <organization>
         <name>OpenSBPM</name>
         <url>http://opensbpm.org</url>
