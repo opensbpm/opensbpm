@@ -68,7 +68,7 @@ public class ComponentFactory {
             attributeSchema.accept(new AttributeSchemaVisitor<Void>() {
                 @Override
                 public Void visitSimple(SimpleAttributeSchema attributeSchema) {
-                return null;
+                    return null;
                 }
 
                 @Override
@@ -191,10 +191,25 @@ public class ComponentFactory {
 
         @Override
         public BindingBuilder<ObjectBean, ?> visitReference(ReferenceAttributeSchema attributeSchema) {
-            return binder.forField(new EmbeddedForm(sbpmEngine, taskInfo, attributeSchema, objectSchema));
+            ObjectSchema referenceSchema = attributeSchema.getAutocompleteReference()
+                    .orElseThrow(() -> new IllegalStateException("no AutocompleteReference for attribute '" + attributeSchema.getName() + "'"));
+            AutocompleteQuery autocompleteQuery = new AutocompleteQuery(sbpmEngine, referenceSchema);
+            ComboBox<AttributeItem> comboBox = new ComboBox<>();
+            comboBox.setDataProvider(autocompleteQuery.createDataProvider(taskInfo));
+            return binder.forField(comboBox)
+                    .withConverter(new Converter<AttributeItem, HashMap<Long, Serializable>>() {
+                        @Override
+                        public Result<HashMap<Long, Serializable>> convertToModel(AttributeItem value, ValueContext context) {
+                            return Result.ok(value == null ? null : value.toSourceMap());
+                        }
+
+                        @Override
+                        public AttributeItem convertToPresentation(HashMap<Long, Serializable> value, ValueContext context) {
+                            return null;
+                        }
+                    });
         }
 
-        
         @Override
         public BindingBuilder<ObjectBean, ?> visitNested(NestedAttributeSchema attributeSchema) {
             return binder.forField(new EmbeddedForm(sbpmEngine, taskInfo, attributeSchema, objectSchema));

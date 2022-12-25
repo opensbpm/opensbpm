@@ -1,11 +1,13 @@
 package org.opensbpm.webui.ui.views.model;
 
 import com.vaadin.flow.component.formlayout.FormLayout;
+import java.util.Collections;
 import org.junit.jupiter.api.Test;
 import org.opensbpm.engine.api.instance.AttributeSchema;
 import org.opensbpm.engine.api.instance.IndexedAttributeSchema;
 import org.opensbpm.engine.api.instance.NestedAttributeSchema;
 import org.opensbpm.engine.api.instance.ObjectSchema;
+import org.opensbpm.engine.api.instance.ReferenceAttributeSchema;
 import org.opensbpm.engine.api.instance.SimpleAttributeSchema;
 import org.opensbpm.engine.api.instance.TaskInfo;
 import org.opensbpm.engine.api.model.FieldType;
@@ -29,7 +31,7 @@ public class ComponentFactoryTest {
         //arrange
         long id = 0l;
 
-        SimpleAttributeSchema reference;
+        ReferenceAttributeSchema reference;
         ObjectSchema objectSchema = ObjectSchema.of(id++, "Test", asList(
                 SimpleAttributeSchema.of(id++, "string", FieldType.STRING),
                 SimpleAttributeSchema.of(id++, "number", FieldType.NUMBER),
@@ -38,7 +40,7 @@ public class ComponentFactoryTest {
                 SimpleAttributeSchema.of(id++, "time", FieldType.TIME),
                 SimpleAttributeSchema.of(id++, "boolean", FieldType.BOOLEAN),
                 SimpleAttributeSchema.of(id++, "binary", FieldType.BINARY),
-                reference = SimpleAttributeSchema.of(id++, "reference", FieldType.REFERENCE),
+                reference = ReferenceAttributeSchema.create(id++, "reference", Collections.emptyList()),
                 NestedAttributeSchema.createNested(id++, "nested", asList(
                         SimpleAttributeSchema.of(id++, "string", FieldType.STRING)
                 )),
