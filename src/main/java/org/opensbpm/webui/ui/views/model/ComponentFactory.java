@@ -41,6 +41,7 @@ import java.math.BigDecimal;
 import java.util.HashMap;
 import org.opensbpm.engine.api.instance.AttributeSchemaVisitor;
 import org.opensbpm.engine.api.instance.IndexedAttributeSchema;
+import org.opensbpm.engine.api.instance.ReferenceAttributeSchema;
 import org.opensbpm.engine.api.instance.SimpleAttributeSchema;
 
 public class ComponentFactory {
@@ -68,6 +69,12 @@ public class ComponentFactory {
                 @Override
                 public Void visitSimple(SimpleAttributeSchema attributeSchema) {
                 return null;
+                }
+
+                @Override
+                public Void visitReference(ReferenceAttributeSchema referenceAttributeSchema) {
+                    formLayout.setColspan(formItem, 2);
+                    return null;
                 }
 
                 @Override
@@ -182,6 +189,12 @@ public class ComponentFactory {
             };
         }
 
+        @Override
+        public BindingBuilder<ObjectBean, ?> visitReference(ReferenceAttributeSchema attributeSchema) {
+            return binder.forField(new EmbeddedForm(sbpmEngine, taskInfo, attributeSchema, objectSchema));
+        }
+
+        
         @Override
         public BindingBuilder<ObjectBean, ?> visitNested(NestedAttributeSchema attributeSchema) {
             return binder.forField(new EmbeddedForm(sbpmEngine, taskInfo, attributeSchema, objectSchema));
