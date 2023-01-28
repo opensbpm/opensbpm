@@ -136,24 +136,6 @@ public class ComponentFactory {
                     return binder.forField(new Checkbox());
                 case BINARY:
                     return binder.forField(new BinaryViewer());
-                case REFERENCE:
-                    ObjectSchema referenceSchema = attributeSchema.getAutocompleteReference()
-                            .orElseThrow(() -> new IllegalStateException("no AutocompleteReference for attribute '" + attributeSchema.getName() + "'"));
-                    AutocompleteQuery autocompleteQuery = new AutocompleteQuery(sbpmEngine, referenceSchema);
-                    ComboBox<AttributeItem> comboBox = new ComboBox<>();
-                    comboBox.setDataProvider(autocompleteQuery.createDataProvider(taskInfo));
-                    return binder.forField(comboBox)
-                            .withConverter(new Converter<AttributeItem, HashMap<Long, Serializable>>() {
-                                @Override
-                                public Result<HashMap<Long, Serializable>> convertToModel(AttributeItem value, ValueContext context) {
-                                    return Result.ok(value == null ? null : value.toSourceMap());
-                                }
-
-                                @Override
-                                public AttributeItem convertToPresentation(HashMap<Long, Serializable> value, ValueContext context) {
-                                    return null;
-                                }
-                            });
                 default:
                     throw new UnsupportedOperationException("no component binding for " + attributeSchema.getFieldType());
             }
