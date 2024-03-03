@@ -1,0 +1,15 @@
+@startuml
+'https://plantuml.com/component-diagram
+
+cloud {
+  [Frontend]
+  [Workflow-Service]
+
+  [Frontend] --> [Workflow-Service]
+}
+
+component "OAuth-Provider"
+[Frontend] -r-> [OAuth-Provider]
+[Workflow-Service] -r-> [OAuth-Provider]
+
+@enduml
