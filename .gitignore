@@ -1,6 +1,7 @@
 
 # Node.js
 node_modules/
+build/
 
 # JetBrains IDE
 .idea/
