@@ -1,4 +1,10 @@
 
+#Gradle
+.gradle/
+
+#Maven
+target/
+
 # Node.js
 node_modules/
 build/
