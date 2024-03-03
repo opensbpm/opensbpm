@@ -4,3 +4,6 @@ node_modules/
 
 # JetBrains IDE
 .idea/
+
+#Misc
+*.bak
