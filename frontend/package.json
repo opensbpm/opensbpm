@@ -2,11 +2,14 @@
   "name": "frontend",
   "version": "0.1.0",
   "private": true,
-  "dependencies": {
+  "devDependencies": {
     "@testing-library/jest-dom": "^5.17.0",
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^13.5.0",
     "@types/jest": "^27.5.2",
+    "jest-junit": "^16.0.0"
+  },
+  "dependencies": {
     "@types/node": "^16.18.86",
     "@types/react": "^18.2.61",
     "@types/react-dom": "^18.2.19",
@@ -39,5 +42,18 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "jest": {
+    "coverageReporters": ["cobertura", "lcov", ["text", {"skipFull": "true"}]]
+  },
+  "jest-junit": {
+    "suiteName": "frontend tests",
+    "outputDirectory": "test-results",
+    "outputName": "junit.xml",
+    "uniqueOutputName": "false",
+    "classNameTemplate": "{filepath} {classname}",
+    "titleTemplate": "{classname}-{title}",
+    "ancestorSeparator": " › ",
+    "usePathForSuiteName": "true"
   }
 }
