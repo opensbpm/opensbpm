@@ -8,6 +8,8 @@ target/
 # Node.js
 node_modules/
 build/
+test-results/
+coverage/
 
 # JetBrains IDE
 .idea/
