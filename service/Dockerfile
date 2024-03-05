@@ -1,6 +1,6 @@
 
-#FROM eclipse-temurin:17-jdk-alpine as build
-FROM gradle:8.5-jdk17 as build
+#FROM eclipse-temurin:17-jdk-alpine AS build
+FROM gradle:8.5-jdk17 AS build
 WORKDIR /workspace/app
 
 COPY . .
@@ -9,7 +9,7 @@ COPY . .
 RUN gradle bootJar
 RUN mkdir -p build/distribution && (cd build/distribution; jar -xf ../libs/*.jar)
 
-FROM eclipse-temurin:17-jdk-alpine as prod
+FROM eclipse-temurin:17-jdk-alpine AS prod
 VOLUME /tmp
 ARG DISTRIBUTION=/workspace/app/build/distribution
 COPY --from=build ${DISTRIBUTION}/BOOT-INF/lib /app/lib

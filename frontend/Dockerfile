@@ -4,7 +4,7 @@ EXPOSE 3000
 WORKDIR /srv/frontend
 
 #development build
-FROM base as build
+FROM base AS build
 COPY . /srv/frontend
 
 RUN npm install && \
@@ -14,7 +14,7 @@ CMD npm start
 
 
 #production build
-FROM base as prod
+FROM base AS prod
 
 COPY --from=build /srv/frontend/build /srv/frontend
 COPY serve.json /srv/frontend/
