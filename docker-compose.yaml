@@ -1,0 +1,21 @@
+version: '3'
+
+services:
+  service:
+    image: opensbpm/service
+    build:
+      context: ./service
+      target: prod
+    #container_name: opensbpm_service
+    #env_file: .env
+    ports:
+      - "8080:8080"
+
+  frontend:
+    image: opensbpm/frontend
+    build:
+      context: ./frontend
+      target: prod
+    #container_name: opensbpm_frontend
+    ports:
+      - "3000:3000"
