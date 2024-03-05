@@ -6,7 +6,7 @@ WORKDIR /workspace/app
 COPY . .
 
 #RUN ./gradlew bootJar
-RUN gradle bootJar
+RUN gradle clean bootJar
 RUN mkdir -p build/distribution && (cd build/distribution; jar -xf ../libs/*.jar)
 
 FROM eclipse-temurin:17-jdk-alpine AS prod

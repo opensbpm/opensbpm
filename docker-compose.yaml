@@ -19,3 +19,11 @@ services:
     #container_name: opensbpm_frontend
     ports:
       - "3000:3000"
+
+  gateway:
+    image: opensbpm/gateway
+    build:
+      context: ./gateway
+    #container_name: opensbpm_gateway
+    ports:
+      - "80:80"
