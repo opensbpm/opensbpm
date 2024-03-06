@@ -1,9 +1,17 @@
-import React from 'react';
+import React, {useEffect} from 'react';
 import logo from './logo.svg';
 import './App.css';
 
 function App() {
-  return (
+  useEffect(() => {
+    const API_BASEURL = process.env.REACT_APP_API_URL ? process.env.REACT_APP_API_URL : '';
+    fetch(`${API_BASEURL}/api/greeting`, { method: 'GET' })
+        .then(response => response.json())
+        .then(data => console.log(data))
+        .catch((error) => console.log('ERROR in getGameCards: ' + error));
+  }, []);
+
+    return (
     <div className="App">
       <header className="App-header">
         <img src={logo} className="App-logo" alt="logo" />
