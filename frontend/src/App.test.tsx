@@ -12,9 +12,11 @@ describe('App.test', () => {
 
     const greeting = {"id":1,"content":"Hello, World!"};
     beforeEach(() => {
-        jest.spyOn(global, 'fetch').mockResolvedValue({
-            json: jest.fn().mockResolvedValue(greeting)
-        })
+        jest.spyOn(global, "fetch").mockImplementation(
+            jest.fn(
+                () => Promise.resolve({ json: () => Promise.resolve(greeting),
+                }),
+            ) as jest.Mock )
     });
 
     afterEach(() => {
