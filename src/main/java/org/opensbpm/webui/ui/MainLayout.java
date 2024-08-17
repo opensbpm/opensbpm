@@ -64,7 +64,7 @@ public class MainLayout extends AppLayout {
         if (true) {
             components.add(new RouterLink("Models", ProcessModelsView.class));
         }
-        addToDrawer(new VerticalLayout(components.toArray(Component[]::new)));
+        addToDrawer(new VerticalLayout(components.toArray(new Component[0])));
     }
 
 }
