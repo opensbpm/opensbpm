@@ -49,7 +49,7 @@ public class WorkflowsViewTest {
 
     @BeforeAll
     public static void discoverRoutes() {
-        routes = new Routes().autoDiscoverViews(MainLayout.class.getPackageName());
+        routes = new Routes().autoDiscoverViews(MainLayout.class.getPackage().getName());
     }
 
     @Autowired
