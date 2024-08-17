@@ -23,7 +23,7 @@
     <distributionManagement>
         <snapshotRepository>
             <id>opensbpm-snapshots</id>
-            <url>http://team.sedelmaier.at/archiva/repository/opensbpm-snapshots/</url>
+            <url>https://team.sedelmaier.at/archiva/repository/opensbpm-snapshots/</url>
         </snapshotRepository>
     </distributionManagement>
 
