@@ -1,3 +1,4 @@
+
 ### Maven ###
 target/
 pom.xml.tag
@@ -11,11 +12,13 @@ buildNumber.properties
 # https://github.com/takari/maven-wrapper#usage-without-binary-jar
 .mvn/wrapper/maven-wrapper.jar
 
+
 ### Vaadin ###
 .vaadin-designer
 .designer
 webpack.generated.js
 node_modules/
+
 
 ### NetBeans ###
 **/nbproject/private/
@@ -26,6 +29,11 @@ nbbuild/
 dist/
 nbdist/
 .nb-gradle/
+
+
+### IntelliJ ###
+.idea/
+
 
 ### miscellaneous ###
 *.bak
