@@ -28,7 +28,7 @@ node('jdk17'){
                         sh "mvn clean test sonar"
                     }
                 }
-                junit '**/target/test-results/*/TEST-*.xml'
+                junit '**/target/*-reports/*/TEST-*.xml'
                 recordCoverage(name: 'Coverage Service',
                     tools: [[pattern: '**/build/reports/jacoco/**/*.xml']]
                 )
