@@ -13,7 +13,7 @@ spring:
   security:
     oauth2:
       authorizationserver:
-        issuer: http://auth-server:9000
+        issuer: http://localhost:9000
         client:
           articles-client:
             registration:
@@ -26,8 +26,8 @@ spring:
                 - authorization_code
                 - refresh_token
               redirect-uris:
-                - http://127.0.0.1:8080/login/oauth2/code/articles-client-oidc
-                - http://127.0.0.1:8080/authorized
+                - http://localhost:8080/login/oauth2/code/articles-client-oidc
+                - http://localhost:8080/authorized
               scopes:
                 - openid
                 - articles.read
