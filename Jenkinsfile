@@ -18,17 +18,21 @@ node('jdk17'){
         }
 
 //        parallel buildService: {
-            stage('Build Service'){
-                dir('service'){
+            stage('Build Services'){
+                withMaven(
+                    jdk: 'jdk17',
+                    maven: 'default',
+                    mavenSettingsConfig: '05894f91-85e1-4e6d-8eb5-a101d90c62e3'
+                ) {
                     withSonarQubeEnv('Sonarqube') {
-                        sh "./gradlew clean test sonar"
+                        sh "mvn clean test sonar"
                     }
-                    junit '**/build/test-results/*/TEST-*.xml'
-                    recordCoverage(name: 'Coverage Service',
-                        tools: [[pattern: '**/build/reports/jacoco/**/*.xml']]
-                    )
-                    waitForSonarqube()
                 }
+                junit '**/target/test-results/*/TEST-*.xml'
+                recordCoverage(name: 'Coverage Service',
+                    tools: [[pattern: '**/build/reports/jacoco/**/*.xml']]
+                )
+                waitForSonarqube()
             }
 //            }, buildFrontend: {
                 stage('Build Frontend'){
