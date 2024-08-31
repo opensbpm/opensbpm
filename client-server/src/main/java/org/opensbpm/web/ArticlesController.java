@@ -11,11 +11,11 @@ import static org.springframework.security.oauth2.client.web.reactive.function.c
 @RestController
 public class ArticlesController {
 
+    private WebClient webClient;
+
     public ArticlesController(WebClient webClient) {
         this.webClient = webClient;
     }
-
-    private WebClient webClient;
 
     @GetMapping(value = "/articles")
     public String[] getArticles(
