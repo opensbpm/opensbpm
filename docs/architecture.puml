@@ -1,0 +1,50 @@
+@startuml
+!theme plain
+:User:
+
+component Browser {
+    component DynUI {
+    }
+}
+
+node WaaS {
+
+    component Gateway {
+    
+    }
+
+    component Auth {
+    
+    }
+
+    component "Workflow Engine" {
+    
+    }
+
+    database "Document DB" {
+        folder "Model Storage"    
+        folder "Process Storage"    
+    }
+
+}
+
+cloud {
+  [LDAP]
+}
+
+cloud {
+  [Subsystem n]
+}
+
+User -r-> DynUI
+DynUI -r-> Gateway
+Gateway -u-> Auth
+Auth -r-> LDAP
+Gateway -r-> "Workflow Engine"
+"Workflow Engine" -u-> Auth
+"Workflow Engine" --> "Model Storage"
+"Workflow Engine" --> "Process Storage"
+
+"Workflow Engine" -> "Subsystem n"
+
+@enduml
