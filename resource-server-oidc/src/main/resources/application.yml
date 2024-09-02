@@ -1,0 +1,21 @@
+server:
+  port: 8090
+
+spring:
+  application.name: resource-server
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:9000/realms/quickstart
+          #jwk-set-uri: http://localhost:9000/realms/quickstart/protocol/openid-connect/certs
+
+
+debug: true
+
+#logging:
+#  level:
+#    root: INFO
+#    org.springframework.web: DEBUG
+#    org.springframework.security: INFO
+#    org.springframework.security.oauth2: INFO
