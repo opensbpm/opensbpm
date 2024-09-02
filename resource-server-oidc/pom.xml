@@ -8,7 +8,7 @@
         <version>1.0-SNAPSHOT</version>
     </parent>
 
-    <artifactId>resource-server</artifactId>
+    <artifactId>resource-server-oidc</artifactId>
 
     <properties>
         <!-- dependency versions -->
@@ -30,19 +30,6 @@
         </dependency>
 
         <!--
-        <dependency>
-            <groupId>org.keycloak</groupId>
-            <artifactId>keycloak-policy-enforcer</artifactId>
-            <version>${keycloak.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.keycloak</groupId>
-            <artifactId>keycloak-core</artifactId>
-            <version>${keycloak.version}</version>
-        </dependency>
-        -->
-
-        <!--
             =======================
               Test Dependencies
             =======================
@@ -57,21 +44,6 @@
             <artifactId>spring-security-test</artifactId>
             <scope>test</scope>
         </dependency>
-
-        <!--
-        <dependency>
-            <groupId>org.keycloak</groupId>
-            <artifactId>keycloak-admin-client</artifactId>
-            <version>${keycloak.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.keycloak</groupId>
-            <artifactId>keycloak-test-helper</artifactId>
-            <version>${keycloak.version}</version>
-            <scope>test</scope>
-        </dependency>
-        -->
 
     </dependencies>
 

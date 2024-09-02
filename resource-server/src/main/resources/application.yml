@@ -1,13 +1,6 @@
 server:
   port: 8090
 
-logging:
-  level:
-    root: INFO
-    org.springframework.web: INFO
-    org.springframework.security: INFO
-    org.springframework.security.oauth2: INFO
-
 spring:
   application.name: resource-server
   security:
@@ -15,3 +8,12 @@ spring:
       resourceserver:
         jwt:
           jwk-set-uri: http://localhost:9000/realms/quickstart/protocol/openid-connect/certs
+
+debug: true
+
+logging:
+  level:
+    root: INFO
+    org.springframework.web: INFO
+    org.springframework.security: INFO
+    org.springframework.security.oauth2: INFO
