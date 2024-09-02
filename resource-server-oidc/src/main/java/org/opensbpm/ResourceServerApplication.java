@@ -23,24 +23,4 @@ public class ResourceServerApplication {
         SpringApplication.run(ResourceServerApplication.class, args);
     }
 
-    @Component
-    public static class AppStartupRunner implements ApplicationRunner {
-
-        @Override
-        public void run(ApplicationArguments args) throws Exception {
-            if(true)
-                return;
-            try {
-                //URI uri = URI.create("http://localhost:9000/realms/quickstart/protocol/openid-connect/certs");
-                //URI uri = URI.create("http://www.orf.at");
-                //URI uri = URI.create("http://localhost:9000/realms/quickstart");
-                URI uri = URI.create("http://localhost:9000/admin");
-                URLConnection urlConnection = uri.toURL().openConnection();
-                urlConnection.connect();
-                ;
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        }
-    }
 }
