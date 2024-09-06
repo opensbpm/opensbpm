@@ -32,7 +32,7 @@ node('jdk17'){
                 recordCoverage(name: 'Coverage Service',
                     tools: [[pattern: '**/build/reports/jacoco/**/*.xml']]
                 )
-                waitForSonarqube(abortPipeline: false)
+                waitForQualityGate (abortPipeline: false)
             }
 //            }, buildFrontend: {
                 stage('Build Frontend'){
@@ -51,7 +51,7 @@ node('jdk17'){
                             tools: [[parser: 'COBERTURA', pattern: '**/coverage/cobertura-coverage.xml']]
                         )
 
-                        waitForSonarqube()
+                        waitForQualityGate (abortPipeline: false)
                     }
                 }
 //            }
