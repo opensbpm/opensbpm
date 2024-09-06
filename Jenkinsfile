@@ -32,7 +32,7 @@ node('jdk17'){
                 recordCoverage(name: 'Coverage Service',
                     tools: [[pattern: '**/build/reports/jacoco/**/*.xml']]
                 )
-                waitForSonarqube()
+                waitForSonarqube(abortPipeline: false)
             }
 //            }, buildFrontend: {
                 stage('Build Frontend'){
