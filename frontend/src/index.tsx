@@ -6,9 +6,9 @@ import reportWebVitals from './reportWebVitals';
 import { AuthProvider } from "react-oidc-context";
 
 const oidcConfig = {
-    authority: 'http://localhost:9000/realms/quickstart',
+    authority: '/auth/realms/quickstart',
     client_id: 'opensbpm-ui',
-    redirect_uri: 'http://localhost:3000',
+    redirect_uri: 'http://opensbpm.local',
 };
 
 const root = ReactDOM.createRoot(
