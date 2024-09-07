@@ -57,7 +57,7 @@ node('jdk17'){
                     node('docker'){
                         checkout scm
                         dir('frontend'){
-                            docker.withRegistry('https://hub.docker.com/', 'sedstef@hub.docker.com') {
+                            docker.withRegistry('', 'sedstef@hub.docker.com') {
                                 def frontenImage = docker.build("sedstef/opensbpm-frontend:${env.BUILD_ID}")
                                 frontenImage.push("latest")
                             }
