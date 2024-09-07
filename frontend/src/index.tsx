@@ -8,7 +8,7 @@ import { AuthProvider } from "react-oidc-context";
 const oidcConfig = {
     authority: '/auth/realms/quickstart',
     client_id: 'opensbpm-ui',
-    redirect_uri: 'http://opensbpm.local',
+    redirect_uri: 'https://opensbpm.local',
 };
 
 const root = ReactDOM.createRoot(
