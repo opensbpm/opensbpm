@@ -1,3 +1,4 @@
 resources:
   - ingress.yaml
   - keycloak.yaml
+  - frontend.yaml
