@@ -53,8 +53,9 @@ node('jdk17'){
 
                         waitForQualityGate (abortPipeline: false)
 
-                        def frontenImage = docker.build "sedstef/opensbpm-frontend:${env.BUILD_ID}"
-                        frontenImage.push()
+                        def frontenImage = docker.build("sedstef/opensbpm-frontend:${env.BUILD_ID}")
+                        frontenImage.push("sedstef/opensbpm-frontend:${env.BUILD_ID}")
+                        frontenImage.push("sedstef/opensbpm-frontend:latest")
                     }
                 }
 //            }
