@@ -27,7 +27,7 @@ node('jdk17'){
                     withSonarQubeEnv('Sonarqube') {
                         sh "mvn clean test verify sonar:sonar package"
                     }
-                    stash(name: 'appjar', includes: 'resource-server-oidc/target/*.jar', excludes: '**/*-source.jar')
+                    stash(name: 'appjar', includes: 'resource-server-oidc/target/*-SNAPSHOT.jar')
                 }
                 junit '**/target/*-reports/TEST-*.xml'
                 recordCoverage(name: 'Coverage Service',
