@@ -33,38 +33,49 @@ node('jdk17'){
                     tools: [[pattern: '**/build/reports/jacoco/**/*.xml']]
                 )
                 waitForQualityGate (abortPipeline: false)
-            }
-//            }, buildFrontend: {
-                stage('Build Frontend'){
-                    dir('frontend'){
-                        sh "npm install"
-                        sh "CI=true npm test -- --reporters=default --reporters=jest-junit --coverage"
 
-                        withSonarQubeEnv(credentialsId: '90714a4b-9950-4c03-a361-89096c37b554') {
-                            env.SONAR_HOME = tool(type: 'hudson.plugins.sonar.SonarRunnerInstallation',name: 'Sonar 4.x')
-                            env.PATH="${env.SONAR_HOME}/bin:${env.PATH}"
-                            sh 'sonar-scanner'
-                        }
-
-                        junit '**/test-results/*.xml'
-                        recordCoverage(name: 'Coverage Frontend',
-                            tools: [[parser: 'COBERTURA', pattern: '**/coverage/cobertura-coverage.xml']]
-                        )
-
-                        waitForQualityGate (abortPipeline: false)
-
-                    }
-                    node('docker'){
-                        checkout scm
-                        dir('frontend'){
-                            docker.withRegistry('', 'sedstef@hub.docker.com') {
-                                def frontenImage = docker.build("sedstef/opensbpm-frontend:${env.BUILD_ID}")
-                                frontenImage.push("${env.BUILD_ID}")
-                                frontenImage.push("latest")
-                            }
+                node('docker'){
+                    checkout scm
+                    dir('resource-server-oidc'){
+                        docker.withRegistry('', 'sedstef@hub.docker.com') {
+                            def image = docker.build("sedstef/opensbpm-resources:${env.BUILD_ID}")
+                            image.push("${env.BUILD_ID}")
+                            image.push("latest")
                         }
                     }
                 }
+            }
+//            }, buildFrontend: {
+            stage('Build Frontend'){
+                dir('frontend'){
+                    sh "npm install"
+                    sh "CI=true npm test -- --reporters=default --reporters=jest-junit --coverage"
+
+                    withSonarQubeEnv(credentialsId: '90714a4b-9950-4c03-a361-89096c37b554') {
+                        env.SONAR_HOME = tool(type: 'hudson.plugins.sonar.SonarRunnerInstallation',name: 'Sonar 4.x')
+                        env.PATH="${env.SONAR_HOME}/bin:${env.PATH}"
+                        sh 'sonar-scanner'
+                    }
+
+                    junit '**/test-results/*.xml'
+                    recordCoverage(name: 'Coverage Frontend',
+                        tools: [[parser: 'COBERTURA', pattern: '**/coverage/cobertura-coverage.xml']]
+                    )
+
+                    waitForQualityGate (abortPipeline: false)
+
+                }
+                node('docker'){
+                    checkout scm
+                    dir('frontend'){
+                        docker.withRegistry('', 'sedstef@hub.docker.com') {
+                            def frontenImage = docker.build("sedstef/opensbpm-frontend:${env.BUILD_ID}")
+                            frontenImage.push("${env.BUILD_ID}")
+                            frontenImage.push("latest")
+                        }
+                    }
+                }
+            }
 //            }
 //            failFast: false
 
