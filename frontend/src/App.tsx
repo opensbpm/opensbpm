@@ -5,7 +5,7 @@ function App() {
     const auth = useAuth();
 
     function fetchResource() {
-        fetch("http://opensbpm.local/api/",{
+        fetch("https://opensbpm.local/api/",{
             headers:{
                 authorization: `Bearer ${auth.user?.access_token}`
             },
