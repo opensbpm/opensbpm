@@ -27,6 +27,7 @@ node('jdk17'){
                     withSonarQubeEnv('Sonarqube') {
                         sh "mvn clean test sonar:sonar"
                     }
+                    stash(name: 'appjar', includes: 'target/*.jar')
                 }
                 junit '**/target/*-reports/TEST-*.xml'
                 recordCoverage(name: 'Coverage Service',
@@ -36,6 +37,7 @@ node('jdk17'){
 
                 node('docker'){
                     checkout scm
+                    unstash('appjar')
                     dir('resource-server-oidc'){
                         docker.withRegistry('', 'sedstef@hub.docker.com') {
                             def image = docker.build("sedstef/opensbpm-resources:${env.BUILD_ID}")
