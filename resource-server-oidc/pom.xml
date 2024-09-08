@@ -58,6 +58,17 @@
                         <java.net.preferIPv4Stack>true</java.net.preferIPv4Stack>
                     </systemPropertyVariables>
                 </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>repackage</goal>
+                        </goals>
+                        <configuration>
+                            <finalName>resource-server-exec</finalName>
+                        </configuration>
+
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>
