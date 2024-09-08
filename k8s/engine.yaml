@@ -1,0 +1,39 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: engine
+  labels:
+    app: engine
+spec:
+  type: LoadBalancer
+  selector:
+    app: engine
+  ports:
+    - name: engine-http
+      port: 8090
+      targetPort: engine-http
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: engine
+  labels:
+    app: engine
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: engine
+  template:
+    metadata:
+      labels:
+        app: engine
+    spec:
+      containers:
+        - name: engine
+          image: sedstef/opensbpm-resources:latest
+          imagePullPolicy: Always
+          ports:
+            - name: engine-http
+              containerPort: 8090
+      restartPolicy: Always
