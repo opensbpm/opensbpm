@@ -7,7 +7,7 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          issuer-uri: http://opensbpm.local/auth/realms/quickstart
+          issuer-uri: https://opensbpm.local/auth/realms/quickstart
           #jwk-set-uri: http://localhost:9000/realms/quickstart/protocol/openid-connect/certs
 
 
