@@ -21,6 +21,13 @@ spec:
                 name: keycloak
                 port:
                   name: keycloak-http
+          - path: /api
+            pathType: Prefix
+            backend:
+              service:
+                name: engine
+                port:
+                  name: engine-http
           - path: /
             pathType: Prefix
             backend:
