@@ -2,7 +2,8 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: opensbpm
-#  annotations:
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
 #    cert-manager.io/cluster-issuer: lets-encrypt
 spec:
   ingressClassName: public
@@ -21,7 +22,7 @@ spec:
                 name: keycloak
                 port:
                   name: keycloak-http
-          - path: /api
+          - path: /api(/|$)(.*)
             pathType: Prefix
             backend:
               service:
