@@ -37,3 +37,4 @@ nbdist/
 
 ### miscellaneous ###
 *.bak
+/node/
