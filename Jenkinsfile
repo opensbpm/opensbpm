@@ -64,6 +64,32 @@ node('jdk11:nodejs12') {
             }
         }
 
+        stage('OCI Image'){
+            withMaven(
+                jdk: 'jdk11',
+                maven: 'default',
+                mavenSettingsConfig: '05894f91-85e1-4e6d-8eb5-a101d90c62e3',
+                options: [
+                    openTasksPublisher(highPriorityTaskIdentifiers: 'FIXME', lowPriorityTaskIdentifiers: 'TODO', normalPriorityTaskIdentifiers: 'PENDING', pattern: '**/*.*',excludePattern: '**/target/**')
+                ]
+            ) {
+                sh "mvn -DskipTests package"
+            }
+            stash(name: 'appjar', includes: 'target/vaadinui-exec.jar')
+
+            node('docker'){
+                checkout scm
+                unstash('appjar')
+                dir('resource-server-oidc'){
+                    docker.withRegistry('', 'sedstef@hub.docker.com') {
+                        def image = docker.build("sedstef/opensbpm-vaadinui:${env.BUILD_ID}")
+                        image.push("${env.BUILD_ID}")
+                        image.push("latest")
+                    }
+                }
+            }
+        }
+
         stage('Deploy'){
             retry(3) {
                 mvn "-DskipTests deploy"
