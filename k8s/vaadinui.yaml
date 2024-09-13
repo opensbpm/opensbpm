@@ -1,0 +1,39 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: vaadinui
+  labels:
+    app: vaadinui
+spec:
+  type: LoadBalancer
+  selector:
+    app: vaadinui
+  ports:
+    - name: vaadinui-http
+      port: 8080
+      targetPort: vaadinui-http
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vaadinui
+  labels:
+    app: vaadinui
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: vaadinui
+  template:
+    metadata:
+      labels:
+        app: vaadinui
+    spec:
+      containers:
+        - name: vaadinui
+          image: sedstef/opensbpm-vaadinui:latest
+          imagePullPolicy: Always
+          ports:
+            - name: vaadinui-http
+              containerPort: 8080
+      restartPolicy: Always

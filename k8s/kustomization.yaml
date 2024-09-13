@@ -3,3 +3,4 @@ resources:
   - keycloak.yaml
   - engine.yaml
   - frontend.yaml
+  - vaadinui.yaml
