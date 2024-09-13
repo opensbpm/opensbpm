@@ -441,8 +441,17 @@
                 <configuration>
                     <wait>2000</wait>
                     <maxAttempts>240</maxAttempts>
-                    <finalName>vaadinui-exec</finalName>
                 </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>repackage</goal>
+                        </goals>
+                        <configuration>
+                            <finalName>vaadinui-exec</finalName>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
         
         </plugins>
