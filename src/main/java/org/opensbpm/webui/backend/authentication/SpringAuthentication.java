@@ -21,6 +21,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.oauth2.core.oidc.user.DefaultOidcUser;
 
 public final class SpringAuthentication {
 
@@ -32,6 +33,8 @@ public final class SpringAuthentication {
                 Object principal = authentication.getPrincipal();
                 if (principal instanceof UserDetails) {
                     username = ((UserDetails) principal).getUsername();
+                } else if (principal instanceof DefaultOidcUser) {
+                    username = ((DefaultOidcUser) principal).getPreferredUsername();
                 } else {
                     username = principal.toString();
                 }

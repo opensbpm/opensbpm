@@ -37,14 +37,17 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
                 // Allow all Vaadin internal requests.
                 .requestMatchers(SecurityUtils::isFrameworkInternalRequest).permitAll()
                 // Allow all requests by logged in users.
-                .anyRequest().authenticated()
-                // Configure the login page.
-                .and().formLogin()
-                .loginPage(LOGIN_URL).permitAll()
-                .loginProcessingUrl(LOGIN_PROCESSING_URL)
-                .failureUrl(LOGIN_FAILURE_URL)
-                // Configure logout
-                .and().logout().logoutSuccessUrl(LOGOUT_SUCCESS_URL);
+                .anyRequest().authenticated();
+
+        // Configure the login page.
+//        http.formLogin()
+//                .loginPage(LOGIN_URL).permitAll()
+//                .loginProcessingUrl(LOGIN_PROCESSING_URL)
+//                .failureUrl(LOGIN_FAILURE_URL)
+//                // Configure logout
+//                .and().logout().logoutSuccessUrl(LOGOUT_SUCCESS_URL);
+
+        http.oauth2Login();
     }
 
     @Bean
