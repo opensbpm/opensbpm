@@ -82,12 +82,10 @@ node('jdk11:nodejs12') {
             node('docker'){
                 checkout scm
                 unstash('appjar')
-                dir('resource-server-oidc'){
-                    docker.withRegistry('', 'sedstef@hub.docker.com') {
-                        def image = docker.build("sedstef/opensbpm-vaadinui:${env.BUILD_ID}")
-                        image.push("${env.BUILD_ID}")
-                        image.push("latest")
-                    }
+                docker.withRegistry('', 'sedstef@hub.docker.com') {
+                    def image = docker.build("sedstef/opensbpm-vaadinui:${env.BUILD_ID}")
+                    image.push("${env.BUILD_ID}")
+                    image.push("latest")
                 }
             }
         }
