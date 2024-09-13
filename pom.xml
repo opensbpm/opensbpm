@@ -170,18 +170,32 @@
             <groupId>org.springframework.security</groupId>
             <artifactId>spring-security-config</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-oauth2-client</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-oauth2-jose</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.nimbusds</groupId>
+            <artifactId>oauth2-oidc-sdk</artifactId>
+            <version>9.43.4</version>
+        </dependency>
 
+        <!--
+        ========================
+          Runtime Dependencies 
+        ========================
+        -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-devtools</artifactId>
             <optional>true</optional>
+            <scope>runtime</scope>
         </dependency>
-    
-        <!-- 
-        ========================
-          Runtime Dependencies 
-        ========================
-        --> 
+
         <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>

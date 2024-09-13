@@ -26,7 +26,7 @@ import org.springframework.security.authentication.event.AuthenticationSuccessEv
 import org.springframework.stereotype.Component;
 
 @Component
-public class UserTokenRegisterer {
+public class    UserTokenRegisterer {
 
     private static final Logger LOGGER = Logger.getLogger(UserTokenRegisterer.class.getName());
 
