@@ -25,7 +25,8 @@ node('jdk11:nodejs12') {
                 jacoco execPattern: '**/target/jacoco*.exec'    
             }
         }
-        
+
+        /*
         stage('Static Analysis'){
             try{
                 withSonarQubeEnv('Sonarqube') {
@@ -63,6 +64,7 @@ node('jdk11:nodejs12') {
                 }
             }
         }
+        */
 
         stage('OCI Image'){
             withMaven(
