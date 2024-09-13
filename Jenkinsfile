@@ -90,11 +90,11 @@ node('jdk11:nodejs12') {
             }
         }
 
-        stage('Deploy'){
-            retry(3) {
-                mvn "-DskipTests deploy"
-            }
-        }
+//         stage('Deploy'){
+//             retry(3) {
+//                 mvn "-DskipTests deploy"
+//             }
+//         }
         
         currentBuild.result = 'SUCCESS'
     }catch(ex){
