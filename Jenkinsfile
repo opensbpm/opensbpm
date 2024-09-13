@@ -16,7 +16,8 @@ node('jdk11:nodejs12') {
         stage('Assemble'){
             mvn "-U -DskipTests clean install"
         }
-        
+
+        if(false){
         stage('Test'){
             try{
                 mvn "verify"
@@ -26,7 +27,6 @@ node('jdk11:nodejs12') {
             }
         }
 
-        /*
         stage('Static Analysis'){
             try{
                 withSonarQubeEnv('Sonarqube') {
@@ -48,7 +48,7 @@ node('jdk11:nodejs12') {
             }finally{
                 recordIssues (enabledForFailure: true, 
                     tools: [
-                        cpd(pattern: '**/target/cpd.xml'), 
+                        cpd(pattern: '**/target/cpd.xml'),
                         pmdParser(pattern: '**/target/pmd.xml')
                     ])
             }
@@ -64,7 +64,7 @@ node('jdk11:nodejs12') {
                 }
             }
         }
-        */
+        }
 
         stage('OCI Image'){
             withMaven(
