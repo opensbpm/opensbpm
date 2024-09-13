@@ -29,10 +29,17 @@ spec:
                 name: engine
                 port:
                   name: engine-http
+#          - path: /node
+#            pathType: Prefix
+#            backend:
+#              service:
+#                name: frontend
+#                port:
+#                  name: frontend-http
           - path: /
             pathType: Prefix
             backend:
               service:
-                name: frontend
+                name: vaadinui
                 port:
-                  name: frontend-http
+                  name: vaadinui-http
