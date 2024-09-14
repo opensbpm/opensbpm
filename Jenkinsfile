@@ -75,7 +75,8 @@ node('jdk11:nodejs12') {
                     openTasksPublisher(highPriorityTaskIdentifiers: 'FIXME', lowPriorityTaskIdentifiers: 'TODO', normalPriorityTaskIdentifiers: 'PENDING', pattern: '**/*.*',excludePattern: '**/target/**')
                 ]
             ) {
-                sh "mvn -DskipTests -Pproduction package"
+                //sh "mvn -DskipTests -Pproduction package"
+                sh "mvn -DskipTests package"
             }
             stash(name: 'appjar', includes: 'target/vaadinui-exec.jar')
 

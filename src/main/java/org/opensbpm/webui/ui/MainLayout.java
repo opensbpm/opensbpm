@@ -1,6 +1,7 @@
 package org.opensbpm.webui.ui;
 
 import com.vaadin.flow.component.Component;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import com.vaadin.flow.component.Text;
@@ -18,6 +19,8 @@ import com.vaadin.flow.server.PWA;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
+
 import org.opensbpm.webui.ui.views.ProcessModelsView;
 import org.opensbpm.webui.ui.views.TasksView;
 import org.opensbpm.webui.ui.views.WorkflowsView;
@@ -44,8 +47,11 @@ public class MainLayout extends AppLayout {
         Anchor logout = new Anchor("/logout", "Log out");
 
         Text username = new Text("User:" + SecurityContextHolder.getContext().getAuthentication().getName());
+        Text authorities = new Text("Authorities:" + SecurityContextHolder.getContext().getAuthentication().getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .collect(Collectors.joining(",")));
 
-        HorizontalLayout header = new HorizontalLayout(new DrawerToggle(), logo, username, logout);
+        HorizontalLayout header = new HorizontalLayout(new DrawerToggle(), logo, username, authorities, logout);
         header.addClassName("header");
         header.setWidth("100%");
         header.expand(logo);
