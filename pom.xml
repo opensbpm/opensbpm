@@ -36,7 +36,7 @@
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
         <!-- dependency versions -->
-        <spring.boot.version>2.3.12.RELEASE</spring.boot.version>
+        <spring.boot.version>2.7.18</spring.boot.version>
         <opensbpm.version>0.1-SNAPSHOT</opensbpm.version>
         <jsbpm.version>0.1-SNAPSHOT</jsbpm.version>
 
