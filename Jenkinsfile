@@ -7,7 +7,7 @@ properties([
         pipelineTriggers([snapshotDependencies()])
     ])
 
-node('jdk11:nodejs12') {
+node('jdk17') {
     try{
         stage('Prepare'){        
             checkout scm
@@ -32,7 +32,7 @@ node('jdk11:nodejs12') {
                 withSonarQubeEnv('Sonarqube') {
                     def model = readMavenPom(file: 'pom.xml')
                     withMaven(
-                        jdk: 'jdk11',
+                        jdk: 'jdk17',
                         maven: 'default', 
                         mavenSettingsConfig: '05894f91-85e1-4e6d-8eb5-a101d90c62e3',
                         options: [
@@ -53,7 +53,7 @@ node('jdk11:nodejs12') {
                     ])
             }
         }
-        
+
         stage("Quality Gate"){
             timeout(time: 15, unit: 'MINUTES') {
                 def qg = waitForQualityGate()
@@ -68,7 +68,7 @@ node('jdk11:nodejs12') {
 
         stage('OCI Image'){
             withMaven(
-                jdk: 'jdk11',
+                jdk: 'jdk17',
                 maven: 'default',
                 mavenSettingsConfig: '05894f91-85e1-4e6d-8eb5-a101d90c62e3',
                 options: [
@@ -90,11 +90,11 @@ node('jdk11:nodejs12') {
             }
         }
 
-//         stage('Deploy'){
-//             retry(3) {
-//                 mvn "-DskipTests deploy"
-//             }
-//         }
+        stage('Deploy'){
+            retry(3) {
+                mvn "-DskipTests deploy"
+            }
+        }
         
         currentBuild.result = 'SUCCESS'
     }catch(ex){
