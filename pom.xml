@@ -39,6 +39,9 @@
         <!-- dependency versions -->
         <spring.boot.version>3.2.9</spring.boot.version>
         <opensbpm.version>1.1-SNAPSHOT</opensbpm.version>
+        <jasperreports.version>6.17.0</jasperreports.version>
+
+
         <jsbpm.version>0.1-SNAPSHOT</jsbpm.version>
 
         <vaadin.version>24.4.11</vaadin.version>
@@ -106,6 +109,11 @@
             <groupId>org.opensbpm.plugins</groupId>
             <artifactId>jasperreports-plugin</artifactId>
             <version>${opensbpm.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>net.sf.jasperreports</groupId>
+            <artifactId>jasperreports</artifactId>
+            <version>${jasperreports.version}</version>
         </dependency>
         <!--dependency>
             <groupId>at.softwaremacherei.jsbpm</groupId>
