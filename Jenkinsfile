@@ -79,22 +79,22 @@ node('jdk17') {
             }
             stash(name: 'appjar', includes: 'target/vaadinui-exec.jar')
 
-//             node('docker'){
-//                 checkout scm
-//                 unstash('appjar')
-//                 docker.withRegistry('', 'sedstef@hub.docker.com') {
-//                     def image = docker.build("sedstef/opensbpm-vaadinui:${env.BUILD_ID}")
-//                     image.push("${env.BUILD_ID}")
-//                     image.push("latest")
-//                 }
-//             }
-        }
-
-        stage('Deploy'){
-            retry(3) {
-                mvn "-DskipTests deploy"
+            node('docker'){
+                checkout scm
+                unstash('appjar')
+                docker.withRegistry('', 'sedstef@hub.docker.com') {
+                    def image = docker.build("sedstef/opensbpm-vaadinui:${env.BUILD_ID}")
+                    image.push("${env.BUILD_ID}")
+                    image.push("latest")
+                }
             }
         }
+
+//         stage('Deploy'){
+//             retry(3) {
+//                 mvn "-DskipTests deploy"
+//             }
+//         }
         
         currentBuild.result = 'SUCCESS'
     }catch(ex){
