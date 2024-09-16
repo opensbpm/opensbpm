@@ -2,6 +2,9 @@ package org.opensbpm.webui.ui.views;
 
 import java.util.Optional;
 
+import com.vaadin.flow.data.provider.ListDataProvider;
+import jakarta.annotation.security.PermitAll;
+import jakarta.annotation.security.RolesAllowed;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
@@ -35,6 +38,7 @@ import java.util.logging.Logger;
 @RouteAlias(value = "", layout = MainLayout.class)
 @Route(value = "workflows", layout = MainLayout.class)
 @PageTitle("Workflows | OpenSBPM Vaadin Demo")
+@PermitAll
 public class WorkflowsView extends VerticalLayout {
 
     private final SbpmEngine sbpmEngine;
@@ -102,8 +106,12 @@ public class WorkflowsView extends VerticalLayout {
 
     private void updateList() {
         try {
-            grid.setItems(sbpmEngine.findStartableProcessModels().stream()
-                    .filter(processModel -> processModel.getName().contains(filterText.getValue())));
+            grid.setItems(new ListDataProvider<>(
+                    sbpmEngine.findStartableProcessModels().stream()
+                    .filter(processModel -> processModel.getName().contains(filterText.getValue()))
+                            .toList()
+                    )
+            );
         } catch (UserNotFoundException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();

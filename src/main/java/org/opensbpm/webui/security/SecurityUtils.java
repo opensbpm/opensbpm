@@ -2,7 +2,7 @@ package org.opensbpm.webui.security;
 
 import java.util.stream.Stream;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 import com.vaadin.flow.server.HandlerHelper.RequestType;
 import com.vaadin.flow.shared.ApplicationConstants;

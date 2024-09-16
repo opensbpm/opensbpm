@@ -25,13 +25,6 @@ import org.opensbpm.webui.ui.views.ProcessModelsView;
 import org.opensbpm.webui.ui.views.TasksView;
 import org.opensbpm.webui.ui.views.WorkflowsView;
 
-@PWA(name = "OpenSBPM Vaadin Demo",
-        shortName = "OpenSBPM",
-        offlineResources = {
-            "./styles/offline.css",
-            "./images/offline.png"
-        },
-        enableInstallPrompt = false)
 @CssImport("./styles/shared-styles.css")
 public class MainLayout extends AppLayout {
 

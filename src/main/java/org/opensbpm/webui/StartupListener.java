@@ -19,7 +19,7 @@ import org.springframework.stereotype.Component;
 import java.io.InputStream;
 import org.springframework.transaction.annotation.Transactional;
 import org.opensbpm.engine.xmlmodel.ProcessModel;
-import javax.xml.bind.JAXBException;
+import jakarta.xml.bind.JAXBException;
 import org.opensbpm.engine.examples.ExampleModels;
 import org.springframework.context.event.EventListener;
 

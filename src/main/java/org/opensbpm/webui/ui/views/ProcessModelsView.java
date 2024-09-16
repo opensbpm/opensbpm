@@ -17,6 +17,8 @@
  */
 package org.opensbpm.webui.ui.views;
 
+import jakarta.annotation.security.PermitAll;
+import jakarta.annotation.security.RolesAllowed;
 import org.opensbpm.engine.api.model.ProcessModelInfo;
 import org.opensbpm.engine.api.model.ProcessModelState;
 import org.opensbpm.engine.api.model.definition.ProcessDefinition;
@@ -34,8 +36,8 @@ import java.util.EnumSet;
 import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.annotation.PostConstruct;
-import javax.xml.bind.JAXBException;
+import jakarta.annotation.PostConstruct;
+import jakarta.xml.bind.JAXBException;
 import org.opensbpm.webui.ui.MainLayout;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
@@ -44,6 +46,7 @@ import org.springframework.stereotype.Component;
 @Scope("prototype")
 @Route(value = "models", layout = MainLayout.class)
 @PageTitle("Models | OpenSBPM Vaadin Demo")
+@PermitAll
 public class ProcessModelsView extends VerticalLayout {
 
     private final transient ModelService modelService;
