@@ -177,7 +177,7 @@ public class ComponentFactory {
                     .orElseThrow(() -> new IllegalStateException("no AutocompleteReference for attribute '" + attributeSchema.getName() + "'"));
             AutocompleteQuery autocompleteQuery = new AutocompleteQuery(sbpmEngine, referenceSchema);
             ComboBox<AttributeItem> comboBox = new ComboBox<>();
-            comboBox.setDataProvider(autocompleteQuery.createDataProvider(taskInfo));
+            comboBox.setItems(autocompleteQuery.createDataProvider(taskInfo));
             return binder.forField(comboBox)
                     .withConverter(new Converter<AttributeItem, HashMap<Long, Serializable>>() {
                         @Override

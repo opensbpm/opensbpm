@@ -1,5 +1,8 @@
 package org.opensbpm.webui;
 
+import com.vaadin.flow.component.page.AppShellConfigurator;
+import com.vaadin.flow.server.PWA;
+import com.vaadin.flow.theme.Theme;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.web.servlet.error.ErrorMvcAutoConfiguration;
@@ -20,7 +23,15 @@ import java.security.cert.X509Certificate;
 @Import({EngineConfig.class,
     JasperReportsConfig.class
 })
-public class Application extends SpringBootServletInitializer {
+@PWA(name = "OpenSBPM Vaadin Demo",
+        shortName = "OpenSBPM",
+        offlineResources = {
+                "./styles/offline.css",
+                "./images/offline.png"
+        }
+        /*enableInstallPrompt = false*/)
+@Theme("my-theme")
+public class Application implements AppShellConfigurator {
 
     public static void main(String[] args) {
         // Create a trust manager that does not validate certificate chains

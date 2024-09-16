@@ -1,5 +1,8 @@
 package org.opensbpm.webui.ui.views;
 
+import com.vaadin.flow.data.provider.ListDataProvider;
+import jakarta.annotation.security.PermitAll;
+import jakarta.annotation.security.RolesAllowed;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
@@ -20,13 +23,16 @@ import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.router.RouteParameters;
+
 import java.util.Objects;
-import javax.annotation.PostConstruct;
+
+import jakarta.annotation.PostConstruct;
 
 @Component
 @Scope("prototype")
 @Route(value = "tasks", layout = MainLayout.class)
 @PageTitle("Tasks | OpenSBPM Vaadin Demo")
+@PermitAll
 public class TasksView extends VerticalLayout {
 
     private final transient SbpmEngine sbpmEngine;
@@ -84,7 +90,9 @@ public class TasksView extends VerticalLayout {
 
     private void updateList() {
         try {
-            grid.setItems(sbpmEngine.getTasks(filterText.getValue()));
+            grid.setItems(new ListDataProvider<>(
+                    sbpmEngine.getTasks(filterText.getValue()).toList()
+            ));
         } catch (UserNotFoundException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();

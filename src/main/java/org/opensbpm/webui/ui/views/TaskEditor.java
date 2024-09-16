@@ -6,6 +6,8 @@ import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.shared.Registration;
 
+import jakarta.annotation.security.PermitAll;
+import jakarta.annotation.security.RolesAllowed;
 import org.opensbpm.engine.api.UserNotFoundException;
 import org.opensbpm.engine.api.instance.ObjectSchema;
 import org.opensbpm.engine.api.instance.Task;
@@ -26,12 +28,13 @@ import com.vaadin.flow.router.RouteParameters;
 import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 import org.springframework.context.annotation.Scope;
 
 @org.springframework.stereotype.Component
 @Scope("prototype")
 @Route(value = "tasks/:taskId/execute", layout = MainLayout.class)
+@PermitAll
 public class TaskEditor extends VerticalLayout implements BeforeEnterObserver {
 
     private final transient SbpmEngine sbpmEngine;
