@@ -1,6 +1,7 @@
 package org.opensbpm.webui.ui;
 
 import com.vaadin.flow.component.Component;
+import org.opensbpm.webui.ui.views.RolesView;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 
@@ -56,6 +57,7 @@ public class MainLayout extends AppLayout {
     private void createDrawer() {
         List<Component> components = new ArrayList<>(
                 Arrays.asList(
+                        new RouterLink("Roles", RolesView.class),
                         new RouterLink("Workflows", WorkflowsView.class),
                         new RouterLink("Tasks", TasksView.class)
                 )
