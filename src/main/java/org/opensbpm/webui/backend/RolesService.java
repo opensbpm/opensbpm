@@ -37,7 +37,7 @@ public class RolesService {
                 .baseUrl("https://opensbpm.local")
                 .build();
         String body = restClient.get()
-                .uri("/api/")
+                .uri("/api/default")
                 .header("Authorization", "Bearer "+ TokenHolder.getToken().getTokenValue())
                 .retrieve()
                 .body(String.class);
