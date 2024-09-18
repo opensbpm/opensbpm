@@ -15,11 +15,16 @@
  */
 package org.opensbpm;
 
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.stream.Collectors;
 
 @RestController
 public class ResourceServerController {
@@ -27,7 +32,12 @@ public class ResourceServerController {
 	@CrossOrigin(origins = "http://localhost:3000")
 	@GetMapping("/")
 	public String index(@AuthenticationPrincipal Jwt jwt) {
-		return String.format("Hello, %s!", jwt.getClaimAsString("preferred_username"));
+		String authorities = SecurityContextHolder.getContext().getAuthentication().getAuthorities().stream()
+				.map(GrantedAuthority::getAuthority)
+				.collect(Collectors.joining(","));
+
+		SecurityContextHolder.getContext().getAuthentication().getAuthorities();
+		return jwt.getClaimAsString("preferred_username")+" "+ authorities;
 	}
 
 	@CrossOrigin(origins = "http://localhost:3000")
