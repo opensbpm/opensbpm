@@ -30,14 +30,12 @@ import java.util.stream.Collectors;
 public class ResourceServerController {
 
 	@CrossOrigin(origins = "http://localhost:3000")
-	@GetMapping("/")
+	@GetMapping("/default")
 	public String index(@AuthenticationPrincipal Jwt jwt) {
 		String authorities = SecurityContextHolder.getContext().getAuthentication().getAuthorities().stream()
 				.map(GrantedAuthority::getAuthority)
 				.collect(Collectors.joining(","));
-
-		SecurityContextHolder.getContext().getAuthentication().getAuthorities();
-		return jwt.getClaimAsString("preferred_username")+" "+ authorities;
+		return jwt.getClaimAsString("preferred_username")+", Roles: "+ authorities;
 	}
 
 	@CrossOrigin(origins = "http://localhost:3000")
