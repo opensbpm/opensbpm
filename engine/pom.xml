@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.opensbpm</groupId>
+        <artifactId>opensbpm</artifactId>
+        <version>1.0-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>opensbpm-engine</artifactId>
+    <packaging>pom</packaging>
+
+    <modules>
+        <module>api</module>
+        <module>service</module>
+
+        <module>client</module>
+        <module>e2e</module>
+    </modules>
+
+    <properties>
+        <!-- dependency versions -->
+        <opensbpm.version>1.1-SNAPSHOT</opensbpm.version>
+    </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.opensbpm.engine</groupId>
+                <artifactId>engine-bom</artifactId>
+                <version>${opensbpm.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+</project>
