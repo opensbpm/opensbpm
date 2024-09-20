@@ -28,6 +28,7 @@ node('jdk17'){
                         sh "mvn clean test verify sonar:sonar package"
                     }
                     stash(name: 'engine-jar', includes: 'engine/service/target/engine-service-exec.jar')
+                    stash(name: 'vaadinui-jar', includes: 'vaadinui/target/vaadinui-exec.jar')
                 }
                 junit '**/target/*-reports/TEST-*.xml'
                 recordCoverage(name: 'Coverage Service',
@@ -42,6 +43,15 @@ node('jdk17'){
                     dir('engine/service'){
                         docker.withRegistry('', 'sedstef@hub.docker.com') {
                             def image = docker.build("sedstef/opensbpm-engine:${env.BUILD_ID}")
+                            image.push("${env.BUILD_ID}")
+                            image.push("latest")
+                        }
+                    }
+
+                    unstash('vaadinui-jar')
+                    dir('vaadinui'){
+                        docker.withRegistry('', 'sedstef@hub.docker.com') {
+                            def image = docker.build("sedstef/opensbpm-vaadinui:${env.BUILD_ID}")
                             image.push("${env.BUILD_ID}")
                             image.push("latest")
                         }
