@@ -62,6 +62,7 @@
         <!-- dependency versions -->
         <opensbpm.version>1.1-SNAPSHOT</opensbpm.version>
         <spring.boot.version>3.3.3</spring.boot.version>
+        <apache.cxf.version>4.0.4</apache.cxf.version>
     </properties>
 
     <dependencyManagement>
@@ -83,6 +84,13 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-dependencies</artifactId>
                 <version>${spring.boot.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.cxf</groupId>
+                <artifactId>apache-cxf</artifactId>
+                <version>${apache.cxf.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
