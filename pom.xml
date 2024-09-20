@@ -55,9 +55,12 @@
             ${project.build.directory}/surefire-reports,
             ${project.build.directory}/failsafe-reports
         </sonar.junit.reportPaths>
-        <sonar.coverage.jacoco.xmlReportPaths>${project.build.directory}/site/jacoco/jacoco.xml,${project.build.directory}/site/jacoco-it/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
+        <sonar.coverage.jacoco.xmlReportPaths>
+            ${project.build.directory}/site/jacoco/jacoco.xml,${project.build.directory}/site/jacoco-it/jacoco.xml
+        </sonar.coverage.jacoco.xmlReportPaths>
 
         <!-- dependency versions -->
+        <opensbpm.version>1.1-SNAPSHOT</opensbpm.version>
         <spring.boot.version>3.3.3</spring.boot.version>
     </properties>
 
@@ -69,6 +72,14 @@
             ===================
             -->
             <dependency>
+                <groupId>org.opensbpm.engine</groupId>
+                <artifactId>engine-bom</artifactId>
+                <version>${opensbpm.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
+            <dependency>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-dependencies</artifactId>
                 <version>${spring.boot.version}</version>
@@ -77,6 +88,31 @@
             </dependency>
         </dependencies>
     </dependencyManagement>
+
+    <repositories>
+        <!-- The order of definitions matters. Explicitly defining central here to make sure it has the highest priority. -->
+
+        <!-- Main Maven repository -->
+        <repository>
+            <id>central</id>
+            <url>https://repo.maven.apache.org/maven2</url>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+
+        <repository>
+            <id>opensbpm-snapshots</id>
+            <name>OpenSBPM Snapshots</name>
+            <url>http://team.sedelmaier.at/archiva/repository/opensbpm-snapshots/</url>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+    </repositories>
 
     <build>
         <pluginManagement>
