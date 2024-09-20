@@ -34,7 +34,7 @@ node('jdk17'){
                 recordCoverage(name: 'Coverage Service',
                     tools: [[pattern: '**/build/reports/jacoco/**/*.xml']]
                 )
-                //waitForQualityGate (abortPipeline: false)
+                waitForQualityGate (abortPipeline: false)
 
                 node('docker'){
                     checkout scm
