@@ -1,44 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>org.opensbpm.webui</groupId>
-    <artifactId>webui</artifactId>
-    <version>1.1.0-SNAPSHOT</version>
+    <parent>
+        <groupId>org.opensbpm</groupId>
+        <artifactId>opensbpm</artifactId>
+        <version>1.0-SNAPSHOT</version>
+    </parent>
 
-    <name>OpenSBPM - WebUI</name>
+    <artifactId>opensbpm-vaadinui</artifactId>
+
+    <name>OpenSBPM - Vaadin UI</name>
     <description>Vaadin WebUI for OpenSBPM:engine</description>
-    <organization>
-        <name>OpenSBPM</name>
-        <url>http://opensbpm.org</url>
-    </organization>
-
-    <developers>
-        <developer>
-            <name>Stefan Sedelmaier</name>
-            <email>stefan@sedelmaier.at</email>                       
-        </developer>
-    </developers>
-
-    <distributionManagement>
-        <snapshotRepository>
-            <id>opensbpm-snapshots</id>
-            <url>https://team.sedelmaier.at/archiva/repository/opensbpm-snapshots/</url>
-        </snapshotRepository>
-    </distributionManagement>
 
     <properties>
-        <!-- java.version>11</java.version -->
-        <java.version>17</java.version>
-        <maven.compiler.source>17</maven.compiler.source>
-        <maven.compiler.target>17</maven.compiler.target>
-
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-
         <!-- dependency versions -->
-        <spring.boot.version>3.2.9</spring.boot.version>
-        <opensbpm.version>1.1-SNAPSHOT</opensbpm.version>
+        <opensbpm.jasperreports.version>1.1-SNAPSHOT</opensbpm.jasperreports.version>
         <jasperreports.version>6.17.0</jasperreports.version>
 
 
@@ -58,22 +35,6 @@
             Import Dependencies 
             ===================
             -->
-            <dependency>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-dependencies</artifactId>
-                <version>${spring.boot.version}</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-
-            <dependency>
-                <groupId>org.opensbpm.engine</groupId>
-                <artifactId>engine-bom</artifactId>
-                <version>${opensbpm.version}</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-
             <dependency>
                 <groupId>com.vaadin</groupId>
                 <artifactId>vaadin-bom</artifactId>
@@ -108,7 +69,7 @@
         <dependency>
             <groupId>org.opensbpm.plugins</groupId>
             <artifactId>jasperreports-plugin</artifactId>
-            <version>${opensbpm.version}</version>
+            <version>${opensbpm.jasperreports.version}</version>
         </dependency>
         <dependency>
             <groupId>net.sf.jasperreports</groupId>
@@ -175,8 +136,8 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-devtools</artifactId>
-            <optional>true</optional>
             <scope>runtime</scope>
+            <optional>true</optional>
         </dependency>
 
         <dependency>
@@ -261,18 +222,6 @@
             <url>https://repo.maven.apache.org/maven2</url>
             <snapshots>
                 <enabled>false</enabled>
-            </snapshots>
-        </repository>
-
-        <repository>
-            <id>opensbpm-snapshots</id>
-            <name>OpenSBPM Snapshots</name>
-            <url>http://team.sedelmaier.at/archiva/repository/opensbpm-snapshots/</url>
-            <releases>
-                <enabled>false</enabled>
-            </releases>
-            <snapshots>
-                <enabled>true</enabled>
             </snapshots>
         </repository>
 

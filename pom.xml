@@ -24,6 +24,7 @@
 
     <modules>
         <module>engine</module>
+        <module>vaadinui</module>
         <module>authorization-server</module>
         <module>auth-keycloak-server</module>
         <module>resource-server</module>
@@ -35,6 +36,12 @@
         <developerConnection>scm:git:git@github.com:opensbpm/opensbpm.git</developerConnection>
         <url>https://github.com/opensbpm/opensbpm</url>
     </scm>
+    <distributionManagement>
+        <snapshotRepository>
+            <id>opensbpm-snapshots</id>
+            <url>https://team.sedelmaier.at/archiva/repository/opensbpm-snapshots/</url>
+        </snapshotRepository>
+    </distributionManagement>
 
     <properties>
         <java.version>17</java.version>
