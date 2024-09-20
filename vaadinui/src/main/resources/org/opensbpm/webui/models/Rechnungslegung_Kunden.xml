@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!--
+  Copyright (C) 2020 Stefan Sedelmaier
+  
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU Affero General Public License as published
+  by the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+  
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU Affero General Public License for more details.
+  
+  You should have received a copy of the GNU Affero General Public License
+  along with this program. If not, see <http://www.gnu.org/licenses/>.
+-->
+<pm:process
+    xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
+    xmlns:pm='http://api.opensbpm.org/processmodel'>
+
+    <name>Kunden erfassen Rechnung</name>
+    <version>1</version>
+    <description>Kunden für Rechnung erfassen</description>
+
+    <userSubject starter="true">
+        <name>Mitarbeiter</name>
+        <roles>Angestellte</roles>
+        <functionState eventType="START">>
+            <name>neuen Kunden erfassen</name>
+            <permission>
+                <object>Kunde</object>
+                <field permission="WRITE" mandatory="true">Nummer</field>
+                <field permission="WRITE" mandatory="true">Name</field>
+            </permission>
+            <toState>Speichern</toState>
+        </functionState>
+        
+        <sendState eventType="END">
+            <name>Speichern</name>
+            <receiver>Indexservice</receiver>
+            <message>Kunde</message>
+        </sendState>
+    </userSubject>
+    
+    <serviceSubject>
+        <name>Indexservice</name>        
+        <receiveState eventType="START">
+            <name>Kunden empfangen</name>
+            <message>
+                <object>Kunde</object>
+                <toState>Kunden indexieren</toState>
+            </message>
+        </receiveState>
+        
+        <functionState provider="ElasticSearch">
+            <name>Kunden indexieren</name>
+            
+            <permission>
+                <object>Kunde</object>
+                <field permission="READ">Nummer</field>
+                <field permission="READ">Name</field>
+            </permission>
+            
+            <toState>Ende</toState>            
+        </functionState>        
+        
+        <functionState eventType="END">
+            <name>Ende</name>
+        </functionState>        
+    </serviceSubject>
+    
+    <object>
+        <name>Kunde</name>
+        <field type="NUMBER" indexed="true">Nummer</field>
+        <field type="STRING" indexed="true">Name</field>
+    </object>
+</pm:process>

@@ -1,0 +1,230 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!--
+  Copyright (C) 2020 Stefan Sedelmaier
+  
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU Affero General Public License as published
+  by the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+  
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU Affero General Public License for more details.
+  
+  You should have received a copy of the GNU Affero General Public License
+  along with this program. If not, see <http://www.gnu.org/licenses/>.
+-->
+<pm:process
+    xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
+    xmlns:pm='http://api.opensbpm.org/processmodel'>
+    
+    <name>Rechnungslegung</name>
+    <version>1</version>
+
+    <userSubject starter="true">
+        <name>Mitarbeiter</name>
+        <roles>Angestellte</roles>
+        <functionState eventType="START">
+            <name>Rechnung erfassen</name>
+            <permission>
+                <object>Rechnung</object>
+                <toOne permission="WRITE">
+                    <name>Empfänger</name>
+                    <field permission="WRITE" mandatory="true">Kunde</field>
+                </toOne>
+                <field permission="WRITE" mandatory="true">Datum</field>
+                <field permission="WRITE" mandatory="true">Nummer</field>
+                <toMany permission="WRITE">
+                    <name>Position</name>
+                    <field permission="WRITE" mandatory="true">Text</field>
+                    <!--toOne>
+                        <name>Artikel</name>
+                        <field type="STRING">Nummer</field>
+                        <field type="STRING">Bezeichnung</field>
+                    </toOne-->
+                    <field permission="WRITE" mandatory="true">Wert</field>
+                </toMany>
+            </permission>
+            <permission>
+                <object>Kunde</object>
+                <field permission="READ">Nummer</field>
+                <field permission="READ">Name</field>
+            </permission>
+            <toState>Vorschau</toState>
+        </functionState>
+        <sendState>
+            <name>Vorschau</name>
+            <receiver>Druckservice</receiver>
+            <message>Druckvorschau</message>
+            <toState>Vorschau empfangen</toState>
+        </sendState>
+        <receiveState>
+            <name>Vorschau empfangen</name>
+            <message>
+                <object>Druck</object>
+                <toState>Vorschau kontrollieren</toState>
+            </message>
+        </receiveState>
+        <functionState>
+            <name>Vorschau kontrollieren</name>
+            <permission>
+                <object>Druck</object>
+                <field permission="READ">Report</field>
+            </permission>
+            <toState>Speichern</toState>
+            <toState>Verwerfen</toState>
+        </functionState>        
+        <functionState eventType="END">
+            <name>Verwerfen</name>
+        </functionState>
+        
+        <sendState>
+            <name>Speichern</name>
+            <receiver>Druckservice</receiver>
+            <message>Druckspeichern</message>
+            <toState>Rechnung drucken</toState>
+        </sendState>
+        <functionState>
+            <name>Rechnung drucken</name>
+            <permission>
+                <object>Druck</object>
+                <field permission="READ">Report</field>
+            </permission>
+            <toState>Ende</toState>
+        </functionState>        
+        <functionState eventType="END">
+            <name>Ende</name>
+        </functionState>
+    </userSubject>
+    
+    <serviceSubject>
+        <name>Druckservice</name>
+        <receiveState eventType="START">
+            <name>Rechnung empfangen</name>
+            <message>
+                <object>Druckvorschau</object>
+                <toState>Druck erstellen</toState>
+            </message>
+            <message>
+                <object>Druckspeichern</object>
+                <toState>Rechnung vorbereiten</toState>
+            </message>
+        </receiveState>        
+        <functionState provider="Groovy">
+            <name>Rechnung vorbereiten</name>
+            <parameters>
+                <script><![CDATA[
+                println 'Rechnung vorbereiten'
+                ]]></script>
+            </parameters>
+            <!--toState>Rechnung speichern</toState-->
+            <toState>Druck erstellen</toState>
+        </functionState>        
+        <functionState provider="DynamoDB"> 
+            <name>Rechnung speichern</name>
+            <parameters>
+                <!--Rechnung.Datum>HASH</Rechnung.Datum-->
+                <Rechnung.Nummer>HASH</Rechnung.Nummer>
+            </parameters>
+            
+            <permission>
+                <object>Rechnung</object>
+                <toOne permission="READ">
+                    <name>Empfänger</name>
+                    <field permission="READ">Kunde</field>
+                </toOne>
+                <field permission="READ">Datum</field>
+                <field permission="READ">Nummer</field>
+                <toMany permission="READ">
+                    <name>Position</name>
+                    <field permission="READ">Text</field>
+                    <!--toOne>
+                        <name>Artikel</name>
+                        <field type="STRING">Nummer</field>
+                        <field type="STRING">Bezeichnung</field>
+                    </toOne-->
+                    <field permission="READ">Wert</field>
+                </toMany>
+            </permission>
+            
+            <toState>Druck erstellen</toState>
+        </functionState>
+        <functionState provider="JasperReports">
+            <name>Druck erstellen</name>
+            <parameters>
+                <layout>Rechnung</layout>
+            </parameters>
+            
+            <permission>
+                <object>Rechnung</object>
+                <toOne permission="READ">
+                    <name>Empfänger</name>
+                    <field permission="READ">Kunde</field>
+                </toOne>
+                <field permission="READ">Datum</field>
+                <field permission="READ">Nummer</field>
+                <toMany permission="READ">
+                    <name>Position</name>
+                    <field permission="READ">Text</field>
+                    <!--toOne>
+                        <name>Artikel</name>
+                        <field type="STRING">Nummer</field>
+                        <field type="STRING">Bezeichnung</field>
+                    </toOne-->
+                    <field permission="READ">Wert</field>
+                </toMany>
+            </permission>
+            <permission>
+                <object>Druck</object>
+                <field permission="WRITE" mandatory="true">Report</field>
+            </permission>
+            
+            <toState>Rechnung senden</toState>
+        </functionState>
+        <sendState eventType="END">
+            <name>Rechnung senden</name>
+            <receiver>Mitarbeiter</receiver>
+            <message>Druck</message>
+        </sendState>
+    </serviceSubject>
+
+    <object>
+        <name>Rechnung</name>
+        <toOne>
+            <name>Empfänger</name>
+            <reference object="Kunde">Kunde</reference>
+            <!--field type="STRING">Adresse</field-->
+        </toOne>
+        <field type="DATE">Datum</field>        
+        <field type="NUMBER">Nummer</field>
+        <toMany>
+            <name>Position</name>
+            <field type="STRING">Text</field>
+            <!--toOne>
+                <name>Artikel</name>
+                <field type="STRING">Nummer</field>
+                <field type="STRING">Bezeichnung</field>
+            </toOne-->
+            <field type="DECIMAL">Wert</field>
+        </toMany>
+    </object>
+    <object>
+        <name>Kunde</name>
+        <displayName>${Nummer} - ${Name}</displayName>
+        <field type="NUMBER">Nummer</field>
+        <field type="STRING">Name</field>
+    </object>
+
+    <object>
+        <name>Druckvorschau</name>
+    </object>
+    <object>
+        <name>Druckspeichern</name>
+    </object>
+    
+    <object>
+        <name>Druck</name>
+        <field type="BINARY">Report</field>
+    </object>
+</pm:process>
