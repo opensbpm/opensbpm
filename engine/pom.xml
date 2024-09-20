@@ -18,21 +18,4 @@
         <module>client</module>
         <module>e2e</module>
     </modules>
-
-    <properties>
-        <!-- dependency versions -->
-        <opensbpm.version>1.1-SNAPSHOT</opensbpm.version>
-    </properties>
-
-    <dependencyManagement>
-        <dependencies>
-            <dependency>
-                <groupId>org.opensbpm.engine</groupId>
-                <artifactId>engine-bom</artifactId>
-                <version>${opensbpm.version}</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
 </project>
