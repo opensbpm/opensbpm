@@ -14,12 +14,10 @@ import java.security.GeneralSecurityException;
 import java.security.SecureRandom;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 import java.util.function.Supplier;
 
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.cxf.configuration.jsse.TLSClientParameters;
-import org.apache.cxf.jaxrs.client.JAXRSClientFactory;
 
 import java.util.Objects;
 
@@ -33,54 +31,64 @@ import org.opensbpm.engine.server.api.UserResource;
 
 import javax.net.ssl.SSLContext;
 
-public class EngineServiceClient {
+public final class EngineServiceClient {
+
 
     public static EngineServiceClient create(String baseAddress, Credentials credentials) {
         Objects.requireNonNull(baseAddress, "baseAddress must not be null");
         Objects.requireNonNull(credentials, "Credentials must not be null");
-        return new EngineServiceClient(baseAddress, credentials);
+        return new EngineServiceClient(baseAddress,
+                new AuthTokenSupplier() {
+                    private Authentication authentication;
+
+                    @Override
+                    public String get() {
+                        return getAuthentication().getAccessToken();
+                    }
+
+                    private Authentication getAuthentication() {
+                        if (authentication == null) {
+                            try {
+                                authentication = authenticate();
+                            } catch (IOException | GeneralSecurityException | InterruptedException ex) {
+                                throw new RuntimeException(ex);
+                            }
+                        }
+                        return authentication;
+                    }
+
+                    private Authentication authenticate() throws IOException, GeneralSecurityException, InterruptedException {
+                        SSLContext sslContext = SSLContext.getInstance("TLS");
+                        sslContext.init(null, SslConfiguration.getTrustAllCerts(), new SecureRandom());
+
+                        HttpClient httpClient = HttpClient.newBuilder()
+                                .sslContext(sslContext)
+                                .build();
+                        HttpRequest authRequest = HttpRequest.newBuilder(URI.create("https://opensbpm.local/auth/realms/quickstart/protocol/openid-connect/token"))
+                                .header("content-type", "application/x-www-form-urlencoded")
+                                .POST(BodyPublishers.ofString(
+                                        String.format("client_id=opensbpm-ui&username=%s&password=%s&grant_type=password", credentials.getUserName(), String.valueOf(credentials.getPassword()))
+                                ))
+                                .build();
+                        HttpResponse<String> authResponse = httpClient.send(authRequest, HttpResponse.BodyHandlers.ofString());
+                        return new ObjectMapper().readValue(authResponse.body(), Authentication.class);
+                    }
+
+                }
+        );
     }
 
     private final String baseAddress;
-    private final Credentials credentials;
+    private final AuthTokenSupplier authTokenSupplier;
     //
-    private Authentication authentication;
     private final LazySupplier<UserResource> userResource = LazySupplier.of(() -> createResourceClient(UserResource.class));
     private final LazySupplier<ProcessModelResource> processModelResource = LazySupplier.of(() -> createResourceClient(ProcessModelResource.class));
     private final LazySupplier<EngineResource> engineResource = LazySupplier.of(() -> createResourceClient(EngineResource.class));
 
 
-    private EngineServiceClient(String baseAddress, Credentials credentials) {
-        this.baseAddress = baseAddress;
-        this.credentials = credentials;
-    }
-
-    private Authentication getAuthentication() {
-        if (authentication == null) {
-            try {
-                authentication = authenticate();
-            } catch (IOException | GeneralSecurityException | InterruptedException ex) {
-                throw new RuntimeException(ex);
-            }
-        }
-        return authentication;
-    }
-
-    private Authentication authenticate() throws IOException, GeneralSecurityException, InterruptedException {
-        SSLContext sslContext = SSLContext.getInstance("TLS");
-        sslContext.init(null, SslConfiguration.getTrustAllCerts(), new SecureRandom());
-
-        HttpClient httpClient = HttpClient.newBuilder()
-                .sslContext(sslContext)
-                .build();
-        HttpRequest authRequest = HttpRequest.newBuilder(URI.create("https://opensbpm.local/auth/realms/quickstart/protocol/openid-connect/token"))
-                .header("content-type", "application/x-www-form-urlencoded")
-                .POST(BodyPublishers.ofString(
-                        String.format("client_id=opensbpm-ui&username=%s&password=%s&grant_type=password", credentials.getUserName(), String.valueOf(credentials.getPassword()))
-                ))
-                .build();
-        HttpResponse<String> authResponse = httpClient.send(authRequest, HttpResponse.BodyHandlers.ofString());
-        return new ObjectMapper().readValue(authResponse.body(), Authentication.class);
+    public EngineServiceClient(String baseAddress, AuthTokenSupplier authTokenSupplier) {
+        this.baseAddress = Objects.requireNonNull(baseAddress, "baseAddress must not be null");
+        this.authTokenSupplier = Objects.requireNonNull(authTokenSupplier, "AuthTokenSupplier must not be null");
     }
 
     public UserResource getUserResource() {
@@ -109,7 +117,7 @@ public class EngineServiceClient {
         final T proxy = factoryBean.create(type);
 
         Client client = WebClient.client(proxy);
-        client.header("Authorization", "Bearer " + getAuthentication().getAccessToken());
+        client.header("Authorization", "Bearer " + authTokenSupplier.get());
 
         WebClient httpClient = WebClient.fromClient(client);
         HTTPConduit httpConduit = (HTTPConduit) WebClient.getConfig(httpClient).getConduit();
@@ -153,4 +161,7 @@ public class EngineServiceClient {
 
     }
 
+    public interface AuthTokenSupplier extends Supplier<String> {
+
+    }
 }
