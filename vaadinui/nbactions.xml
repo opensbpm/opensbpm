@@ -14,7 +14,7 @@
                 <exec.executable>java</exec.executable>
                 <jpda.listen>true</jpda.listen>
                 <exec.appArgs>--spring.config.additional-location=file:/home/stefan/.softwaremacherei/sbpm/webui.properties</exec.appArgs>
-                <exec.mainClass>org.opensbpm.webui.Application</exec.mainClass>
+                <exec.mainClass>org.opensbpm.vaadinui.Application</exec.mainClass>
                 <exec.vmArgs>-agentlib:jdwp=transport=dt_socket,server=n,address=${jpda.address}</exec.vmArgs>
             </properties>
         </action>
@@ -31,7 +31,7 @@
                 <exec.vmArgs></exec.vmArgs>
                 <exec.args>${exec.vmArgs} -classpath %classpath ${exec.mainClass} ${exec.appArgs}</exec.args>
                 <exec.appArgs>--spring.config.additional-location=file:/home/stefan/.softwaremacherei/sbpm/webui.properties</exec.appArgs>
-                <exec.mainClass>org.opensbpm.webui.Application</exec.mainClass>
+                <exec.mainClass>org.opensbpm.vaadinui.Application</exec.mainClass>
                 <exec.executable>java</exec.executable>
             </properties>
         </action>
@@ -47,7 +47,7 @@
             <properties>
                 <exec.vmArgs></exec.vmArgs>
                 <exec.args>${exec.vmArgs} -classpath %classpath ${exec.mainClass} ${exec.appArgs}</exec.args>
-                <exec.mainClass>org.opensbpm.webui.Application</exec.mainClass>
+                <exec.mainClass>org.opensbpm.vaadinui.Application</exec.mainClass>
                 <exec.executable>java</exec.executable>
                 <exec.appArgs>--spring.config.additional-location=file:/home/stefan/.softwaremacherei/sbpm/webui.properties</exec.appArgs>
             </properties>
