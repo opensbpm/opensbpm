@@ -9,7 +9,7 @@
       "username": "alice",
       "firstName": "Alice",
       "lastName": "Liddel",
-      "email": "alice@keycloak.org",
+      "email": "alice@opensbpm.org",
       "enabled": true,
       "credentials": [
         {
@@ -18,7 +18,8 @@
         }
       ],
       "realmRoles": [
-        "angestellte",
+        "Angestellte",
+        "Abteilungsleiter",
         "user"
       ]
     },
@@ -26,7 +27,7 @@
       "username": "jdoe",
       "firstName": "jdoe",
       "lastName": "jdoe",
-      "email": "jdoe@keycloak.org",
+      "email": "jdoe@opensbpm.org",
       "enabled": true,
       "credentials": [
         {
@@ -35,9 +36,28 @@
         }
       ],
       "realmRoles": [
-        "angestellte",
+        "Angestellte",
+        "Abteilungsleiter",
         "user",
         "user_premium"
+      ]
+    },
+    {
+      "username": "miriam",
+      "firstName": "Miriam",
+      "lastName": "Mariam",
+      "email": "miriam@opensbpm.org",
+      "enabled": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "miriam"
+        }
+      ],
+      "realmRoles": [
+        "Angestellte",
+        "Reisestelle",
+        "user"
       ]
     },
     {
@@ -52,8 +72,16 @@
   "roles": {
     "realm": [
       {
-        "name": "angestellte",
-        "description": "Angestellte"
+        "name": "Angestellte",
+        "description": "Angestellte für Opensbpm"
+      },
+      {
+        "name": "Abteilungsleiter",
+        "description": "Abteilungsleiter für Opensbpm"
+      },
+      {
+        "name": "Reisestelle",
+        "description": "Reisestelle für Opensbpm"
       },
       {
         "name": "user",
