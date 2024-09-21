@@ -25,7 +25,7 @@ node('jdk17'){
                     mavenSettingsConfig: '05894f91-85e1-4e6d-8eb5-a101d90c62e3'
                 ) {
                     withSonarQubeEnv('Sonarqube') {
-                        sh "mvn clean test verify sonar:sonar package"
+                        sh "mvn clean test verify sonar:sonar package -Pproduction"
                     }
                     stash(name: 'engine-jar', includes: 'engine/service/target/engine-service-exec.jar')
                     stash(name: 'vaadinui-jar', includes: 'vaadinui/target/vaadinui-exec.jar')
