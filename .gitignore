@@ -1,6 +1,7 @@
 
 ## Vaadin
 /vaadinui/src/main/frontend/generated/
+/vaadinui/node/
 
 ## Gradle
 .gradle/
