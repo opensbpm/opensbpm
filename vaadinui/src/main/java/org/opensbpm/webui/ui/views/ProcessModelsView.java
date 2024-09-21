@@ -18,12 +18,8 @@
 package org.opensbpm.webui.ui.views;
 
 import jakarta.annotation.security.PermitAll;
-import jakarta.annotation.security.RolesAllowed;
 import org.opensbpm.engine.api.model.ProcessModelInfo;
 import org.opensbpm.engine.api.model.ProcessModelState;
-import org.opensbpm.engine.api.model.definition.ProcessDefinition;
-import org.opensbpm.engine.api.ModelService;
-import org.opensbpm.engine.xmlmodel.ProcessModel;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
@@ -34,10 +30,8 @@ import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import java.util.EnumSet;
 import java.util.Objects;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import jakarta.annotation.PostConstruct;
-import jakarta.xml.bind.JAXBException;
+import org.opensbpm.webui.backend.SbpmEngine;
 import org.opensbpm.webui.ui.MainLayout;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
@@ -49,11 +43,11 @@ import org.springframework.stereotype.Component;
 @PermitAll
 public class ProcessModelsView extends VerticalLayout {
 
-    private final transient ModelService modelService;
+    private final transient SbpmEngine sbpmEngine;
     private final Grid<ProcessModelInfo> grid = new Grid<>();
 
-    public ProcessModelsView(ModelService modelService) {
-        this.modelService = Objects.requireNonNull(modelService, "ModelService must be non null");
+    public ProcessModelsView(SbpmEngine sbpmEngine) {
+        this.sbpmEngine = Objects.requireNonNull(sbpmEngine, "ModelService must be non null");
     }
     
     @PostConstruct
@@ -62,15 +56,9 @@ public class ProcessModelsView extends VerticalLayout {
         MemoryBuffer buffer = new MemoryBuffer();
         Upload upload = new Upload(buffer);
         upload.addSucceededListener(t -> {
-            try {
-                final ProcessDefinition processDefinition = new ProcessModel().unmarshal(buffer.getInputStream());
-                final ProcessModelInfo processModelInfo = modelService.save(processDefinition);
+                final ProcessModelInfo processModelInfo = sbpmEngine.uploadModel(buffer.getInputStream());
                 Notification.show("Processmodel " + processModelInfo.getName() + " succesful saved");
                 updateItems();
-            } catch (JAXBException ex) {
-                Logger.getLogger(ProcessModelsView.class.getName()).log(Level.SEVERE, ex.getMessage(), ex);
-                Notification.show(ex.getMessage());
-            }
         });
         horizontalLayout.add(upload);
 
@@ -88,7 +76,7 @@ public class ProcessModelsView extends VerticalLayout {
     }
 
     private void updateItems() {
-        grid.setItems(modelService.findAllByStates(EnumSet.of(ProcessModelState.ACTIVE)));
+        grid.setItems(sbpmEngine.getProcessModels());
     }
 
 }
