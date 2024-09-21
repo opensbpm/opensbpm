@@ -36,11 +36,11 @@ public class MainLayout extends AppLayout {
         Anchor logout = new Anchor("/logout", "Log out");
 
         Text username = new Text("User:" + SecurityContextHolder.getContext().getAuthentication().getName());
-        Text authorities = new Text("Authorities:" + SecurityContextHolder.getContext().getAuthentication().getAuthorities().stream()
-                .map(GrantedAuthority::getAuthority)
-                .collect(Collectors.joining(",")));
+//        Text authorities = new Text("Authorities:" + SecurityContextHolder.getContext().getAuthentication().getAuthorities().stream()
+//                .map(GrantedAuthority::getAuthority)
+//                .collect(Collectors.joining(",")));
 
-        HorizontalLayout header = new HorizontalLayout(new DrawerToggle(), logo, username, authorities, logout);
+        HorizontalLayout header = new HorizontalLayout(new DrawerToggle(), logo, username, logout);
         header.addClassName("header");
         header.setWidth("100%");
         header.expand(logo);
