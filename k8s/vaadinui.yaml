@@ -31,7 +31,7 @@ spec:
     spec:
       containers:
         - name: vaadinui
-          image: sedstef/opensbpm-vaadinui:latest
+          image: sedstef/opensbpm-vaadinui:53
           imagePullPolicy: Always
           ports:
             - name: vaadinui-http
