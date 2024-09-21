@@ -25,10 +25,6 @@
     <modules>
         <module>engine</module>
         <module>vaadinui</module>
-        <module>authorization-server</module>
-        <module>auth-keycloak-server</module>
-        <module>resource-server</module>
-        <module>client-server</module>
     </modules>
 
     <scm>
