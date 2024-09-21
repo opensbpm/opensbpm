@@ -19,11 +19,11 @@ import org.springframework.boot.autoconfigure.web.servlet.error.ErrorMvcAutoConf
         }
         /*enableInstallPrompt = false*/)
 @Theme("my-theme")
-public class Application implements AppShellConfigurator {
+public class VaadinUIApplication implements AppShellConfigurator {
 
     public static void main(String[] args) {
         SslConfiguration.trustAll();
-        SpringApplication.run(Application.class, args);
+        SpringApplication.run(VaadinUIApplication.class, args);
     }
 
 }
