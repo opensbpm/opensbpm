@@ -31,7 +31,7 @@ spec:
     spec:
       containers:
         - name: engine
-          image: sedstef/opensbpm-engine:latest
+          image: sedstef/opensbpm-engine:53
           imagePullPolicy: Always
           ports:
             - name: engine-http
