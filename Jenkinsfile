@@ -35,7 +35,9 @@ node('jdk17'){
                     tools: [[pattern: '**/build/reports/jacoco/**/*.xml']]
                 )
                 waitForQualityGate (abortPipeline: false)
+            }
 
+            stage('Build OCI Images'){
                 node('docker'){
                     checkout scm
 
