@@ -6,23 +6,11 @@ import com.vaadin.flow.theme.Theme;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.web.servlet.error.ErrorMvcAutoConfiguration;
-import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
-import org.springframework.context.annotation.Import;
-
-import org.opensbpm.engine.core.EngineConfig;
-import org.opensbpm.plugins.jasperreports.JasperReportsConfig;
-
-import javax.net.ssl.*;
-import java.security.GeneralSecurityException;
-import java.security.cert.X509Certificate;
 
 /**
  * The entry point of the Spring Boot application.
  */
 @SpringBootApplication(exclude = ErrorMvcAutoConfiguration.class)
-@Import({EngineConfig.class,
-    JasperReportsConfig.class
-})
 @PWA(name = "OpenSBPM Vaadin Demo",
         shortName = "OpenSBPM",
         offlineResources = {

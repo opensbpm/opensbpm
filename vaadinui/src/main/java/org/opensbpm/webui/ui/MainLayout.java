@@ -1,10 +1,8 @@
 package org.opensbpm.webui.ui;
 
 import com.vaadin.flow.component.Component;
-import org.opensbpm.webui.ui.views.RolesView;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
-
 import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.applayout.DrawerToggle;
@@ -15,13 +13,10 @@ import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.RouterLink;
-import com.vaadin.flow.server.PWA;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
-
 import org.opensbpm.webui.ui.views.ProcessModelsView;
 import org.opensbpm.webui.ui.views.TasksView;
 import org.opensbpm.webui.ui.views.WorkflowsView;
@@ -57,7 +52,6 @@ public class MainLayout extends AppLayout {
     private void createDrawer() {
         List<Component> components = new ArrayList<>(
                 Arrays.asList(
-                        new RouterLink("Roles", RolesView.class),
                         new RouterLink("Workflows", WorkflowsView.class),
                         new RouterLink("Tasks", TasksView.class)
                 )
