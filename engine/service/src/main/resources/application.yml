@@ -10,7 +10,7 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          issuer-uri: https://opensbpm/auth/realms/quickstart
+          issuer-uri: https://opensbpm.sedelnet.loc/auth/realms/quickstart
 
 #debug: true
 
