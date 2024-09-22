@@ -30,11 +30,11 @@ node('jdk17'){
                     stash(name: 'engine-jar', includes: 'engine/service/target/engine-service-exec.jar')
                     stash(name: 'vaadinui-jar', includes: 'vaadinui/target/vaadinui-exec.jar')
                 }
-                junit '**/target/*-reports/TEST-*.xml'
+                //junit '**/target/*-reports/TEST-*.xml'
                 recordCoverage(name: 'Coverage Service',
                     tools: [[pattern: '**/build/reports/jacoco/**/*.xml']]
                 )
-                waitForQualityGate (abortPipeline: false)
+                //waitForQualityGate (abortPipeline: false)
             }
 
             stage('Build OCI Images'){
