@@ -38,7 +38,7 @@ public class SbpmEngine {
         if (engineServiceClient == null) {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             OidcIdToken idToken = ((DefaultOidcUser) authentication.getPrincipal()).getIdToken();
-            engineServiceClient = new EngineServiceClient("https://opensbpm.local/api/services", () -> idToken.getTokenValue());
+            engineServiceClient = new EngineServiceClient("https://opensbpm.sedelnet.loc/api/services", () -> idToken.getTokenValue());
         }
         return engineServiceClient;
     }
