@@ -9,10 +9,10 @@ spec:
   ingressClassName: public
   tls:
     - hosts:
-        - opensbpm.local
-#      secretName: games2click-tls
+        - opensbpm
+#      secretName: opensbpm-tls
   rules:
-    - host: opensbpm.local
+    - host: opensbpm
       http:
         paths:
           - path: /auth
