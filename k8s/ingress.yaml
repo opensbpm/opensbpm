@@ -9,10 +9,10 @@ spec:
   ingressClassName: public
   tls:
     - hosts:
-        - opensbpm
+        - opensbpm.sedelnet.loc
 #      secretName: opensbpm-tls
   rules:
-    - host: opensbpm
+    - host: opensbpm.sedelnet.loc
       http:
         paths:
           - path: /auth
