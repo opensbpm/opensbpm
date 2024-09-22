@@ -103,8 +103,8 @@
       "redirectUris": [
         "https://opensbpm.local/*"
       ],
-      "publicClient": true,
       "directAccessGrantsEnabled": true,
+      "publicClient": true,
       "defaultClientScopes": [
         "web-origins",
         "acr",
