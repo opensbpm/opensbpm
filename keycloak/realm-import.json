@@ -97,11 +97,11 @@
     {
       "clientId": "opensbpm-ui",
       "enabled": true,
-      "baseUrl": "https://opensbpm.sedelnet.loc",
-      "adminUrl": "https://opensbpm.sedelnet.loc",
+      "baseUrl": "https://cloud.opensbpm.org",
+      "adminUrl": "https://cloud.opensbpm.org",
       "bearerOnly": false,
       "redirectUris": [
-        "https://opensbpm.sedelnet.loc/*"
+        "https://cloud.opensbpm.org/*"
       ],
       "directAccessGrantsEnabled": true,
       "publicClient": true,
