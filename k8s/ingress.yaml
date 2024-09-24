@@ -2,17 +2,17 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: opensbpm
-#  annotations:
+  annotations:
 #    nginx.ingress.kubernetes.io/rewrite-target: /$2
-#    cert-manager.io/cluster-issuer: lets-encrypt
+    cert-manager.io/cluster-issuer: lets-encrypt
 spec:
   ingressClassName: public
   tls:
     - hosts:
-        - opensbpm.sedelnet.loc
-#      secretName: opensbpm-tls
+        - cloud.opensbpm.org
+      secretName: opensbpm-tls
   rules:
-    - host: opensbpm.sedelnet.loc
+    - host: cloud.opensbpm.org
       http:
         paths:
           - path: /auth

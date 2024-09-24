@@ -4,6 +4,7 @@ kind: Kustomization
 namespace: opensbpm
 resources:
   - namespace.yaml
+  - lets-encrypt.yaml
   - ingress.yaml
   - keycloak.yaml
   - engine.yaml
