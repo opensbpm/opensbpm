@@ -96,7 +96,11 @@ node('jdk17'){
                 node('docker'){
                     checkout scm
                     withKubeConfig( credentialsId: 'hetzner.sedelmaier.at', serverUrl: 'https://138.201.174.136:16443') {
-                        sh 'kubectl apply -k .'
+                        sh """
+                            kustomize edit set image sedstef/opensbpm-engine=sedstef/opensbpm-engine:$BUILD_ID
+                            kustomize edit set image sedstef/opensbpm-vaadinui=sedstef/opensbpm-vaadinui:$TBUILD_ID
+                            kubectl apply -k .
+                        """
                     }
                 }
             }
