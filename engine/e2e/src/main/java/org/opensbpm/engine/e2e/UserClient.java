@@ -4,7 +4,9 @@ import jakarta.ws.rs.ProcessingException;
 import org.opensbpm.engine.api.instance.*;
 import org.opensbpm.engine.client.Credentials;
 import org.opensbpm.engine.client.EngineServiceClient;
-import org.opensbpm.engine.server.api.EngineResource;
+import org.opensbpm.engine.server.api.EngineResource.ProcessModelResource;
+import org.opensbpm.engine.server.api.EngineResource.ProcessInstanceResource;
+import org.opensbpm.engine.server.api.EngineResource.TaskResource;
 
 import java.io.Serializable;
 import java.util.*;
@@ -54,20 +56,20 @@ class UserClient {
         return getUserToken().getId();
     }
 
-    private EngineResource.ProcessModelResource getProcessModelResource() {
+    private ProcessModelResource getProcessModelResource() {
         return getEngineServiceClient().getEngineResource().getProcessModelResource(getUserId());
     }
 
-    private EngineResource.ProcessInstanceResource getProcessInstanceResource() {
+    private ProcessInstanceResource getProcessInstanceResource() {
         return getEngineServiceClient().getEngineResource().getProcessInstanceResource(getUserId());
     }
 
-    private EngineResource.TaskResource getTaskResource() {
+    private TaskResource getTaskResource() {
         return getEngineServiceClient().getEngineResource().getTaskResource(getUserId());
     }
 
     void start() {
-        System.out.println("User: " + getUserToken().getName() + " Roles: " + getUserToken().getRoles().stream()
+        LOGGER.info("User: " + getUserToken().getName() + " Roles: " + getUserToken().getRoles().stream()
                 .map(RoleToken::getName)
                 .collect(Collectors.joining(",")));
 
