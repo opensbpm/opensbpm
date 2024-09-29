@@ -93,7 +93,7 @@ node('jdk17'){
             }
 
             stage('Apply Kubernetes'){
-                node('docker'){
+                node('kubectl'){
                     checkout scm
                     withKubeConfig( credentialsId: 'hetzner.sedelmaier.at', serverUrl: 'https://138.201.174.136:16443') {
                         sh """
