@@ -54,7 +54,7 @@ public interface EngineResource {
     public interface ProcessModelResource {
 
         @Operation(summary = "Retrieve all startable processmodels",
-                description = "Retrieve all processmodels the giben user can start")
+                description = "Retrieve all process models the given user can start")
         @GET
         ProcessModels index();
 
