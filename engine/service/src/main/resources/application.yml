@@ -12,7 +12,7 @@ spring:
         jwt:
           issuer-uri: https://cloud.opensbpm.org/auth/realms/quickstart
 
-#debug: true
+debug: true
 
 #logging:
 #  level:
