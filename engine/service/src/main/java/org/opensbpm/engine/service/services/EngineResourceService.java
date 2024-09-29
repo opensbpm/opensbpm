@@ -36,6 +36,7 @@ import org.opensbpm.engine.api.instance.UserToken;
 import org.opensbpm.engine.api.model.ProcessModelInfo;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -172,8 +173,8 @@ public class EngineResourceService implements EngineResource {
         public TaskResponse retrieve(Long taskId) {
             try {
                 UserToken userToken = retrieveToken(SecurityContextHolder.getContext().getAuthentication());
-                TaskInfo taskInfo = filterToOne(engineService.getTasks(userToken), task
-                        -> taskId.equals(task.getId()))
+                TaskInfo taskInfo = filterToOne(engineService.getTasks(userToken),
+                        task -> Objects.equals(task.getId(), taskId))
                         .orElseThrow(() -> new ClientErrorException("Task with id " + taskId + " doesn't exists anymore", Status.GONE));
                 return engineService.getTaskResponse(userToken, taskInfo);
             } catch (UserNotFoundException | TaskNotFoundException ex) {
