@@ -8,5 +8,7 @@ resources:
   - ingress.yaml
   - keycloak.yaml
   - engine.yaml
+  - engine-db.yaml
+  - pv-engine-db-local.yaml
   - frontend.yaml
   - vaadinui.yaml
