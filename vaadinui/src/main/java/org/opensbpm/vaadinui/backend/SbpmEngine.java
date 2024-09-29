@@ -91,7 +91,8 @@ public class SbpmEngine {
     }
 
     public Task getTask(Long taskId) throws TaskOutOfDateException, TaskNotFoundException, UserNotFoundException {
-        TaskInfo taskInfo = getAllTasks().filter(task -> Objects.equals(task.getId(), taskId))
+        TaskInfo taskInfo = getAllTasks()
+                .filter(task -> Objects.equals(task.getId(), taskId))
                 .findFirst()
                 .orElseThrow(() -> new TaskOutOfDateException(String.valueOf(taskId)));
         return new Task(taskInfo, getTaskResource().retrieve(taskInfo.getId()));
