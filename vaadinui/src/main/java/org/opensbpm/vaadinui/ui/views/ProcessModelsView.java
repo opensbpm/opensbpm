@@ -56,7 +56,7 @@ public class ProcessModelsView extends VerticalLayout {
         Upload upload = new Upload(buffer);
         upload.addSucceededListener(t -> {
                 final ProcessModelInfo processModelInfo = sbpmEngine.uploadModel(buffer.getInputStream());
-                Notification.show("Processmodel " + processModelInfo.getName() + " succesful saved");
+                Notification.show("Processmodel " + processModelInfo.getName() + " successful saved");
                 updateItems();
         });
         horizontalLayout.add(upload);
