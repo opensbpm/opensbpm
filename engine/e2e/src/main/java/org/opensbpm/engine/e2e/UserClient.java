@@ -170,14 +170,6 @@ class UserClient {
                         }
 
                         @Override
-                        public Void visitReference(ReferenceAttributeSchema attributeSchema) {
-//                            setValues(attributeSchema.getAttributes(),
-//                                    (Map<Long, Serializable>) attributeData.get(attributeSchema.getId()),
-//                                    fieldValue);
-                            return null;
-                        }
-
-                        @Override
                         public Void visitNested(NestedAttributeSchema attributeSchema) {
                             setValues(attributeSchema.getAttributes(),
                                     (Map<Long, Serializable>) attributeData.get(attributeSchema.getId()),
