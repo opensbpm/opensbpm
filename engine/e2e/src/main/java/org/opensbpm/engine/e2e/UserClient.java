@@ -1,5 +1,6 @@
 package org.opensbpm.engine.e2e;
 
+import jakarta.ws.rs.ClientErrorException;
 import jakarta.ws.rs.ProcessingException;
 import org.opensbpm.engine.api.instance.*;
 import org.opensbpm.engine.client.Credentials;
@@ -29,17 +30,16 @@ class UserClient {
 
     //
     private final EngineServiceClient engineServiceClient;
-    private final ArrayBlockingQueue<TaskInfo> tasksQueue;
+    private final ExecutorService taskExecutorService;
     //
     private UserToken userToken;
     private List<Long> startedProcesses;
-    private Future<Boolean> taskWatcher;
     private Timer tasksFetcher;
 
 
     private UserClient(Configuration configuration, Credentials credentials) {
         engineServiceClient = EngineServiceClient.create(configuration.getUrl(), credentials);
-        tasksQueue = new ArrayBlockingQueue<>(20);
+        taskExecutorService = Executors.newWorkStealingPool(1);
     }
 
     public synchronized EngineServiceClient getEngineServiceClient() {
@@ -73,59 +73,36 @@ class UserClient {
                 .map(RoleToken::getName)
                 .collect(Collectors.joining(",")));
 
-        tasksFetcher = new Timer("TasksFetcher for " + getUserToken().getName());
-        tasksFetcher.schedule(new TimerTask() {
-            @Override
-            public void run() {
-                LOGGER.finer("fetching tasks for user " + getUserToken().getName());
-                putAll(getTaskResource().index().getTaskInfos());
-            }
-        }, 100, 750);
-
         List<TaskInfo> taskInfos = getProcessModelResource().index().getProcessModelInfos().parallelStream()
                 .map(model -> {
                     LOGGER.info("starting process " + model.getName() + " for user " + getUserToken().getName());
                     return getProcessModelResource().start(model.getId());
                 })
                 .toList();
-
         startedProcesses = taskInfos.stream()
                 .map(TaskInfo::getProcessId)
                 .toList();
-        putAll(taskInfos);
 
-        ExecutorService singleExecutor = Executors.newWorkStealingPool(1);
-        taskWatcher = singleExecutor.submit(() -> {
-            while (true) {
-                TaskInfo taskInfo = tasksQueue.take();
-                if (TASK_EMPTY == taskInfo) {
-                    //got some poison...
-                    return true;
-                }
-                executeTask(taskInfo);
+        taskInfos.stream()
+                .map(taskInfo -> (Runnable) () -> executeTask(taskInfo))
+                .forEach(taskExecutorService::submit);
+
+
+        tasksFetcher = new Timer("TasksFetcher for " + getUserToken().getName());
+        tasksFetcher.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                LOGGER.finer("fetching tasks for user " + getUserToken().getName());
+                getTaskResource().index().getTaskInfos().stream()
+                        .map(taskInfo -> (Runnable) () -> executeTask(taskInfo))
+                        .forEach(taskExecutorService::submit);
+
             }
-        });
-        singleExecutor.shutdown();
-
-    }
-
-    private void putAll(List<TaskInfo> taskInfos) {
-        taskInfos.forEach(taskInfo -> {
-            try {
-                tasksQueue.put(taskInfo);
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            }
-        });
+        }, 100, 300);
     }
 
     public void stop() throws InterruptedException, ExecutionException {
-        if (taskWatcher != null) {
-            //offer some poison
-            tasksQueue.put(TASK_EMPTY);
-            //after poison, wait for correct shutdown
-            taskWatcher.get();
-        }
+        taskExecutorService.shutdown();
 
         tasksFetcher.cancel();
         tasksFetcher.purge();
@@ -141,22 +118,31 @@ class UserClient {
             }
         } catch (ProcessingException ex) {
             LOGGER.log(Level.FINE, ex.getMessage() /*, ex*/);
+        } catch (ClientErrorException ex) {
+            LOGGER.log(Level.SEVERE, "User[" + this.getUserToken().getName() + "," + taskInfo + "]:" + ex.getMessage() /*, ex*/);
         } catch (Throwable ex) {
             //TODO handle uncaught exceptions correctly
             LOGGER.log(Level.SEVERE, "User[" + this.getUserToken().getName() + "," + taskInfo + "]:" + ex.getMessage(), ex);
         }
     }
 
-    private void executeTask(Task task, Function<Task, NextState> stateValue, Function<SimpleAttributeSchema, Serializable> fieldValue){
+    private void executeTask(Task task, Function<Task, NextState> stateValue, Function<SimpleAttributeSchema, Serializable> fieldValue) {
         task.getSchemas().forEach(objectSchema -> {
             Map<Long, Serializable> attributeData = task.getObjectData(objectSchema).getData();
             setValues(objectSchema.getAttributes(), attributeData, fieldValue);
         });
 
         NextState nextState = stateValue.apply(task);
-        LOGGER.log(Level.INFO, "executing task {0}", task);
+        LOGGER.log(Level.FINEST, "User[{0}]: executing task {0}", new Object[]{
+                this.getUserToken().getName(),
+                task
+        });
         getTaskResource().submit(task.getId(), task.createTaskRequest(nextState));
-        LOGGER.log(Level.INFO, "successfull changed to state {0}", nextState);
+        LOGGER.log(Level.INFO, "User[{0}]: task {1} successfully changed to state {2}", new Object[]{
+                this.getUserToken().getName(),
+                task.getStateName(),
+                nextState.getName()
+        });
     }
 
     private void setValues(List<AttributeSchema> attributes, Map<Long, Serializable> attributeData, Function<SimpleAttributeSchema, Serializable> fieldValue) {
@@ -165,15 +151,7 @@ class UserClient {
                     attributeSchema.accept(new AttributeSchemaVisitor<Void>() {
                         @Override
                         public Void visitSimple(SimpleAttributeSchema attributeSchema) {
-                            attributeData.put(attributeSchema.getId(), fieldValue.apply(attributeSchema));
-                            return null;
-                        }
-
-                        @Override
-                        public Void visitReference(ReferenceAttributeSchema attributeSchema) {
-//                            setValues(attributeSchema.getAttributes(),
-//                                    (Map<Long, Serializable>) attributeData.get(attributeSchema.getId()),
-//                                    fieldValue);
+                            attributeData.put(attributeSchema.getId(), Utils.createRandomValue(attributeSchema));
                             return null;
                         }
 
