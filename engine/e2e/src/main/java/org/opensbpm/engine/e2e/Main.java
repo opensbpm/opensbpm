@@ -1,0 +1,116 @@
+/**
+ * ****************************************************************************
+ * Copyright (C) 2024 Stefan Sedelmaier
+ * <p>
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published
+ * by the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * <p>
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ * <p>
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * ****************************************************************************
+ */
+package org.opensbpm.engine.e2e;
+
+import java.security.GeneralSecurityException;
+import java.util.*;
+import java.util.concurrent.*;
+import java.util.logging.LogManager;
+
+import org.apache.commons.cli.ParseException;
+import org.opensbpm.engine.api.ProcessNotFoundException;
+import org.opensbpm.engine.api.UserNotFoundException;
+import org.opensbpm.engine.api.instance.*;
+
+import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.stream.Collectors;
+
+import static java.util.Arrays.asList;
+
+
+public class Main {
+
+    private static final Logger LOGGER = Logger.getLogger(Main.class.getName());
+
+    public static void main(String[] args) {
+        try {
+            LogManager.getLogManager().readConfiguration(Main.class.getResourceAsStream("/logging.properties"));
+            new Main(Configuration.parseArgs(args)).execute();
+        } catch (ParseException ex) {
+            //ParseException is already dumped to System.out, log here for debugging purpose
+            LOGGER.log(Level.FINEST, ex.getMessage(), ex);
+            System.exit(1);
+        } catch (InterruptedException ex) {
+            LOGGER.log(Level.SEVERE, ex.getMessage(), ex);
+            // Restore interrupted state...
+            Thread.currentThread().interrupt();
+            System.exit(1);
+        } catch (ProcessNotFoundException | UserNotFoundException
+                 | IOException | SecurityException
+                 | ExecutionException | GeneralSecurityException ex) {
+            LOGGER.log(Level.SEVERE, ex.getMessage(), ex);
+            System.exit(1);
+        }
+    }
+
+    private final Configuration configuration;
+
+    private Main(Configuration configuration) {
+        this.configuration = configuration;
+    }
+
+    public void execute() throws UserNotFoundException, ProcessNotFoundException,
+            IOException, InterruptedException, ExecutionException, GeneralSecurityException {
+
+        List<UserClient> userClients = asList(
+                UserClient.of(configuration, "alice", "alice"),
+                UserClient.of(configuration, "jdoe", "jdoe"),
+                UserClient.of(configuration, "miriam", "miriam")
+        );
+        userClients.forEach(client -> client.start());
+
+        ExecutorService singleExecutor = Executors.newWorkStealingPool(1);
+        singleExecutor.submit(() -> {
+            boolean allFinished = false;
+            while (!allFinished) {
+                allFinished = userClients.stream()
+                        .mapToLong(userClient -> userClient.getActiveProcesses().size())
+                        .sum() == 0;
+
+                for (UserClient userClient : userClients) {
+                    List<ProcessInfo> activeProcesses = userClient.getActiveProcesses();
+                    LOGGER.info(userClient.getUserToken().getName() + " has active processes " +
+                            activeProcesses.stream()
+                                    .map(processInfo -> processInfo.toString())
+                                    .collect(Collectors.joining(","))
+                    );
+                }
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException ex) {
+                    LOGGER.log(Level.SEVERE, ex.getMessage(), ex);
+                    // Restore interrupted state...
+                    Thread.currentThread().interrupt();
+                    System.exit(1);
+                }
+            }
+            LOGGER.info("All processes finished");
+        });
+        singleExecutor.awaitTermination(10, TimeUnit.MINUTES);
+
+        LOGGER.info("All started processes finished");
+        for (UserClient client : userClients) {
+            client.stop();
+        }
+        LOGGER.info("Everything done");
+    }
+
+}

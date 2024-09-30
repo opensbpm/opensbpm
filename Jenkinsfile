@@ -18,38 +18,92 @@ node('jdk17'){
         }
 
 //        parallel buildService: {
-            stage('Build Service'){
-                dir('service'){
+            stage('Build Services'){
+                withMaven(
+                    jdk: 'jdk17',
+                    maven: 'default',
+                    mavenSettingsConfig: '05894f91-85e1-4e6d-8eb5-a101d90c62e3'
+                ) {
                     withSonarQubeEnv('Sonarqube') {
-                        sh "./gradlew clean test sonar"
+                        sh "mvn clean test verify sonar:sonar package -Pproduction"
                     }
-                    junit '**/build/test-results/*/TEST-*.xml'
-                    recordCoverage(name: 'Coverage Service',
-                        tools: [[pattern: '**/build/reports/jacoco/**/*.xml']]
-                    )
-                    waitForSonarqube()
+                    stash(name: 'engine-jar', includes: 'engine/service/target/engine-service-exec.jar')
+                    stash(name: 'vaadinui-jar', includes: 'vaadinui/target/vaadinui-exec.jar')
+                }
+                //junit '**/target/*-reports/TEST-*.xml'
+                recordCoverage(name: 'Coverage Service',
+                    tools: [[pattern: '**/build/reports/jacoco/**/*.xml']]
+                )
+                //waitForQualityGate (abortPipeline: false)
+            }
+
+            stage('Build OCI Images'){
+                node('docker'){
+                    checkout scm
+
+                    unstash('engine-jar')
+                    dir('engine/service'){
+                        docker.withRegistry('', 'sedstef@hub.docker.com') {
+                            def image = docker.build("sedstef/opensbpm-engine:${env.BUILD_ID}")
+                            image.push("${env.BUILD_ID}")
+                            image.push("latest")
+                        }
+                    }
+
+                    unstash('vaadinui-jar')
+                    dir('vaadinui'){
+                        docker.withRegistry('', 'sedstef@hub.docker.com') {
+                            def image = docker.build("sedstef/opensbpm-vaadinui:${env.BUILD_ID}")
+                            image.push("${env.BUILD_ID}")
+                            image.push("latest")
+                        }
+                    }
                 }
             }
 //            }, buildFrontend: {
-                stage('Build Frontend'){
+            stage('Build Frontend'){
+                dir('frontend'){
+                    sh "npm install"
+                    sh "CI=true npm test -- --reporters=default --reporters=jest-junit --coverage"
+
+                    withSonarQubeEnv(credentialsId: '90714a4b-9950-4c03-a361-89096c37b554') {
+                        env.SONAR_HOME = tool(type: 'hudson.plugins.sonar.SonarRunnerInstallation',name: 'Sonar 4.x')
+                        env.PATH="${env.SONAR_HOME}/bin:${env.PATH}"
+                        sh 'sonar-scanner'
+                    }
+
+                    junit '**/test-results/*.xml'
+                    recordCoverage(name: 'Coverage Frontend',
+                        tools: [[parser: 'COBERTURA', pattern: '**/coverage/cobertura-coverage.xml']]
+                    )
+
+                    waitForQualityGate (abortPipeline: false)
+
+                }
+                node('docker'){
+                    checkout scm
                     dir('frontend'){
-                        sh "npm install"
-                        sh "CI=true npm test -- --reporters=default --reporters=jest-junit --coverage"
-
-                        withSonarQubeEnv(credentialsId: '90714a4b-9950-4c03-a361-89096c37b554') {
-                            env.SONAR_HOME = tool(type: 'hudson.plugins.sonar.SonarRunnerInstallation',name: 'Sonar 4.x')
-                            env.PATH="${env.SONAR_HOME}/bin:${env.PATH}"
-                            sh 'sonar-scanner'
+                        docker.withRegistry('', 'sedstef@hub.docker.com') {
+                            def frontenImage = docker.build("sedstef/opensbpm-frontend:${env.BUILD_ID}")
+                            frontenImage.push("${env.BUILD_ID}")
+                            frontenImage.push("latest")
                         }
-
-                        junit '**/test-results/*.xml'
-                        recordCoverage(name: 'Coverage Frontend',
-                            tools: [[parser: 'COBERTURA', pattern: '**/coverage/cobertura-coverage.xml']]
-                        )
-
-                        waitForSonarqube()
                     }
                 }
+            }
+
+            stage('Apply Kubernetes'){
+                node('kubectl'){
+                    checkout scm
+                    withKubeConfig( credentialsId: 'hetzner.sedelmaier.at', serverUrl: 'https://138.201.174.136:16443') {
+                        sh """
+                            kustomize edit set image sedstef/opensbpm-engine=sedstef/opensbpm-engine:$BUILD_ID
+                            kustomize edit set image sedstef/opensbpm-vaadinui=sedstef/opensbpm-vaadinui:$BUILD_ID
+                            kubectl apply -k .
+                        """
+                    }
+                }
+            }
 //            }
 //            failFast: false
 

@@ -3,13 +3,22 @@ import ReactDOM from 'react-dom/client';
 import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
+import { AuthProvider } from "react-oidc-context";
+
+const oidcConfig = {
+    authority: '/auth/realms/quickstart',
+    client_id: 'opensbpm-ui',
+    redirect_uri: 'https://opensbpm.local',
+};
 
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement
 );
 root.render(
   <React.StrictMode>
-    <App />
+      <AuthProvider {...oidcConfig}>
+        <App />
+      </AuthProvider>
   </React.StrictMode>
 );
 
