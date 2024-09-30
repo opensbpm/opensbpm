@@ -14,10 +14,10 @@ spring:
 
 #debug: true
 
-logging:
-  level:
+#logging:
+#  level:
 #    root: INFO
 #    org.springframework.web: DEBUG
 #    org.springframework.security: DEBUG
 #    org.springframework.security.oauth2: INFO
-    org.apache.cxf: DEBUG
+#    org.apache.cxf: DEBUG
