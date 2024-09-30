@@ -41,7 +41,6 @@ import java.math.BigDecimal;
 import java.util.HashMap;
 import org.opensbpm.engine.api.instance.AttributeSchemaVisitor;
 import org.opensbpm.engine.api.instance.IndexedAttributeSchema;
-import org.opensbpm.engine.api.instance.ReferenceAttributeSchema;
 import org.opensbpm.engine.api.instance.SimpleAttributeSchema;
 
 public class ComponentFactory {
@@ -68,12 +67,6 @@ public class ComponentFactory {
             attributeSchema.accept(new AttributeSchemaVisitor<Void>() {
                 @Override
                 public Void visitSimple(SimpleAttributeSchema attributeSchema) {
-                    return null;
-                }
-
-                @Override
-                public Void visitReference(ReferenceAttributeSchema referenceAttributeSchema) {
-                    formLayout.setColspan(formItem, 2);
                     return null;
                 }
 
@@ -171,7 +164,7 @@ public class ComponentFactory {
             };
         }
 
-        @Override
+        /*@Override
         public BindingBuilder<ObjectBean, ?> visitReference(ReferenceAttributeSchema attributeSchema) {
             ObjectSchema referenceSchema = attributeSchema.getAutocompleteReference()
                     .orElseThrow(() -> new IllegalStateException("no AutocompleteReference for attribute '" + attributeSchema.getName() + "'"));
@@ -190,7 +183,7 @@ public class ComponentFactory {
                             return null;
                         }
                     });
-        }
+        }*/
 
         @Override
         public BindingBuilder<ObjectBean, ?> visitNested(NestedAttributeSchema attributeSchema) {

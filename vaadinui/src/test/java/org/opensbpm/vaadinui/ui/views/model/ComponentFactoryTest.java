@@ -5,7 +5,6 @@ import org.junit.jupiter.api.Test;
 import org.opensbpm.engine.api.instance.IndexedAttributeSchema;
 import org.opensbpm.engine.api.instance.NestedAttributeSchema;
 import org.opensbpm.engine.api.instance.ObjectSchema;
-import org.opensbpm.engine.api.instance.ReferenceAttributeSchema;
 import org.opensbpm.engine.api.instance.SimpleAttributeSchema;
 import org.opensbpm.engine.api.instance.TaskInfo;
 import org.opensbpm.engine.api.model.FieldType;
@@ -37,7 +36,6 @@ public class ComponentFactoryTest {
                 SimpleAttributeSchema.of(id++, "time", FieldType.TIME),
                 SimpleAttributeSchema.of(id++, "boolean", FieldType.BOOLEAN),
                 SimpleAttributeSchema.of(id++, "binary", FieldType.BINARY),
-                ReferenceAttributeSchema.create(id++, "reference", new ObjectSchema()),
                 NestedAttributeSchema.createNested(id++, "nested", asList(
                         SimpleAttributeSchema.of(id++, "string", FieldType.STRING)
                 )),
