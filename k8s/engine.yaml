@@ -1,0 +1,51 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: engine
+  labels:
+    app: engine
+spec:
+  type: LoadBalancer
+  selector:
+    app: engine
+  ports:
+    - name: engine-http
+      port: 8090
+      targetPort: engine-http
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: engine
+  labels:
+    app: engine
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: engine
+  template:
+    metadata:
+      labels:
+        app: engine
+    spec:
+      containers:
+        - name: engine
+          image: sedstef/opensbpm-engine:latest
+          imagePullPolicy: Always
+          env:
+            - name: SPRING_DATASOURCE_URL
+              value: jdbc:postgresql://engine-db:5432/opensbpm
+            - name: SPRING_DATASOURCE_USERNAME
+              value: opensbpm
+            - name: SPRING_DATASOURCE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: engine-db-password
+                  key: password
+            - name: SPRING_JPA_HIBERNATE_DDLAUTO
+              value: update
+          ports:
+            - name: engine-http
+              containerPort: 8090
+      restartPolicy: Always

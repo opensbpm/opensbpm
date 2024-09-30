@@ -1,18 +1,22 @@
 
-#Gradle
+## Vaadin
+/vaadinui/src/main/frontend/generated/
+/vaadinui/node/
+
+## Gradle
 .gradle/
 
-#Maven
+## Maven
 target/
 
-# Node.js
+## Node.js
 node_modules/
 build/
 test-results/
 coverage/
 
-# JetBrains IDE
+## JetBrains IDE
 .idea/
 
-#Misc
+## Misc
 *.bak

@@ -1,0 +1,69 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: engine-db
+  labels:
+    app: engine-db
+spec:
+  selector:
+    app: engine-db
+  ports:
+    - port: 5432
+      targetPort: engine-db-port
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: engine-db-pv-claim
+  labels:
+    app: engine-db
+spec:
+  selector:
+    matchLabels:
+      app: engine-db
+  storageClassName: ""
+  accessModes: [ ReadWriteOnce ]
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: engine-db
+  labels:
+    app: engine-db
+spec:
+  selector:
+    matchLabels:
+      app: engine-db
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: engine-db
+    spec:
+      containers:
+        - name: engine-postgres
+          image: docker.io/library/postgres:15.4
+          env:
+            - name: POSTGRES_DB
+              value: opensbpm
+            - name: POSTGRES_USER
+              value: opensbpm
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: engine-db-password
+                  key: password
+          ports:
+            - name: engine-db-port
+              containerPort: 5432
+          volumeMounts:
+            - name: engine-db-storage
+              mountPath: /var/lib/postgresql/data
+      volumes:
+        - name: engine-db-storage
+          persistentVolumeClaim:
+            claimName: engine-db-pv-claim
