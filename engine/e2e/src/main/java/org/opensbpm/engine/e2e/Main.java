@@ -33,6 +33,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
+import static java.lang.String.format;
 import static java.util.Arrays.asList;
 
 
@@ -89,12 +90,12 @@ public class Main {
                     List<ProcessInfo> activeProcesses = userClient.getActiveProcesses();
                     LOGGER.info(userClient.getUserToken().getName() + " has active processes " +
                             activeProcesses.stream()
-                                    .map(processInfo -> processInfo.toString())
+                                    .map(processInfo -> asString(processInfo))
                                     .collect(Collectors.joining(","))
                     );
                 }
                 try {
-                    Thread.sleep(1000);
+                    Thread.sleep(2000);
                 } catch (InterruptedException ex) {
                     LOGGER.log(Level.SEVERE, ex.getMessage(), ex);
                     // Restore interrupted state...
@@ -113,4 +114,14 @@ public class Main {
         LOGGER.info("Everything done");
     }
 
+    private static String asString(ProcessInfo processInfo) {
+        return format("%s started at %s by %s in state %s",
+                processInfo.getProcessModelInfo().getName(),
+                processInfo.getStartTime(),
+                processInfo.getOwner().getName(),
+                processInfo.getSubjects().stream()
+                        .map(ProcessInfo.SubjectStateInfo::getStateName)
+                        .collect(Collectors.joining(","))
+        );
+    }
 }
