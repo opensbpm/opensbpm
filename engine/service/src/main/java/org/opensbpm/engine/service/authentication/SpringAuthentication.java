@@ -22,6 +22,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.oauth2.core.oidc.user.DefaultOidcUser;
 
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -29,20 +30,22 @@ import org.springframework.security.oauth2.jwt.Jwt;
 public final class SpringAuthentication {
 
     public static TokenRequest of(Authentication authentication) {
+        String username;
+        Object principal = authentication.getPrincipal();
+        if (principal instanceof UserDetails) {
+            username = ((UserDetails) principal).getUsername();
+        } else if (principal instanceof Jwt) {
+            username = ((Jwt) principal).getClaimAsString("preferred_username");
+        } else if (principal instanceof DefaultOidcUser) {
+            username = ((DefaultOidcUser) principal).getPreferredUsername();
+        } else {
+            username = principal.toString();
+        }
+        Objects.requireNonNull(username,"Username must be non null");
+
         return new TokenRequest() {
             @Override
             public String getUsername() {
-                String username;
-                Object principal = authentication.getPrincipal();
-                if (principal instanceof UserDetails) {
-                    username = ((UserDetails) principal).getUsername();
-                } else if (principal instanceof Jwt) {
-                    username = ((Jwt) principal).getClaimAsString("preferred_username");
-                } else if (principal instanceof DefaultOidcUser) {
-                    username = ((DefaultOidcUser) principal).getPreferredUsername();
-                } else {
-                    username = principal.toString();
-                }
                 return username;
             }
 
