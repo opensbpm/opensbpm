@@ -64,7 +64,7 @@ public final class EngineServiceClient {
                         HttpClient httpClient = HttpClient.newBuilder()
                                 .sslContext(sslContext)
                                 .build();
-                        HttpRequest authRequest = HttpRequest.newBuilder(URI.create("https://opensbpm.local/auth/realms/quickstart/protocol/openid-connect/token"))
+                        HttpRequest authRequest = HttpRequest.newBuilder(URI.create("https://cloud.opensbpm.org/auth/realms/quickstart/protocol/openid-connect/token"))
                                 .header("content-type", "application/x-www-form-urlencoded")
                                 .POST(BodyPublishers.ofString(
                                         String.format("client_id=opensbpm-ui&username=%s&password=%s&grant_type=password", credentials.getUserName(), String.valueOf(credentials.getPassword()))
