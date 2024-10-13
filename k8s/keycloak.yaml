@@ -44,7 +44,7 @@ spec:
                 secretKeyRef:
                   name: engine-db-password
                   key: password
-          command: [ "import --verbose --dir /opt/keycloak/data/import/" ]
+          #args: [ "import --verbose --dir /opt/keycloak/data/import/" ]
       containers:
         - name: keycloak
           image: quay.io/keycloak/keycloak:25.0.4
