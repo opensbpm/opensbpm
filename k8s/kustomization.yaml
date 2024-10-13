@@ -6,9 +6,11 @@ resources:
   - namespace.yaml
   - lets-encrypt.yaml
   - ingress.yaml
+  - pv-keycloak-db-local.yaml
+  - keycloak-db.yaml
   - keycloak.yaml
-  - engine.yaml
-  - engine-db.yaml
   - pv-engine-db-local.yaml
+  - engine-db.yaml
+  - engine.yaml
   - frontend.yaml
   - vaadinui.yaml

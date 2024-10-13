@@ -29,11 +29,40 @@ spec:
       labels:
         app: keycloak
     spec:
+      initContainers:
+        - name: init-keyloak
+          image: sedstef/keycloak-init:latest
+          env:
+            - name: KC_DB
+              value: postgres
+            - name: KC_DB_URL
+              value: jdbc:postgresql://keycloak-db:5432/opensbpm
+            - name: KC_DB_USERNAME
+              value: opensbpm
+            - name: KC_DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: engine-db-password
+                  key: password
+          command: [ "import --verbose --dir /opt/keycloak/data/import/" ]
       containers:
         - name: keycloak
           image: quay.io/keycloak/keycloak:25.0.4
           args: [ "start-dev"]
           env:
+            - name: KC_DB
+              value: postgres
+            - name: KC_DB_URL
+              value: jdbc:postgresql://keycloak-db:5432/opensbpm
+            - name: KC_DB_USERNAME
+              value: opensbpm
+            - name: KC_DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: engine-db-password
+                  key: password
+            #- name: KC_HOSTNAME
+            #  value: localhost
             - name: KEYCLOAK_ADMIN
               value: "admin"
             - name: KEYCLOAK_ADMIN_PASSWORD
