@@ -5,5 +5,5 @@
   tasks:
     - name: Ensure server is absent
       hetzner.hcloud.server:
-        name: main
+        name: controller
         state: absent

@@ -11,7 +11,8 @@ In lokaler GIT-Bash:
 ```
 ssh-keygen -t ed25519
 ```
-Den erstellen Public-Key als `opensbpm@hetzner` in den SSH-Keys des Hetzner-Projekts hinterlegen  
+Den Public-Key als `opensbpm@hetzner` in den SSH-Keys des Hetzner-Projekts hinterlegen.
+Bei wsl den key nach `~/.ssh/opensbpm-hetzner` kopieren
 
 ## Requirements
 Install hetzner.hcloud with ansbile-galaxy.

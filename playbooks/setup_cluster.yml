@@ -3,17 +3,60 @@
   hosts: localhost
   gather_facts: no
   tasks:
-    - name: Setup main node
+    - name: Setup controller server
       hetzner.hcloud.server:
         location: fsn1
-        name: main
+        name: controller
         server_type: cx22
         image: ubuntu-24.04
-        state: present
         ssh_keys:
           - opensbpm@hetzner
-      register: server_main
+        state: started
+      register: controller_info
 
     - name: Show server details
       debug:
-        var: server_main
+        var: controller_info
+
+    - name: Retrieve ssh key from controller server
+      shell: "ssh-keyscan -H {{ controller_info.hcloud_server.ipv4_address }}"
+      register: controller_sshkeyscan
+
+    - name: Add controller host keys to known_hosts
+      ansible.builtin.known_hosts:
+        path: ~/.ssh/known_hosts
+        name: "{{ controller_info.hcloud_server.ipv4_address }}"
+        key: "{{ controller_sshkeyscan.stdout }}"
+        state: present
+
+    - name: Add controller to inventory
+      add_host:
+        name: "{{ controller_info.hcloud_server.ipv4_address }}"
+        groups: microk8s_controller
+        ansible_user: root
+        ansible_ssh_private_key_file: ~/.ssh/opensbpm-hetzner
+
+- name: Configure the controller server
+  hosts: microk8s_controller
+  become: yes
+  tasks:
+    - name: Install basic microk8s
+      community.general.snap:
+        classic: true
+        name:
+          - microk8s
+        state: present
+
+    - name: Create kubctl config
+      ansible.builtin.shell:
+        cmd: |
+          mkdir -p ~/.kube
+          microk8s config > ~/.kube/config
+          sed -i 's/microk8s/opensbpm/' ~/.kube/config
+        creates: ~/.kube/config
+
+    - name: Fetch the kubectl config from the remote server
+      ansible.builtin.fetch:
+        src: /root/.kube/config
+        dest: ~/.kube/opensbm@hetzner
+        flat: yes
