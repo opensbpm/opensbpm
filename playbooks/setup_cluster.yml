@@ -1,0 +1,19 @@
+---
+- name: Setup Hetzner cluster
+  hosts: localhost
+  gather_facts: no
+  tasks:
+    - name: Setup main node
+      hetzner.hcloud.server:
+        location: fsn1
+        name: main
+        server_type: cx22
+        image: ubuntu-24.04
+        state: present
+        ssh_keys:
+          - opensbpm@hetzner
+      register: server_main
+
+    - name: Show server details
+      debug:
+        var: server_main
