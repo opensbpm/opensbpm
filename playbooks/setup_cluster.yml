@@ -55,6 +55,9 @@
           - microk8s
         state: present
 
+    - name: Activate microk8s plugins
+      ansible.builtin.command: microk8s enable dns ingress cert-manager dashboard
+
     - name: Create kubctl config
       ansible.builtin.shell:
         cmd: |
