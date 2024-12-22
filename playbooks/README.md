@@ -40,3 +40,9 @@ docker run --rm `
     sedstef/ansible-playbook:latest
      
 ```
+
+### Check
+Check kubeconfig with kubectl
+```
+kubectl --kubeconfig ~/.kube/opensbm\@hetzner cluster-info
+```
