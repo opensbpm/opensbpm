@@ -100,10 +100,11 @@ node('jdk17'){
                 }
             }
 
+            /*
             stage('Apply Kubernetes'){
                 node('kubectl'){
                     checkout scm
-                    withKubeConfig( credentialsId: 'hetzner.sedelmaier.at', serverUrl: 'https://138.201.174.136:16443') {
+                    withKubeConfig( credentialsId: 'opensbpm@hetzner', serverUrl: 'https://cloud.opensbpm.org:16443') {
                         sh """
                             kustomize edit set image sedstef/keycloak-init=sedstef/keycloak-init:$BUILD_ID
                             kustomize edit set image sedstef/opensbpm-engine=sedstef/opensbpm-engine:$BUILD_ID
@@ -113,6 +114,7 @@ node('jdk17'){
                     }
                 }
             }
+            */
 //            }
 //            failFast: false
 
