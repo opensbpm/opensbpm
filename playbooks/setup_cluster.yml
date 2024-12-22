@@ -3,12 +3,20 @@
   hosts: localhost
   gather_facts: no
   tasks:
+    - name: Create the IPv4 Primary IP
+      hetzner.hcloud.primary_ip:
+        name: opensbpm-primary-ip
+        datacenter: fsn1-dc14
+        type: ipv4
+        delete_protection: true
+        state: present
     - name: Setup controller server
       hetzner.hcloud.server:
         location: fsn1
         name: controller
         server_type: cx22
         image: ubuntu-24.04
+        ipv4: opensbpm-primary-ip
         ssh_keys:
           - opensbpm@hetzner
         state: started
@@ -58,5 +66,6 @@
     - name: Fetch the kubectl config from the remote server
       ansible.builtin.fetch:
         src: /root/.kube/config
-        dest: ~/.kube/opensbm@hetzner
+        #dest: ~/.kube/opensbm@hetzner
+        dest: /mnt/c/Users/stefan/.kube/opensbm@hetzner
         flat: yes
