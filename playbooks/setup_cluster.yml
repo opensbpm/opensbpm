@@ -49,15 +49,18 @@
   hosts: microk8s_controller
   become: yes
   tasks:
+    - name: Install python3-kubernetes
+      ansible.builtin.apt:
+        name: python3-kubernetes
+        update_cache: true
+        state: present
+
     - name: Install basic microk8s
       community.general.snap:
         classic: true
         name:
           - microk8s
         state: present
-
-    - name: Activate microk8s plugins
-      ansible.builtin.command: microk8s enable dns ingress cert-manager dashboard
 
     - name: Create kubctl config
       ansible.builtin.shell:
@@ -73,3 +76,14 @@
         #dest: ~/.kube/opensbm@hetzner
         dest: /mnt/c/Users/stefan/.kube/opensbm@hetzner
         flat: yes
+
+    - name: Activate microk8s plugins
+      ansible.builtin.command: microk8s enable dns ingress cert-manager dashboard
+
+    - name: Create OpenSBPM namespace in k8s
+      kubernetes.core.k8s:
+        name: opensbpm
+        api_version: v1
+        kind: Namespace
+        state: present
+
