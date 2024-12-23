@@ -15,9 +15,10 @@ Den Public-Key als `opensbpm@hetzner` in den SSH-Keys des Hetzner-Projekts hinte
 Bei wsl den key nach `~/.ssh/opensbpm-hetzner` kopieren
 
 ## Requirements
-Install hetzner.hcloud with ansbile-galaxy.
+Install hetzner.hcloud and kubernetes.core with ansbile-galaxy.
 ```
 ansible-galaxy collection install hetzner.hcloud
+ansible-galaxy collection install kubernetes.core
 ```
 
 ### Run in wsl
