@@ -10,6 +10,7 @@
         type: ipv4
         delete_protection: true
         state: present
+
     - name: Setup controller server
       hetzner.hcloud.server:
         location: fsn1
@@ -27,7 +28,7 @@
         var: controller_info
 
     - name: Retrieve ssh key from controller server
-      shell: "ssh-keyscan -H {{ controller_info.hcloud_server.ipv4_address }}"
+      shell: "ssh-keyscan -H -T 120 {{ controller_info.hcloud_server.ipv4_address }}"
       register: controller_sshkeyscan
 
     - name: Add controller host keys to known_hosts
