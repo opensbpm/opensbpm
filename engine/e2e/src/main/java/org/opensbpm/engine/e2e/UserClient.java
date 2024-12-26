@@ -106,10 +106,8 @@ class UserClient {
     }
 
     public void stop() throws InterruptedException, ExecutionException {
-        taskExecutorService.shutdown();
-
         tasksFetcher.cancel();
-        tasksFetcher.purge();
+        taskExecutorService.shutdown();
     }
 
     public void executeTask(TaskInfo taskInfo) {
