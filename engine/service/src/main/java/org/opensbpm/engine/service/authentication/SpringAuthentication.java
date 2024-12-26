@@ -36,6 +36,7 @@ public final class SpringAuthentication {
             username = ((UserDetails) principal).getUsername();
         } else if (principal instanceof Jwt) {
             username = ((Jwt) principal).getClaimAsString("preferred_username");
+            username =Objects.requireNonNull(username,"'preferred_username' missing in payload");
         } else if (principal instanceof DefaultOidcUser) {
             username = ((DefaultOidcUser) principal).getPreferredUsername();
         } else {

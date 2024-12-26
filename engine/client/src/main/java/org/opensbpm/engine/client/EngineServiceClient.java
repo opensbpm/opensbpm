@@ -35,12 +35,14 @@ public final class EngineServiceClient {
 
 
     public static EngineServiceClient create(String baseAddress, Credentials credentials) {
-        Objects.requireNonNull(baseAddress, "baseAddress must not be null");
-        if(baseAddress.endsWith("/")){
-            throw new IllegalArgumentException(baseAddress +" must not end with /");
-        }
+        return create(baseAddress,baseAddress, credentials);
+    }
+
+    public static EngineServiceClient create(String authAddress, String serviceAddress, Credentials credentials) {
+        requireAddress(authAddress);
+        requireAddress(serviceAddress);
         Objects.requireNonNull(credentials, "Credentials must not be null");
-        return new EngineServiceClient(baseAddress,
+        return new EngineServiceClient(serviceAddress,
                 new AuthTokenSupplier() {
                     private Authentication authentication;
 
@@ -67,7 +69,7 @@ public final class EngineServiceClient {
                         HttpClient httpClient = HttpClient.newBuilder()
                                 .sslContext(sslContext)
                                 .build();
-                        HttpRequest authRequest = HttpRequest.newBuilder(URI.create(String.format("%s/auth/realms/quickstart/protocol/openid-connect/token", baseAddress)))
+                        HttpRequest authRequest = HttpRequest.newBuilder(URI.create(String.format("%s/auth/realms/quickstart/protocol/openid-connect/token", authAddress)))
                                 .header("content-type", "application/x-www-form-urlencoded")
                                 .POST(BodyPublishers.ofString(
                                         String.format("client_id=opensbpm-ui&username=%s&password=%s&grant_type=password", credentials.getUserName(), String.valueOf(credentials.getPassword()))
@@ -79,6 +81,14 @@ public final class EngineServiceClient {
 
                 }
         );
+    }
+
+    private static String requireAddress(String authAddress) {
+        Objects.requireNonNull(authAddress, "Address must not be null");
+        if(authAddress.endsWith("/")){
+            throw new IllegalArgumentException(authAddress +" must not end with /");
+        }
+        return authAddress;
     }
 
     private final String baseAddress;
