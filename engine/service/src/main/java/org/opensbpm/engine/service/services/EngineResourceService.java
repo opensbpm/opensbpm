@@ -20,11 +20,8 @@ package org.opensbpm.engine.service.services;
 import jakarta.ws.rs.ClientErrorException;
 import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.core.Response.Status;
-import org.opensbpm.engine.api.EngineService;
-import org.opensbpm.engine.api.ModelNotFoundException;
+import org.opensbpm.engine.api.*;
 import org.opensbpm.engine.api.ModelService.ModelRequest;
-import org.opensbpm.engine.api.UserNotFoundException;
-import org.opensbpm.engine.api.UserTokenService;
 import org.opensbpm.engine.api.instance.ProcessInfo;
 import org.opensbpm.engine.api.instance.ProcessInstanceState;
 import org.opensbpm.engine.api.instance.TaskInfo;
@@ -189,10 +186,10 @@ public class EngineResourceService implements EngineResource {
             try {
                 UserToken userToken = retrieveToken(SecurityContextHolder.getContext().getAuthentication());
                 if (!taskId.equals(taskRequest.getId())) {
-                    throw new ClientErrorException("Task id " + taskId + " doesnt match TaskRequest " + taskRequest.getId(), Status.BAD_REQUEST);
+                    throw new ClientErrorException("Task id " + taskId + " doesn't match TaskRequest " + taskRequest.getId(), Status.BAD_REQUEST);
                 }
                 engineService.executeTask(userToken, taskRequest);
-            } catch (UserNotFoundException | TaskNotFoundException ex) {
+            } catch (UserNotFoundException | SubjectAlreadyBoundException | TaskNotFoundException ex) {
                 throw new NotFoundException(ex.getMessage(), ex);
             } catch (TaskOutOfDateException ex) {
                 throw new ClientErrorException(ex.getMessage(), Status.GONE, ex);
