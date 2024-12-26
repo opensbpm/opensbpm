@@ -41,7 +41,7 @@ public final class SpringAuthentication {
         } else {
             username = principal.toString();
         }
-        Objects.requireNonNull(username,"Username must be non null");
+        Objects.requireNonNull(username,"Username must be non null ("+principal+")");
 
         return new TokenRequest() {
             @Override
