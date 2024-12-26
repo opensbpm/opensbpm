@@ -19,7 +19,6 @@
       ],
       "realmRoles": [
         "Angestellte",
-        "Abteilungsleiter",
         "user"
       ]
     },
@@ -36,7 +35,6 @@
         }
       ],
       "realmRoles": [
-        "Angestellte",
         "Abteilungsleiter",
         "user",
         "user_premium"
@@ -55,7 +53,6 @@
         }
       ],
       "realmRoles": [
-        "Angestellte",
         "Reisestelle",
         "user"
       ]
