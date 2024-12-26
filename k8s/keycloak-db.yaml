@@ -55,8 +55,8 @@ spec:
             - name: POSTGRES_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: keycloak-db-password
-                  key: password
+                  name: opensbpm-secrets
+                  key: keycloak-db-password
           ports:
             - name: kc-db-port
               containerPort: 5432

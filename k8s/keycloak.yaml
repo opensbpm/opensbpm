@@ -50,8 +50,8 @@ spec:
             - name: KC_DB_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: engine-db-password
-                  key: password
+                  name: opensbpm-secrets
+                  key: keycloak-db-password
             - name: KEYCLOAK_ADMIN
               value: "admin"
             - name: KEYCLOAK_ADMIN_PASSWORD
@@ -70,8 +70,8 @@ spec:
             - name: KC_DB_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: engine-db-password
-                  key: password
+                  name: opensbpm-secrets
+                  key: keycloak-db-password
             #- name: KC_HOSTNAME
             #  value: localhost
             - name: KEYCLOAK_ADMIN
