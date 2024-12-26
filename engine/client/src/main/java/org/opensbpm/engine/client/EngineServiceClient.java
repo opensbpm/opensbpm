@@ -36,6 +36,9 @@ public final class EngineServiceClient {
 
     public static EngineServiceClient create(String baseAddress, Credentials credentials) {
         Objects.requireNonNull(baseAddress, "baseAddress must not be null");
+        if(baseAddress.endsWith("/")){
+            throw new IllegalArgumentException(baseAddress +" must not end with /");
+        }
         Objects.requireNonNull(credentials, "Credentials must not be null");
         return new EngineServiceClient(baseAddress,
                 new AuthTokenSupplier() {
@@ -64,7 +67,7 @@ public final class EngineServiceClient {
                         HttpClient httpClient = HttpClient.newBuilder()
                                 .sslContext(sslContext)
                                 .build();
-                        HttpRequest authRequest = HttpRequest.newBuilder(URI.create("https://cloud.opensbpm.org/auth/realms/quickstart/protocol/openid-connect/token"))
+                        HttpRequest authRequest = HttpRequest.newBuilder(URI.create(String.format("%s/auth/realms/quickstart/protocol/openid-connect/token", baseAddress)))
                                 .header("content-type", "application/x-www-form-urlencoded")
                                 .POST(BodyPublishers.ofString(
                                         String.format("client_id=opensbpm-ui&username=%s&password=%s&grant_type=password", credentials.getUserName(), String.valueOf(credentials.getPassword()))
@@ -110,7 +113,7 @@ public final class EngineServiceClient {
                         .registerModule(new JavaTimeModule()))
         );
         JAXRSClientFactoryBean factoryBean = new JAXRSClientFactoryBean();
-        factoryBean.setAddress(String.format("%s", baseAddress));
+        factoryBean.setAddress(String.format("%s/api/services", baseAddress));
         factoryBean.setProviders(providers);
         factoryBean.setInheritHeaders(true);
         factoryBean.setServiceClass(type);
