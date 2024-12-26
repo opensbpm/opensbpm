@@ -32,9 +32,16 @@ public class Configuration {
             .desc("url of OpenSBPM-Engine")
             .required(true)
             .build();
+    private static final Option AUTHURLOPTION = Option.builder("a")
+            .longOpt("authurl")
+            .hasArg(true)
+            .argName("authurl")
+            .desc("Use different url for authentication")
+            .build();
     public static Configuration parseArgs(String[] args) throws ParseException {
         Options options = new Options();
         options.addOption(URLOPTION);
+        options.addOption(AUTHURLOPTION);
         try {
             CommandLine cmd = new DefaultParser().parse(options, args, true);
             return new Configuration(cmd);
@@ -55,6 +62,14 @@ public class Configuration {
 
     public String getUrl() {
         return cmd.getOptionValue(URLOPTION.getOpt());
+    }
+
+    public boolean hasAuthUrl(){
+        return cmd.hasOption(AUTHURLOPTION.getOpt());
+    }
+
+    public String getAuthUrl() {
+        return cmd.getOptionValue(AUTHURLOPTION.getOpt());
     }
 
 }
