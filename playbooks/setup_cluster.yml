@@ -28,7 +28,7 @@
         var: controller_info
 
     - name: Retrieve ssh key from controller server
-      shell: "ssh-keyscan -H -T 120 {{ controller_info.hcloud_server.ipv4_address }}"
+      shell: "ssh-keyscan -H -T 240 {{ controller_info.hcloud_server.ipv4_address }}"
       register: controller_sshkeyscan
 
     - name: Add controller host keys to known_hosts
@@ -87,3 +87,16 @@
         kind: Namespace
         state: present
 
+    - name: Create secrets
+      kubernetes.core.k8s:
+        namespace: opensbpm
+        state: present
+        definition:
+          apiVersion: v1
+          kind: Secret
+          metadata:
+            name: opensbpm-secrets
+          type: Opaque
+          data:
+            keycloak-db-password: "{{ lookup('ansible.builtin.password', '/tmp/keycloak-passwd', chars=['ascii_letters', 'digits', 'punctuation']) | b64encode }}"
+            engine-db-password: "{{ lookup('ansible.builtin.password', '/tmp/engine-passwd', chars=['ascii_letters', 'digits', 'punctuation']) | b64encode }}"

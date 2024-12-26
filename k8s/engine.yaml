@@ -41,8 +41,8 @@ spec:
             - name: SPRING_DATASOURCE_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: engine-db-password
-                  key: password
+                  name: opensbpm-secrets
+                  key: engine-db-password
             - name: SPRING_JPA_HIBERNATE_DDLAUTO
               value: update
           ports:

@@ -55,8 +55,8 @@ spec:
             - name: POSTGRES_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: engine-db-password
-                  key: password
+                  name: opensbpm-secrets
+                  key: engine-db-password
           ports:
             - name: engine-db-port
               containerPort: 5432
