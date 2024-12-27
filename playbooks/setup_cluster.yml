@@ -15,7 +15,9 @@
       hetzner.hcloud.server:
         location: fsn1
         name: controller
-        server_type: cx22
+        server_type: cx22 # 2 VCPU, 4GB RAM
+        #server_type: cx32 # 3 VCPU, 4GB RAM
+        #server_type: cpx31 # 4 VCPU, 8GB RAM
         image: ubuntu-24.04
         ipv4: opensbpm-primary-ip
         ssh_keys:
@@ -28,7 +30,7 @@
         var: controller_info
 
     - name: Retrieve ssh key from controller server
-      shell: "ssh-keyscan -H -T 240 {{ controller_info.hcloud_server.ipv4_address }}"
+      shell: "ssh-keyscan -vvv -T 240 -H {{ controller_info.hcloud_server.ipv4_address }}"
       register: controller_sshkeyscan
 
     - name: Add controller host keys to known_hosts
@@ -78,7 +80,13 @@
         flat: yes
 
     - name: Activate microk8s plugins
-      ansible.builtin.command: microk8s enable dns ingress cert-manager dashboard
+      become: yes
+      shell: |
+        microk8s enable dns 
+        microk8s enable ingress 
+        microk8s enable cert-manager 
+        microk8s enable observability 
+        microk8s enable dashboard
 
     - name: Create OpenSBPM namespace in k8s
       kubernetes.core.k8s:
