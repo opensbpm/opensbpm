@@ -9,10 +9,10 @@ spec:
   ingressClassName: public
   tls:
     - hosts:
-        - cloud.opensbpm.org
+        - cloud-dev.opensbpm.org
       secretName: opensbpm-tls
   rules:
-    - host: cloud.opensbpm.org
+    - host: cloud-dev.opensbpm.org
       http:
         paths:
           - path: /auth
