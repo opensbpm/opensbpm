@@ -4,8 +4,10 @@ metadata:
   name: lets-encrypt
 spec:
   acme:
-    email: office@opensbpm.org
-    server: https://acme-v02.api.letsencrypt.org/directory
+    #email: office@opensbpm.org
+    email: stefan@sedelmaier.at
+    #server: https://acme-v02.api.letsencrypt.org/directory #production server
+    server: https://acme-staging-v02.api.letsencrypt.org/directory #staging server
     privateKeySecretRef:
       # Secret resource that will be used to store the account's private key.
       name: lets-encrypt-priviate-key
