@@ -12,5 +12,5 @@ resources:
   - pv-engine-db-local.yaml
   - engine-db.yaml
   - engine.yaml
-  - frontend.yaml
-  - vaadinui.yaml
+#  - frontend.yaml
+#  - vaadinui.yaml
