@@ -30,7 +30,7 @@
         var: controller_info
 
     - name: Retrieve ssh key from controller server
-      shell: "ssh-keyscan -vvv -T 240 -H {{ controller_info.hcloud_server.ipv4_address }}"
+      shell: "sleep 30; ssh-keyscan -vvv -T 240 -H {{ controller_info.hcloud_server.ipv4_address }}"
       register: controller_sshkeyscan
 
     - name: Add controller host keys to known_hosts
