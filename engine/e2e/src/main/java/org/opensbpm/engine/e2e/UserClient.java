@@ -79,7 +79,7 @@ class UserClient {
 
         List<TaskInfo> taskInfos = getProcessModelResource().index().getProcessModelInfos().parallelStream()
                 .map(model -> {
-                    LOGGER.info("starting process " + model.getName() + " for user " + getUserToken().getName());
+                    LOGGER.info("User[" + getUserToken().getName() +"] starting process " + model.getName());
                     return getProcessModelResource().start(model.getId());
                 })
                 .toList();
@@ -102,7 +102,7 @@ class UserClient {
                         .forEach(taskExecutorService::submit);
 
             }
-        }, 100, 300);
+        }, 0, 10);
     }
 
     public void stop() throws InterruptedException, ExecutionException {

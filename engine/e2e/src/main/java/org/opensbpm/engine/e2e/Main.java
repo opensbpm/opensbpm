@@ -88,11 +88,13 @@ public class Main {
 
                 for (UserClient userClient : userClients) {
                     List<ProcessInfo> activeProcesses = userClient.getActiveProcesses();
-                    LOGGER.info(userClient.getUserToken().getName() + " has active processes " +
-                            activeProcesses.stream()
-                                    .map(processInfo -> asString(processInfo))
-                                    .collect(Collectors.joining(","))
-                    );
+                    if(!activeProcesses.isEmpty()) {
+                        LOGGER.info("User[" + userClient.getUserToken().getName() + "] has active processes " +
+                                activeProcesses.stream()
+                                        .map(processInfo -> asString(processInfo))
+                                        .collect(Collectors.joining(","))
+                        );
+                    }
                 }
                 try {
                     Thread.sleep(2000);
