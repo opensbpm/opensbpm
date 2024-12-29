@@ -89,7 +89,7 @@ public class Main {
                 for (UserClient userClient : userClients) {
                     List<ProcessInfo> activeProcesses = userClient.getActiveProcesses();
                     if(!activeProcesses.isEmpty()) {
-                        LOGGER.info("User[" + userClient.getUserToken().getName() + "] has active processes " +
+                        LOGGER.finer("User[" + userClient.getUserToken().getName() + "] has active processes " +
                                 activeProcesses.stream()
                                         .map(processInfo -> asString(processInfo))
                                         .collect(Collectors.joining(","))
@@ -97,12 +97,11 @@ public class Main {
                     }
                 }
                 try {
-                    Thread.sleep(2000);
+                    Thread.sleep(1000);
                 } catch (InterruptedException ex) {
                     LOGGER.log(Level.SEVERE, ex.getMessage(), ex);
                     // Restore interrupted state...
                     Thread.currentThread().interrupt();
-                    System.exit(1);
                 }
             }
             LOGGER.info("All processes finished");
