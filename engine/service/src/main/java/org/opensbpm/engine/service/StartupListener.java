@@ -10,9 +10,6 @@ import jakarta.xml.bind.JAXBException;
 import org.opensbpm.engine.api.ModelService;
 import org.opensbpm.engine.api.TaskProviderService;
 import org.opensbpm.engine.api.model.definition.ProcessDefinition;
-import org.opensbpm.engine.api.taskprovider.TaskProviderInfo;
-import org.opensbpm.engine.api.taskprovider.TaskProviderInfo.ProviderResource;
-import org.opensbpm.engine.examples.ExampleModels;
 import org.opensbpm.engine.xmlmodel.ProcessModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.ContextRefreshedEvent;
@@ -61,10 +58,10 @@ public class StartupListener {
 //    }
 
     private void storeModel(String model) throws JAXBException {
-        storeModel(loadResource(model));
+        storeModel(loadModel(model));
     }
 
-    private static InputStream loadResource(String resource) {
+    private static InputStream loadModel(String resource) {
         return StartupListener.class.getResourceAsStream("/org/opensbpm/engine/service/models/" + resource);
     }
 
