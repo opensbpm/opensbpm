@@ -36,7 +36,7 @@ public class StartupListener {
     @EventListener
     @Transactional
     public void onApplicationEvent(ContextRefreshedEvent event) throws JAXBException {
-        storeModel(ExampleModels.getDienstreiseantrag());
+        storeModel(ExampleModels.getDienstreiseantragSimple());
         
 //        storeModel("Rechnungslegung_Kunden.xml");
 //        storeModel("Rechnungslegung_Wizard.xml");
