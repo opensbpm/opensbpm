@@ -33,7 +33,8 @@ class UserClient {
     private final ExecutorService taskExecutorService;
     //
     private UserToken userToken;
-    private List<Long> startedProcesses;
+    private List<TaskInfo> startedProcesses;
+    private BlockingQueue<TaskInfo> tasks = new LinkedBlockingDeque<>();
     private Timer tasksFetcher;
 
 
@@ -73,39 +74,46 @@ class UserClient {
     }
 
     void start() {
-        LOGGER.info("User: " + getUserToken().getName() + " Roles: " + getUserToken().getRoles().stream()
+        LOGGER.info("User[" + getUserToken().getName() + "] with Roles " + getUserToken().getRoles().stream()
                 .map(RoleToken::getName)
                 .collect(Collectors.joining(",")));
 
-        List<TaskInfo> taskInfos = getProcessModelResource().index().getProcessModelInfos().parallelStream()
+        startedProcesses = getProcessModelResource().index().getProcessModelInfos().parallelStream()
                 .map(model -> {
                     LOGGER.info("User[" + getUserToken().getName() +"] starting process " + model.getName());
                     return getProcessModelResource().start(model.getId());
                 })
                 .toList();
-        startedProcesses = taskInfos.stream()
-                .map(TaskInfo::getProcessId)
-                .toList();
-
-        taskInfos.stream()
-                .map(taskInfo -> (Runnable) () -> executeTask(taskInfo))
-                .forEach(taskExecutorService::submit);
-
+        tasks.addAll(startedProcesses);
 
         tasksFetcher = new Timer("TasksFetcher for " + getUserToken().getName());
         tasksFetcher.schedule(new TimerTask() {
             @Override
             public void run() {
                 LOGGER.finer("fetching tasks for user " + getUserToken().getName());
-                getTaskResource().index().getTaskInfos().stream()
-                        .map(taskInfo -> (Runnable) () -> executeTask(taskInfo))
-                        .forEach(taskExecutorService::submit);
-
+                tasks.addAll(getTaskResource().index().getTaskInfos());
             }
-        }, 0, 10);
+        }, 100, 100);
+
+        taskExecutorService.submit(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    TaskInfo taskInfo;
+                    while((taskInfo = tasks.take())!= null){
+                        executeTask(taskInfo);
+                    }
+                } catch (InterruptedException ex) {
+                    LOGGER.log(Level.SEVERE, ex.getMessage(), ex);
+                    // Restore interrupted state...
+                    Thread.currentThread().interrupt();
+                }
+            }
+        });
     }
 
     public void stop() throws InterruptedException, ExecutionException {
+        LOGGER.info("User[" + getUserToken().getName() +"] closing client");
         tasksFetcher.cancel();
         taskExecutorService.shutdown();
     }
@@ -184,7 +192,7 @@ class UserClient {
 
     public List<ProcessInfo> getActiveProcesses() {
         return startedProcesses.stream()
-                .map(processId -> getProcessInstanceResource().retrieve(processId))
+                .map(task -> getProcessInstanceResource().retrieve(task.getProcessId()))
                 .filter(processInfo -> processInfo.getState() == ProcessInstanceState.ACTIVE)
                 .toList();
     }
