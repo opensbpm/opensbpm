@@ -9,6 +9,7 @@ package org.opensbpm.engine.service;
 import jakarta.xml.bind.JAXBException;
 import org.opensbpm.engine.api.ModelService;
 import org.opensbpm.engine.api.TaskProviderService;
+import org.opensbpm.engine.api.model.definition.ProcessDefinition;
 import org.opensbpm.engine.api.taskprovider.TaskProviderInfo;
 import org.opensbpm.engine.api.taskprovider.TaskProviderInfo.ProviderResource;
 import org.opensbpm.engine.examples.ExampleModels;
@@ -68,7 +69,9 @@ public class StartupListener {
     }
 
     private void storeModel(InputStream loadResource) throws JAXBException {
-        modelService.save(new ProcessModel().unmarshal(loadResource));
+        ProcessDefinition definition = new ProcessModel().unmarshal(loadResource);
+        LOGGER.info("Storing model " + definition.getName());
+        modelService.save(definition);
     }
 
 
