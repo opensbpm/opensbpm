@@ -14,9 +14,9 @@ spring:
 
 #debug: true
 
-#logging:
-#  level:
+logging.level:
 #    root: INFO
+  org.hibernate.engine.internal.StatefulPersistenceContext: ERROR # avoid HHH000179 info
 #    org.springframework.web: DEBUG
 #    org.springframework.security: DEBUG
 #    org.springframework.security.oauth2: INFO
