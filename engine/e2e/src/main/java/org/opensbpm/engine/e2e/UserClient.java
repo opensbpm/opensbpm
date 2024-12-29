@@ -29,31 +29,28 @@ class UserClient {
     }
 
     //
+    private final BlockingQueue<TaskInfo> tasks = new LinkedBlockingDeque<>();
+    private final Set<TaskInfo> processedTasks = new HashSet<>();
+    private final ExecutorService taskExecutorService = Executors.newWorkStealingPool(1);
+    //
     private final EngineServiceClient engineServiceClient;
-    private final ExecutorService taskExecutorService;
     //
     private UserToken userToken;
     private List<TaskInfo> startedProcesses;
-    private BlockingQueue<TaskInfo> tasks = new LinkedBlockingDeque<>();
     private Timer tasksFetcher;
 
 
     private UserClient(Configuration configuration, Credentials credentials) {
-        if(configuration.hasAuthUrl()){
+        if (configuration.hasAuthUrl()) {
             engineServiceClient = EngineServiceClient.create(configuration.getAuthUrl(), configuration.getUrl(), credentials);
-        }else {
+        } else {
             engineServiceClient = EngineServiceClient.create(configuration.getUrl(), credentials);
         }
-        taskExecutorService = Executors.newWorkStealingPool(1);
-    }
-
-    public synchronized EngineServiceClient getEngineServiceClient() {
-        return engineServiceClient;
     }
 
     public UserToken getUserToken() {
         if (userToken == null)
-            userToken = getEngineServiceClient().getUserResource().info();
+            userToken = engineServiceClient.getUserResource().info();
         return userToken;
     }
 
@@ -62,15 +59,15 @@ class UserClient {
     }
 
     private ProcessModelResource getProcessModelResource() {
-        return getEngineServiceClient().getEngineResource().getProcessModelResource(getUserId());
+        return engineServiceClient.getEngineResource().getProcessModelResource(getUserId());
     }
 
     private ProcessInstanceResource getProcessInstanceResource() {
-        return getEngineServiceClient().getEngineResource().getProcessInstanceResource(getUserId());
+        return engineServiceClient.getEngineResource().getProcessInstanceResource(getUserId());
     }
 
     private TaskResource getTaskResource() {
-        return getEngineServiceClient().getEngineResource().getTaskResource(getUserId());
+        return engineServiceClient.getEngineResource().getTaskResource(getUserId());
     }
 
     void start() {
@@ -80,7 +77,7 @@ class UserClient {
 
         startedProcesses = getProcessModelResource().index().getProcessModelInfos().parallelStream()
                 .map(model -> {
-                    LOGGER.info("User[" + getUserToken().getName() +"] starting process " + model.getName());
+                    LOGGER.info("User[" + getUserToken().getName() + "] starting process " + model.getName());
                     return getProcessModelResource().start(model.getId());
                 })
                 .toList();
@@ -90,21 +87,32 @@ class UserClient {
         tasksFetcher.schedule(new TimerTask() {
             @Override
             public void run() {
-                LOGGER.finer("fetching tasks for user " + getUserToken().getName());
-                tasks.addAll(getTaskResource().index().getTaskInfos());
+                LOGGER.finest("User[" + getUserToken().getName() + "] fetching tasks");
+                getTaskResource().index().getTaskInfos().stream()
+                        .filter(taskInfo -> !tasks.contains(taskInfo) && !processedTasks.contains(taskInfo))
+                        .forEach(taskInfo -> {
+                            try {
+                                tasks.put(taskInfo);
+                            } catch (InterruptedException ex) {
+                                LOGGER.info("User[" + getUserToken().getName() + "]: " + ex.getMessage());
+                                // Restore interrupted state...
+                                Thread.currentThread().interrupt();
+                            }
+                        });
             }
-        }, 100, 100);
+        }, 50, 50);
 
         taskExecutorService.submit(new Runnable() {
             @Override
             public void run() {
                 try {
                     TaskInfo taskInfo;
-                    while((taskInfo = tasks.take())!= null){
+                    while ((taskInfo = tasks.take()) != null) {
+                        processedTasks.add(taskInfo);
                         executeTask(taskInfo);
                     }
                 } catch (InterruptedException ex) {
-                    LOGGER.log(Level.SEVERE, ex.getMessage(), ex);
+                    LOGGER.log(Level.SEVERE, ex.getMessage());
                     // Restore interrupted state...
                     Thread.currentThread().interrupt();
                 }
@@ -113,7 +121,7 @@ class UserClient {
     }
 
     public void stop() throws InterruptedException, ExecutionException {
-        LOGGER.info("User[" + getUserToken().getName() +"] closing client");
+        LOGGER.info("User[" + getUserToken().getName() + "] closing client");
         tasksFetcher.cancel();
         taskExecutorService.shutdown();
     }
@@ -129,10 +137,10 @@ class UserClient {
         } catch (ProcessingException ex) {
             LOGGER.log(Level.FINE, ex.getMessage() /*, ex*/);
         } catch (ClientErrorException ex) {
-            LOGGER.log(Level.SEVERE, "User[" + this.getUserToken().getName() + "," + taskInfo + "]:" + ex.getMessage() /*, ex*/);
+            LOGGER.log(Level.SEVERE, "User[" + this.getUserToken().getName() + "] task " + taskInfo + ": " + ex.getMessage() /*, ex*/);
         } catch (Throwable ex) {
             //TODO handle uncaught exceptions correctly
-            LOGGER.log(Level.SEVERE, "User[" + this.getUserToken().getName() + "," + taskInfo + "]:" + ex.getMessage(), ex);
+            LOGGER.log(Level.SEVERE, "User[" + this.getUserToken().getName() + "] task " + taskInfo + ": " + ex.getMessage(), ex);
         }
     }
 
@@ -192,7 +200,16 @@ class UserClient {
 
     public List<ProcessInfo> getActiveProcesses() {
         return startedProcesses.stream()
-                .map(task -> getProcessInstanceResource().retrieve(task.getProcessId()))
+                .map(task -> {
+                    try {
+                        return getProcessInstanceResource().retrieve(task.getProcessId());
+                    } catch (Exception ex) {
+                        LOGGER.info("User[" + getUserToken().getName() + "] process " + task.getProcessId() + ": " + ex.getMessage());
+                        //LOGGER.log(Level.SEVERE, ex.getMessage(), ex);
+                        return null;
+                    }
+                })
+                .filter(Objects::nonNull)
                 .filter(processInfo -> processInfo.getState() == ProcessInstanceState.ACTIVE)
                 .toList();
     }

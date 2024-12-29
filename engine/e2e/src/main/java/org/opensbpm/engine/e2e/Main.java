@@ -76,38 +76,36 @@ public class Main {
                 UserClient.of(configuration, "jdoe", "jdoe"),
                 UserClient.of(configuration, "miriam", "miriam")
         );
-        userClients.forEach(client -> client.start());
+        ExecutorService executorService = Executors.newWorkStealingPool(userClients.size());
+        for (UserClient client : userClients) {
+            executorService.submit(() -> client.start());
+        }
+        executorService.awaitTermination(1, TimeUnit.MINUTES);
 
-        ExecutorService singleExecutor = Executors.newWorkStealingPool(1);
-        singleExecutor.submit(() -> {
-            boolean allFinished = false;
-            while (!allFinished) {
-                allFinished = userClients.stream()
-                        .mapToLong(userClient -> userClient.getActiveProcesses().size())
-                        .sum() == 0;
+        boolean allFinished = false;
+        while (!allFinished) {
+            allFinished = userClients.stream()
+                    .mapToLong(userClient -> userClient.getActiveProcesses().size())
+                    .sum() == 0;
 
-                for (UserClient userClient : userClients) {
-                    List<ProcessInfo> activeProcesses = userClient.getActiveProcesses();
-                    if(!activeProcesses.isEmpty()) {
-                        LOGGER.finer("User[" + userClient.getUserToken().getName() + "] has active processes " +
-                                activeProcesses.stream()
-                                        .map(processInfo -> asString(processInfo))
-                                        .collect(Collectors.joining(","))
-                        );
-                    }
-                }
-                try {
-                    Thread.sleep(1000);
-                } catch (InterruptedException ex) {
-                    LOGGER.log(Level.SEVERE, ex.getMessage(), ex);
-                    // Restore interrupted state...
-                    Thread.currentThread().interrupt();
+            for (UserClient userClient : userClients) {
+                List<ProcessInfo> activeProcesses = userClient.getActiveProcesses();
+                if(!activeProcesses.isEmpty()) {
+                    LOGGER.finer("User[" + userClient.getUserToken().getName() + "] has active processes " +
+                            activeProcesses.stream()
+                                    .map(processInfo -> asString(processInfo))
+                                    .collect(Collectors.joining(","))
+                    );
                 }
             }
-            LOGGER.info("All processes finished");
-        });
-        singleExecutor.awaitTermination(10, TimeUnit.MINUTES);
-
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException ex) {
+                LOGGER.log(Level.SEVERE, ex.getMessage(), ex);
+                // Restore interrupted state...
+                Thread.currentThread().interrupt();
+            }
+        }
         LOGGER.info("All started processes finished");
         for (UserClient client : userClients) {
             client.stop();
