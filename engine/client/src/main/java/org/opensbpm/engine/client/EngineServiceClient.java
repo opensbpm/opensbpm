@@ -94,9 +94,24 @@ public final class EngineServiceClient {
     private final String baseAddress;
     private final AuthTokenSupplier authTokenSupplier;
     //
-    private final LazySupplier<UserResource> userResource = LazySupplier.of(() -> createResourceClient(UserResource.class));
-    private final LazySupplier<ProcessModelResource> processModelResource = LazySupplier.of(() -> createResourceClient(ProcessModelResource.class));
-    private final LazySupplier<EngineResource> engineResource = LazySupplier.of(() -> createResourceClient(EngineResource.class));
+    private final ThreadLocal<UserResource> userResource = new ThreadLocal(){
+        @Override
+        protected UserResource initialValue() {
+            return createResourceClient(UserResource.class);
+        }
+    };
+    private final ThreadLocal<ProcessModelResource> processModelResource = new ThreadLocal<>(){
+        @Override
+        protected ProcessModelResource initialValue() {
+            return createResourceClient(ProcessModelResource.class);
+        }
+    };
+    private final ThreadLocal<EngineResource> engineResource = new ThreadLocal<>(){
+        @Override
+        protected EngineResource initialValue() {
+            return createResourceClient(EngineResource.class);
+        }
+    };
 
 
     public EngineServiceClient(String baseAddress, AuthTokenSupplier authTokenSupplier) {
@@ -149,29 +164,6 @@ public final class EngineServiceClient {
         }
 
         return proxy;
-    }
-
-    private static class LazySupplier<T> {
-
-        public static <T> LazySupplier<T> of(Supplier<T> supplier) {
-            return new LazySupplier<>(supplier);
-        }
-
-        private final Supplier<T> supplier;
-
-        private T value;
-
-        private LazySupplier(Supplier<T> supplier) {
-            this.supplier = supplier;
-        }
-
-        public T get() {
-            if (value == null) {
-                value = supplier.get();
-            }
-            return value;
-        }
-
     }
 
     public interface AuthTokenSupplier extends Supplier<String> {
