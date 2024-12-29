@@ -36,8 +36,9 @@ public class StartupListener {
     @EventListener
     @Transactional
     public void onApplicationEvent(ContextRefreshedEvent event) throws JAXBException {
-        storeModel(ExampleModels.getDienstreiseantragSimple());
-        
+        //storeModel(ExampleModels.getDienstreiseantragSimple());
+        storeModel("dienstreiseantrag_simple.xml");
+
 //        storeModel("Rechnungslegung_Kunden.xml");
 //        storeModel("Rechnungslegung_Wizard.xml");
 //        storeModel("Rechnungslegung.xml");
@@ -58,16 +59,19 @@ public class StartupListener {
 //        };
 //    }
 
-    private void storeModel(InputStream loadResource) throws JAXBException {
-        modelService.save(new ProcessModel().unmarshal(loadResource));
-    }
-
     private void storeModel(String model) throws JAXBException {
         storeModel(loadResource(model));
     }
 
     private static InputStream loadResource(String resource) {
-        return StartupListener.class.getResourceAsStream("/org/opensbpm/webui/models/" + resource);
+        return StartupListener.class.getResourceAsStream("/org/opensbpm/engine/service/models/" + resource);
     }
+
+    private void storeModel(InputStream loadResource) throws JAXBException {
+        modelService.save(new ProcessModel().unmarshal(loadResource));
+    }
+
+
+
 
 }
