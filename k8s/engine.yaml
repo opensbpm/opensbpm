@@ -64,9 +64,9 @@ spec:
               path: /api/actuator/health
             initialDelaySeconds: 35
             #periodSeconds: 2
-          readinessProbe:
-            httpGet:
-              port: 8090
-              path: /api/actuator/health
-            initialDelaySeconds: 35
+#          readinessProbe:
+#            httpGet:
+#              port: 8090
+#              path: /api/actuator/health
+#            initialDelaySeconds: 35
       restartPolicy: Always
