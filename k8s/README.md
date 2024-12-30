@@ -26,6 +26,11 @@ kubectl --kubeconfig ~/.kube/opensbm\@hetzner logs -n ingress -l name=nginx-ingr
 microk8s kubectl port-forward -n kube-system service/kubernetes-dashboard --address 0.0.0.0 10443:443
 '''
 
+Token
+'''
+microk8s kubectl create token default
+'''
+
 
 == Grafana access with port-forwarding
 (see https://www.server-world.info/en/note?os=Ubuntu_24.04&p=microk8s&f=8 )
