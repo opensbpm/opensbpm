@@ -20,7 +20,7 @@ metadata:
   labels:
     app: engine
 spec:
-  replicas: 1
+  replicas: 2
   selector:
     matchLabels:
       app: engine
@@ -50,6 +50,11 @@ spec:
                   key: engine-db-password
             - name: SPRING_JPA_HIBERNATE_DDLAUTO
               value: update
+          resources:
+            requests:
+              memory: "512Mi"
+            limits:
+              memory: "1Gi"
           ports:
             - name: engine-http
               containerPort: 8090
@@ -57,11 +62,11 @@ spec:
             httpGet:
               port: 8090
               path: /api/actuator/health
-            initialDelaySeconds: 40
+            initialDelaySeconds: 35
             #periodSeconds: 2
           readinessProbe:
             httpGet:
               port: 8090
               path: /api/actuator/health
-            initialDelaySeconds: 40
+            initialDelaySeconds: 35
       restartPolicy: Always
