@@ -39,7 +39,7 @@ public class UserResourceService implements UserResource {
     private UserTokenService userTokenService;
 
     @Override
-    public UserToken info() {
+    public synchronized UserToken info() {
         TokenRequest tokenRequest = SpringAuthentication.of(SecurityContextHolder.getContext().getAuthentication());
         return userTokenService.registerUser(tokenRequest);
     }
