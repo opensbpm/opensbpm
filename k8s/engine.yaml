@@ -28,6 +28,11 @@ spec:
     metadata:
       labels:
         app: engine
+      annotations:
+        # Prometheus configuration
+        prometheus.io/scrape: "true"
+        prometheus.io/path: "/api/actuator/prometheus"
+        prometheus.io/port: "8080"
     spec:
       containers:
         - name: engine
@@ -48,4 +53,15 @@ spec:
           ports:
             - name: engine-http
               containerPort: 8090
+          livenessProbe:
+            httpGet:
+              port: 8090
+              path: /api/actuator/health
+            initialDelaySeconds: 40
+            #periodSeconds: 2
+          readinessProbe:
+            httpGet:
+              port: 8090
+              path: /api/actuator/health
+            initialDelaySeconds: 40
       restartPolicy: Always
