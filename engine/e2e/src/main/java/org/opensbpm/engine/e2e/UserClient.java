@@ -35,7 +35,7 @@ class UserClient {
     //
     private final BlockingQueue<TaskInfo> tasks = new LinkedBlockingDeque<>();
     private final Set<TaskInfo> processedTasks = new HashSet<>();
-    private final ExecutorService taskExecutorService = Executors.newWorkStealingPool(1);
+    private final ExecutorService taskExecutorService = Executors.newFixedThreadPool(10);
     //
     private final EngineServiceClient engineServiceClient;
     //
@@ -82,7 +82,7 @@ class UserClient {
         startedProcesses = getProcessModelResource().index().getProcessModelInfos().stream()
                 .flatMap(model -> {
                     LOGGER.info("User[" + getUserToken().getName() + "] starting process " + model.getName());
-                    return IntStream.range(0, 100).boxed()
+                    return IntStream.range(0, 500).boxed()
                             .map(idx -> getProcessModelResource().start(model.getId()));
                 })
                 .toList();
@@ -156,6 +156,9 @@ class UserClient {
                 LOGGER.log(Level.FINE, ex.getMessage() /*, ex*/);
             } catch (ClientErrorException ex) {
                 LOGGER.log(Level.SEVERE, "User[" + userToken.getName() + "] task " + taskInfo + ": " + ex.getMessage() /*, ex*/);
+                if(ex.getResponse().getStatus() == 401){
+                    engineServiceClient.refreshToken();
+                }
             } catch (Throwable ex) {
                 //TODO handle uncaught exceptions correctly
                 LOGGER.log(Level.SEVERE, "User[" + userToken.getName() + "] task " + taskInfo + ": " + ex.getMessage(), ex);
@@ -223,6 +226,12 @@ class UserClient {
                 .map(task -> {
                     try {
                         return getProcessInstanceResource().retrieve(task.getProcessId());
+                    } catch (ClientErrorException ex) {
+                        LOGGER.log(Level.SEVERE, "User[" + userToken.getName() + "] process " + task.getProcessId() + ": " + ex.getMessage() /*, ex*/);
+                        if(ex.getResponse().getStatus() == 401){
+                            engineServiceClient.refreshToken();
+                        }
+                        return null;
                     } catch (Exception ex) {
                         LOGGER.info("User[" + getUserToken().getName() + "] process " + task.getProcessId() + ": " + ex.getMessage());
                         //LOGGER.log(Level.SEVERE, ex.getMessage(), ex);

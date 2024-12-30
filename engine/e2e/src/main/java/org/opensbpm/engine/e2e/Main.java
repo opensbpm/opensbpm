@@ -74,6 +74,7 @@ public class Main {
         List<UserClient> userClients = asList(
                 UserClient.of(configuration, "alice", "alice"),
                 UserClient.of(configuration, "jdoe", "jdoe"),
+                //UserClient.of(configuration, "jodoe", "jodoe"),
                 UserClient.of(configuration, "miriam", "miriam")
         );
         ExecutorService executorService = Executors.newFixedThreadPool(userClients.size());
