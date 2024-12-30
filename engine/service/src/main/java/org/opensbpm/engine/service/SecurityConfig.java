@@ -20,6 +20,8 @@ public class SecurityConfig {
         http.authorizeHttpRequests(authz -> authz
                         .requestMatchers("/services/openapi.yaml","/services/api-docs/**").permitAll()
                         .requestMatchers("/services/engine/**").authenticated()
+                        //.requestMatchers("/actuator/health").permitAll()
+                        .requestMatchers("/actuator/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .oauth2ResourceServer(oauth2 -> oauth2.jwt(Customizer.withDefaults()))
