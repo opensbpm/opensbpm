@@ -36,7 +36,7 @@ class UserClient {
     private final EngineServiceClient engineServiceClient;
     //
     private UserToken userToken;
-    private List<TaskInfo> startedProcesses;
+    private List<TaskInfo> startedProcesses = Collections.emptyList();
     private Timer tasksFetcher;
 
 
@@ -66,11 +66,11 @@ class UserClient {
         return engineServiceClient.getEngineResource().getProcessInstanceResource(getUserId());
     }
 
-    private TaskResource getTaskResource() {
-        return engineServiceClient.getEngineResource().getTaskResource(getUserId());
+    private TaskResource newTaskResource() {
+        return engineServiceClient.newEngineResource().getTaskResource(getUserId());
     }
 
-    void start() {
+    public void start() {
         LOGGER.info("User[" + getUserToken().getName() + "] with Roles " + getUserToken().getRoles().stream()
                 .map(RoleToken::getName)
                 .collect(Collectors.joining(",")));
@@ -88,7 +88,7 @@ class UserClient {
             @Override
             public void run() {
                 LOGGER.finest("User[" + getUserToken().getName() + "] fetching tasks");
-                getTaskResource().index().getTaskInfos().stream()
+                newTaskResource().index().getTaskInfos().stream()
                         .filter(taskInfo -> !tasks.contains(taskInfo) && !processedTasks.contains(taskInfo))
                         .forEach(taskInfo -> {
                             try {
@@ -109,7 +109,7 @@ class UserClient {
                     TaskInfo taskInfo;
                     while ((taskInfo = tasks.take()) != null) {
                         processedTasks.add(taskInfo);
-                        executeTask(taskInfo);
+                        new TaskExecutor(getUserToken(), newTaskResource()).execute(taskInfo);
                     }
                 } catch (InterruptedException ex) {
                     LOGGER.log(Level.SEVERE, ex.getMessage());
@@ -126,76 +126,87 @@ class UserClient {
         taskExecutorService.shutdown();
     }
 
-    public void executeTask(TaskInfo taskInfo) {
-        try {
-            Task task = new Task(taskInfo, getTaskResource().retrieve(taskInfo.getId()));
-            if (task.getNextStates() == null || task.getNextStates().isEmpty()) {
-                LOGGER.log(Level.SEVERE, "no nextState for {0}", task);
-            } else {
-                executeTask(task, Utils::randomState, Utils::createRandomValue);
-            }
-        } catch (ProcessingException ex) {
-            LOGGER.log(Level.FINE, ex.getMessage() /*, ex*/);
-        } catch (ClientErrorException ex) {
-            LOGGER.log(Level.SEVERE, "User[" + this.getUserToken().getName() + "] task " + taskInfo + ": " + ex.getMessage() /*, ex*/);
-        } catch (Throwable ex) {
-            //TODO handle uncaught exceptions correctly
-            LOGGER.log(Level.SEVERE, "User[" + this.getUserToken().getName() + "] task " + taskInfo + ": " + ex.getMessage(), ex);
+    private static class TaskExecutor {
+        private final UserToken userToken;
+        private final TaskResource taskResource;
+
+        public TaskExecutor(UserToken userToken, TaskResource taskResource) {
+            this.userToken = userToken;
+            this.taskResource = taskResource;
         }
-    }
 
-    private void executeTask(Task task, Function<Task, NextState> stateValue, Function<SimpleAttributeSchema, Serializable> fieldValue) {
-        task.getSchemas().forEach(objectSchema -> {
-            Map<Long, Serializable> attributeData = task.getObjectData(objectSchema).getData();
-            setValues(objectSchema.getAttributes(), attributeData, fieldValue);
-        });
+        public void execute(TaskInfo taskInfo) {
+            try {
+                Task task = new Task(taskInfo, taskResource.retrieve(taskInfo.getId()));
+                if (task.getNextStates() == null || task.getNextStates().isEmpty()) {
+                    LOGGER.log(Level.SEVERE, "no nextState for {0}", task);
+                } else {
+                    execute(task, Utils::randomState, Utils::createRandomValue);
+                }
+            } catch (ProcessingException ex) {
+                LOGGER.log(Level.FINE, ex.getMessage() /*, ex*/);
+            } catch (ClientErrorException ex) {
+                LOGGER.log(Level.SEVERE, "User[" + userToken.getName() + "] task " + taskInfo + ": " + ex.getMessage() /*, ex*/);
+            } catch (Throwable ex) {
+                //TODO handle uncaught exceptions correctly
+                LOGGER.log(Level.SEVERE, "User[" + userToken.getName() + "] task " + taskInfo + ": " + ex.getMessage(), ex);
+            }
+        }
 
-        NextState nextState = stateValue.apply(task);
-        LOGGER.log(Level.FINEST, "User[{0}]: executing task {0}", new Object[]{
-                this.getUserToken().getName(),
-                task
-        });
-        getTaskResource().submit(task.getId(), task.createTaskRequest(nextState));
-        LOGGER.log(Level.INFO, "User[{0}]: task {1} successfully changed to state {2}", new Object[]{
-                this.getUserToken().getName(),
-                task.getStateName(),
-                nextState.getName()
-        });
-    }
+        private void execute(Task task, Function<Task, NextState> stateValue, Function<SimpleAttributeSchema, Serializable> fieldValue) {
+            task.getSchemas().forEach(objectSchema -> {
+                Map<Long, Serializable> attributeData = task.getObjectData(objectSchema).getData();
+                setValues(objectSchema.getAttributes(), attributeData, fieldValue);
+            });
 
-    private void setValues(List<AttributeSchema> attributes, Map<Long, Serializable> attributeData, Function<SimpleAttributeSchema, Serializable> fieldValue) {
-        attributes.stream()
-                .forEach(attributeSchema -> {
-                    attributeSchema.accept(new AttributeSchemaVisitor<Void>() {
-                        @Override
-                        public Void visitSimple(SimpleAttributeSchema attributeSchema) {
-                            attributeData.put(attributeSchema.getId(), Utils.createRandomValue(attributeSchema));
-                            return null;
-                        }
+            NextState nextState = stateValue.apply(task);
+            LOGGER.log(Level.FINEST, "User[{0}]: executing task {0}", new Object[]{
+                    userToken.getName(),
+                    task
+            });
+            taskResource.submit(task.getId(), task.createTaskRequest(nextState));
+            LOGGER.log(Level.INFO, "User[{0}]: task {1} successfully changed to state {2}", new Object[]{
+                    userToken.getName(),
+                    task.getStateName(),
+                    nextState.getName()
+            });
+        }
 
-                        @Override
-                        public Void visitNested(NestedAttributeSchema attributeSchema) {
-                            setValues(attributeSchema.getAttributes(),
-                                    (Map<Long, Serializable>) attributeData.get(attributeSchema.getId()),
-                                    fieldValue);
-                            return null;
-                        }
-
-                        @Override
-                        public Void visitIndexed(IndexedAttributeSchema attributeSchema) {
-                            List<Map<Long, Serializable>> nestedList = (List<Map<Long, Serializable>>) attributeData.get(attributeSchema.getId());
-                            if (nestedList == null) {
-                                nestedList = new ArrayList<>();
+        private void setValues(List<AttributeSchema> attributes, Map<Long, Serializable> attributeData, Function<SimpleAttributeSchema, Serializable> fieldValue) {
+            attributes.stream()
+                    .forEach(attributeSchema -> {
+                        attributeSchema.accept(new AttributeSchemaVisitor<Void>() {
+                            @Override
+                            public Void visitSimple(SimpleAttributeSchema attributeSchema) {
+                                attributeData.put(attributeSchema.getId(), Utils.createRandomValue(attributeSchema));
+                                return null;
                             }
-                            HashMap<Long, Serializable> data = new HashMap<>();
-                            nestedList.add(data);
-                            setValues(attributeSchema.getAttributes(),
-                                    data,
-                                    fieldValue);
-                            return null;
-                        }
+
+                            @Override
+                            public Void visitNested(NestedAttributeSchema attributeSchema) {
+                                setValues(attributeSchema.getAttributes(),
+                                        (Map<Long, Serializable>) attributeData.get(attributeSchema.getId()),
+                                        fieldValue);
+                                return null;
+                            }
+
+                            @Override
+                            public Void visitIndexed(IndexedAttributeSchema attributeSchema) {
+                                List<Map<Long, Serializable>> nestedList = (List<Map<Long, Serializable>>) attributeData.get(attributeSchema.getId());
+                                if (nestedList == null) {
+                                    nestedList = new ArrayList<>();
+                                }
+                                HashMap<Long, Serializable> data = new HashMap<>();
+                                nestedList.add(data);
+                                setValues(attributeSchema.getAttributes(),
+                                        data,
+                                        fieldValue);
+                                return null;
+                            }
+                        });
                     });
-                });
+        }
+
     }
 
     public List<ProcessInfo> getActiveProcesses() {
@@ -213,4 +224,5 @@ class UserClient {
                 .filter(processInfo -> processInfo.getState() == ProcessInstanceState.ACTIVE)
                 .toList();
     }
+
 }

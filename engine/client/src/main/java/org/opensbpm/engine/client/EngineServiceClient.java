@@ -35,7 +35,7 @@ public final class EngineServiceClient {
 
 
     public static EngineServiceClient create(String baseAddress, Credentials credentials) {
-        return create(baseAddress,baseAddress, credentials);
+        return create(baseAddress, baseAddress, credentials);
     }
 
     public static EngineServiceClient create(String authAddress, String serviceAddress, Credentials credentials) {
@@ -85,8 +85,8 @@ public final class EngineServiceClient {
 
     private static String requireAddress(String authAddress) {
         Objects.requireNonNull(authAddress, "Address must not be null");
-        if(authAddress.endsWith("/")){
-            throw new IllegalArgumentException(authAddress +" must not end with /");
+        if (authAddress.endsWith("/")) {
+            throw new IllegalArgumentException(authAddress + " must not end with /");
         }
         return authAddress;
     }
@@ -94,24 +94,19 @@ public final class EngineServiceClient {
     private final String baseAddress;
     private final AuthTokenSupplier authTokenSupplier;
     //
-    private final ThreadLocal<UserResource> userResource = new ThreadLocal(){
-        @Override
-        protected UserResource initialValue() {
-            return createResourceClient(UserResource.class);
-        }
-    };
-    private final ThreadLocal<ProcessModelResource> processModelResource = new ThreadLocal<>(){
-        @Override
-        protected ProcessModelResource initialValue() {
-            return createResourceClient(ProcessModelResource.class);
-        }
-    };
-    private final ThreadLocal<EngineResource> engineResource = new ThreadLocal<>(){
-        @Override
-        protected EngineResource initialValue() {
-            return createResourceClient(EngineResource.class);
-        }
-    };
+    private final ThreadLocal<UserResource> userResource = of(() -> createResourceClient(UserResource.class));
+    private final ThreadLocal<ProcessModelResource> processModelResource = of(() -> createResourceClient(ProcessModelResource.class));
+    private final ThreadLocal<EngineResource> engineResource = of(() -> newEngineResource());
+
+    private static <T> ThreadLocal<T> of(Supplier<T> resourceSupplier) {
+        return new ThreadLocal<T>() {
+            @Override
+            protected T initialValue() {
+                return resourceSupplier.get();
+
+            }
+        };
+    }
 
 
     public EngineServiceClient(String baseAddress, AuthTokenSupplier authTokenSupplier) {
@@ -125,6 +120,10 @@ public final class EngineServiceClient {
 
     public ProcessModelResource getProcessModelResource() {
         return processModelResource.get();
+    }
+
+    public EngineResource newEngineResource() {
+        return createResourceClient(EngineResource.class);
     }
 
     public EngineResource getEngineResource() {

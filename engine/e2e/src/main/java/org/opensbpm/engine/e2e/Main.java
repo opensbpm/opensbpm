@@ -76,10 +76,16 @@ public class Main {
                 UserClient.of(configuration, "jdoe", "jdoe"),
                 UserClient.of(configuration, "miriam", "miriam")
         );
-        ExecutorService executorService = Executors.newWorkStealingPool(userClients.size());
+        ExecutorService executorService = Executors.newFixedThreadPool(userClients.size());
         for (UserClient client : userClients) {
-            executorService.submit(() -> client.start());
+            executorService.submit(new Runnable() {
+                @Override
+                public void run() {
+                    client.start();
+                }
+            });
         }
+        executorService.shutdown();
         executorService.awaitTermination(1, TimeUnit.MINUTES);
 
         boolean allFinished = false;
@@ -88,14 +94,16 @@ public class Main {
                     .mapToLong(userClient -> userClient.getActiveProcesses().size())
                     .sum() == 0;
 
-            for (UserClient userClient : userClients) {
-                List<ProcessInfo> activeProcesses = userClient.getActiveProcesses();
-                if(!activeProcesses.isEmpty()) {
-                    LOGGER.finer("User[" + userClient.getUserToken().getName() + "] has active processes " +
-                            activeProcesses.stream()
-                                    .map(processInfo -> asString(processInfo))
-                                    .collect(Collectors.joining(","))
-                    );
+            if(LOGGER.isLoggable(Level.FINEST)) {
+                for (UserClient userClient : userClients) {
+                    List<ProcessInfo> activeProcesses = userClient.getActiveProcesses();
+                    if (!activeProcesses.isEmpty()) {
+                        LOGGER.finest("User[" + userClient.getUserToken().getName() + "] has active processes " +
+                                activeProcesses.stream()
+                                        .map(processInfo -> asString(processInfo))
+                                        .collect(Collectors.joining(","))
+                        );
+                    }
                 }
             }
             try {
