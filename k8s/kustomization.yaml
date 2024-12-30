@@ -14,4 +14,4 @@ resources:
   - engine-db.yaml
   - engine.yaml
 #  - frontend.yaml
-#  - vaadinui.yaml
+  - vaadinui.yaml
