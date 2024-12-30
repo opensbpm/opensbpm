@@ -41,6 +41,24 @@
       ]
     },
     {
+      "username": "jodoe",
+      "firstName": "jodoe",
+      "lastName": "jodoe",
+      "email": "jodoe@opensbpm.org",
+      "enabled": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "jodoe"
+        }
+      ],
+      "realmRoles": [
+        "Abteilungsleiter",
+        "user",
+        "user_premium"
+      ]
+    },
+    {
       "username": "miriam",
       "firstName": "Miriam",
       "lastName": "Mariam",
