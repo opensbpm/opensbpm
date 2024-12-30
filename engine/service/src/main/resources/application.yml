@@ -12,6 +12,14 @@ spring:
         jwt:
           issuer-uri: https://cloud-dev.opensbpm.org/auth/realms/quickstart
 
+management:
+  endpoints.web.exposure.include: "prometheus"
+  metrics.tags.application: ${spring.application.name}
+
+#management.endpoints:
+#  web.exposure.include: *
+#  health.show-details: always
+
 #debug: true
 
 logging.level:
