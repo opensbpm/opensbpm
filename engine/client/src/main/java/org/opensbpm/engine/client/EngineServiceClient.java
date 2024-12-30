@@ -20,6 +20,8 @@ import org.apache.commons.lang3.ObjectUtils;
 import org.apache.cxf.configuration.jsse.TLSClientParameters;
 
 import java.util.Objects;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.apache.cxf.jaxrs.client.Client;
 import org.apache.cxf.jaxrs.client.JAXRSClientFactoryBean;
@@ -31,7 +33,7 @@ import org.opensbpm.engine.server.api.UserResource;
 
 import javax.net.ssl.SSLContext;
 
-public final class EngineServiceClient {
+public abstract class EngineServiceClient {
 
 
     public static EngineServiceClient create(String baseAddress, Credentials credentials) {
@@ -42,27 +44,17 @@ public final class EngineServiceClient {
         requireAddress(authAddress);
         requireAddress(serviceAddress);
         Objects.requireNonNull(credentials, "Credentials must not be null");
-        return new EngineServiceClient(serviceAddress,
-                new AuthTokenSupplier() {
-                    private Authentication authentication;
-
-                    @Override
-                    public String get() {
-                        return getAuthentication().getAccessToken();
+        return new EngineServiceClient(serviceAddress){
+            @Override
+            protected Authentication authenticate() {
+                try {
+                    return doAuthenticate();
+                } catch (IOException | GeneralSecurityException | InterruptedException ex) {
+                    throw new RuntimeException(ex);
+                }
                     }
 
-                    private Authentication getAuthentication() {
-                        if (authentication == null) {
-                            try {
-                                authentication = authenticate();
-                            } catch (IOException | GeneralSecurityException | InterruptedException ex) {
-                                throw new RuntimeException(ex);
-                            }
-                        }
-                        return authentication;
-                    }
-
-                    private Authentication authenticate() throws IOException, GeneralSecurityException, InterruptedException {
+                    private Authentication doAuthenticate() throws IOException, GeneralSecurityException, InterruptedException {
                         SSLContext sslContext = SSLContext.getInstance("TLS");
                         sslContext.init(null, SslConfiguration.getTrustAllCerts(), new SecureRandom());
 
@@ -79,8 +71,7 @@ public final class EngineServiceClient {
                         return new ObjectMapper().readValue(authResponse.body(), Authentication.class);
                     }
 
-                }
-        );
+                };
     }
 
     private static String requireAddress(String authAddress) {
@@ -91,28 +82,33 @@ public final class EngineServiceClient {
         return authAddress;
     }
 
+    private final static Logger LOGGER = Logger.getLogger(EngineServiceClient.class.getName());
+    //
     private final String baseAddress;
-    private final AuthTokenSupplier authTokenSupplier;
+    //
+    private final Object lock = new Object();
+    private Authentication authentication;
     //
     private final ThreadLocal<UserResource> userResource = of(() -> createResourceClient(UserResource.class));
     private final ThreadLocal<ProcessModelResource> processModelResource = of(() -> createResourceClient(ProcessModelResource.class));
     private final ThreadLocal<EngineResource> engineResource = of(() -> newEngineResource());
 
-    private static <T> ThreadLocal<T> of(Supplier<T> resourceSupplier) {
-        return new ThreadLocal<T>() {
-            @Override
-            protected T initialValue() {
-                return resourceSupplier.get();
-
-            }
-        };
-    }
-
-
-    public EngineServiceClient(String baseAddress, AuthTokenSupplier authTokenSupplier) {
+    public EngineServiceClient(String baseAddress) {
         this.baseAddress = Objects.requireNonNull(baseAddress, "baseAddress must not be null");
-        this.authTokenSupplier = Objects.requireNonNull(authTokenSupplier, "AuthTokenSupplier must not be null");
     }
+
+
+    private Authentication getAuthentication() {
+        if (authentication == null) {
+            synchronized(lock) {
+                LOGGER.log(Level.FINER, "request authentication");
+                authentication = authenticate();
+            }
+        }
+        return authentication;
+    }
+
+    protected abstract Authentication authenticate();
 
     public UserResource getUserResource() {
         return userResource.get();
@@ -144,7 +140,7 @@ public final class EngineServiceClient {
         final T proxy = factoryBean.create(type);
 
         Client client = WebClient.client(proxy);
-        client.header("Authorization", "Bearer " + authTokenSupplier.get());
+        client.header("Authorization", "Bearer " + getAuthentication().getAccessToken());
 
         WebClient httpClient = WebClient.fromClient(client);
         HTTPConduit httpConduit = (HTTPConduit) WebClient.getConfig(httpClient).getConduit();
@@ -164,6 +160,22 @@ public final class EngineServiceClient {
 
         return proxy;
     }
+
+    public void refreshToken() {
+        LOGGER.log(Level.INFO, "Refreshing token");
+        authentication = null;
+    }
+
+    private static <T> ThreadLocal<T> of(Supplier<T> resourceSupplier) {
+        return new ThreadLocal<T>() {
+            @Override
+            protected T initialValue() {
+                return resourceSupplier.get();
+
+            }
+        };
+    }
+
 
     public interface AuthTokenSupplier extends Supplier<String> {
 

@@ -2,7 +2,7 @@ package org.opensbpm.engine.client;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-class Authentication {
+public class Authentication {
     @JsonProperty("access_token")
     private String accessToken;
 

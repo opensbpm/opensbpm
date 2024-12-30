@@ -38,7 +38,17 @@ public class SbpmEngine {
         if (engineServiceClient == null) {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             OidcIdToken idToken = ((DefaultOidcUser) authentication.getPrincipal()).getIdToken();
-            engineServiceClient = new EngineServiceClient("https://cloud-dev.opensbpm.org", () -> idToken.getTokenValue());
+            engineServiceClient = new EngineServiceClient("https://cloud-dev.opensbpm.org"){
+                @Override
+                protected org.opensbpm.engine.client.Authentication authenticate() {
+                    return new org.opensbpm.engine.client.Authentication(){
+                        @Override
+                        public String getAccessToken() {
+                            return idToken.getTokenValue();
+                        }
+                    };
+                }
+            };
         }
         return engineServiceClient;
     }
