@@ -70,12 +70,13 @@ public class Main {
 
     public void execute() throws UserNotFoundException, ProcessNotFoundException,
             IOException, InterruptedException, ExecutionException, GeneralSecurityException {
+        ExecutorService taskExecutorService = Executors.newFixedThreadPool(8);
 
         List<UserClient> userClients = asList(
-                UserClient.of(configuration, "alice", "alice"),
-                UserClient.of(configuration, "jdoe", "jdoe"),
-                //UserClient.of(configuration, "jodoe", "jodoe"),
-                UserClient.of(configuration, "miriam", "miriam")
+                UserClient.of(configuration,taskExecutorService, "alice", "alice"),
+                UserClient.of(configuration, taskExecutorService,"jdoe", "jdoe"),
+                UserClient.of(configuration, taskExecutorService, "jodoe", "jodoe"),
+                UserClient.of(configuration,taskExecutorService, "miriam", "miriam")
         );
         ExecutorService executorService = Executors.newFixedThreadPool(userClients.size());
         for (UserClient client : userClients) {
@@ -116,9 +117,11 @@ public class Main {
             }
         }
         LOGGER.info("All started processes finished");
+        taskExecutorService.shutdown();
         for (UserClient client : userClients) {
             client.stop();
         }
+        executorService.awaitTermination(5, TimeUnit.MINUTES);
         LOGGER.info("Everything done");
     }
 

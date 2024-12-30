@@ -163,7 +163,9 @@ public abstract class EngineServiceClient {
 
     public void refreshToken() {
         LOGGER.log(Level.INFO, "Refreshing token");
-        authentication = null;
+        synchronized(lock) {
+            authentication = null;
+        }
     }
 
     private static <T> ThreadLocal<T> of(Supplier<T> resourceSupplier) {

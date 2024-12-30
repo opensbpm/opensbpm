@@ -17,39 +17,37 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-import java.util.stream.Stream;
-
-import static java.util.Arrays.asList;
 
 class UserClient {
     private static final Logger LOGGER = Logger.getLogger(UserClient.class.getName());
     private final static TaskInfo TASK_EMPTY = new TaskInfo();
 
-    public static UserClient of(Configuration configuration, String userName, String password) {
+    public static UserClient of(Configuration configuration,ExecutorService taskExecutorService, String userName, String password) {
         return new UserClient(
                 configuration,
+                taskExecutorService,
                 Credentials.of(userName, password.toCharArray())
         );
     }
 
     //
-    private final BlockingQueue<TaskInfo> tasks = new LinkedBlockingDeque<>();
     private final Set<TaskInfo> processedTasks = new HashSet<>();
-    private final ExecutorService taskExecutorService = Executors.newFixedThreadPool(10);
     //
     private final EngineServiceClient engineServiceClient;
+    private final ExecutorService taskExecutorService;
     //
     private UserToken userToken;
     private List<TaskInfo> startedProcesses = Collections.emptyList();
     private Timer tasksFetcher;
 
 
-    private UserClient(Configuration configuration, Credentials credentials) {
+    private UserClient(Configuration configuration,ExecutorService taskExecutorService, Credentials credentials) {
         if (configuration.hasAuthUrl()) {
             engineServiceClient = EngineServiceClient.create(configuration.getAuthUrl(), configuration.getUrl(), credentials);
         } else {
             engineServiceClient = EngineServiceClient.create(configuration.getUrl(), credentials);
         }
+        this.taskExecutorService = taskExecutorService;
     }
 
     public UserToken getUserToken() {
@@ -82,53 +80,37 @@ class UserClient {
         startedProcesses = getProcessModelResource().index().getProcessModelInfos().stream()
                 .flatMap(model -> {
                     LOGGER.info("User[" + getUserToken().getName() + "] starting process " + model.getName());
-                    return IntStream.range(0, 500).boxed()
+                    return IntStream.range(0, 5).boxed()
                             .map(idx -> getProcessModelResource().start(model.getId()));
                 })
                 .toList();
-        tasks.addAll(startedProcesses);
+        startedProcesses.forEach(taskInfo -> {
+            processedTasks.add(taskInfo);
+            taskExecutorService.submit(() -> new TaskExecutor(getUserToken(), engineServiceClient).execute(taskInfo));
+        });
 
         tasksFetcher = new Timer("TasksFetcher for " + getUserToken().getName());
-        tasksFetcher.schedule(new TimerTask() {
+        tasksFetcher.scheduleAtFixedRate(new TimerTask() {
             @Override
             public void run() {
                 LOGGER.finest("User[" + getUserToken().getName() + "] fetching tasks");
-                newTaskResource().index().getTaskInfos().stream()
-                        .filter(taskInfo -> !tasks.contains(taskInfo) && !processedTasks.contains(taskInfo))
-                        .forEach(taskInfo -> {
-                            try {
-                                tasks.put(taskInfo);
-                            } catch (InterruptedException ex) {
-                                LOGGER.info("User[" + getUserToken().getName() + "]: " + ex.getMessage());
-                                // Restore interrupted state...
-                                Thread.currentThread().interrupt();
-                            }
-                        });
-            }
-        }, 50, 50);
-
-        taskExecutorService.submit(new Runnable() {
-            @Override
-            public void run() {
                 try {
-                    TaskInfo taskInfo;
-                    while ((taskInfo = tasks.take()) != null) {
-                        processedTasks.add(taskInfo);
-                        new TaskExecutor(getUserToken(), engineServiceClient).execute(taskInfo);
-                    }
-                } catch (InterruptedException ex) {
-                    LOGGER.log(Level.SEVERE, ex.getMessage());
-                    // Restore interrupted state...
-                    Thread.currentThread().interrupt();
+                    newTaskResource().index().getTaskInfos().stream()
+                            .filter(taskInfo -> !processedTasks.contains(taskInfo))
+                            .forEach(taskInfo -> {
+                                processedTasks.add(taskInfo);
+                                taskExecutorService.submit(() -> new TaskExecutor(getUserToken(), engineServiceClient).execute(taskInfo));
+                            });
+                } catch (Exception ex) {
+                    LOGGER.severe("User[" + getUserToken().getName() + "] "+ ex.getMessage());
                 }
             }
-        });
+        }, 50, 500);
     }
 
     public void stop() throws InterruptedException, ExecutionException {
         LOGGER.info("User[" + getUserToken().getName() + "] closing client");
         tasksFetcher.cancel();
-        taskExecutorService.shutdown();
     }
 
     private static class TaskExecutor {
@@ -140,13 +122,13 @@ class UserClient {
             this.engineServiceClient = engineServiceClient;
         }
 
-        private TaskResource newTaskResource() {
-            return engineServiceClient.newEngineResource().getTaskResource(userToken.getId());
+        private TaskResource getTaskResource() {
+            return engineServiceClient.getEngineResource().getTaskResource(userToken.getId());
         }
 
         public void execute(TaskInfo taskInfo) {
             try {
-                Task task = new Task(taskInfo, newTaskResource().retrieve(taskInfo.getId()));
+                Task task = new Task(taskInfo, getTaskResource().retrieve(taskInfo.getId()));
                 if (task.getNextStates() == null || task.getNextStates().isEmpty()) {
                     LOGGER.log(Level.SEVERE, "no nextState for {0}", task);
                 } else {
@@ -176,7 +158,7 @@ class UserClient {
                     userToken.getName(),
                     task
             });
-            newTaskResource().submit(task.getId(), task.createTaskRequest(nextState));
+            getTaskResource().submit(task.getId(), task.createTaskRequest(nextState));
             LOGGER.log(Level.INFO, "User[{0}]: task {1} successfully changed to state {2}", new Object[]{
                     userToken.getName(),
                     task.getStateName(),
