@@ -112,11 +112,11 @@
     {
       "clientId": "opensbpm-ui",
       "enabled": true,
-      "baseUrl": "https://cloud.opensbpm.org",
-      "adminUrl": "https://cloud.opensbpm.org",
+      "baseUrl": "https://cloud-dev.opensbpm.org",
+      "adminUrl": "https://cloud-dev.opensbpm.org",
       "bearerOnly": false,
       "redirectUris": [
-        "https://cloud.opensbpm.org/*"
+        "https://cloud-dev.opensbpm.org/*"
       ],
       "directAccessGrantsEnabled": true,
       "publicClient": true,
