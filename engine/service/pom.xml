@@ -171,7 +171,6 @@
                         <configuration>
                             <finalName>engine-service-exec</finalName>
                         </configuration>
-
                     </execution>
                 </executions>
             </plugin>
