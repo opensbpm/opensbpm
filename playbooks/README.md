@@ -31,7 +31,7 @@ export HCLOUD_TOKEN=<Hetzner API Token>
 ansible-playbook playbooks/setup_cluster.yml
 ```
 
-### Run in powershell
+### Run in powershell with docker
 To run playbook in powershell (standalone) run (in root dir):
 ```
 docker run --rm `
@@ -48,5 +48,10 @@ Check kubeconfig with kubectl
 kubectl --kubeconfig ~/.kube/opensbm\@hetzner cluster-info
 ```
 
-== TODO
+###
+```
+ssh-keygen -R cloud-dev.opesnsbpm.org; ssh -i ~/.ssh/opensbpm-hetzner root@cloud-dev.opensbpm.org
+```
+
+#### TODO
 https://docs.ansible.com/ansible/2.8/user_guide/playbooks_best_practices.html
