@@ -1,0 +1,14 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: e2e-client
+spec:
+  #ttlSecondsAfterFinished: 100 #in Seconds
+  template:
+    spec:
+      containers:
+        - name: opensbpm-e2e-client
+          image: sedstef/opensbpm-e2e
+          args: ["--url",  "https://cloud-dev.opensbpm.org"]
+      restartPolicy: Never
+  backoffLimit: 4
