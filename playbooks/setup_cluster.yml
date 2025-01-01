@@ -15,9 +15,12 @@
       hetzner.hcloud.server:
         location: fsn1
         name: controller
+        # controller needs more than 4GB RAM
+        #
         #server_type: cx22 # 2 VCPU, 4GB RAM
         #server_type: cpx21 # 3 VCPU, 4GB RAM
-        server_type: cx32 # 4 VCPU, 8GB RAM
+        server_type: cx32 # 4 VCPU, 8GB RAM, 80GB HDD
+        #server_type: cpx31 # 4 VCPU, 8GB RAM, 160GB HDD
         #server_type: cpx41 # 8 VCPU, 16GB RAM
         image: ubuntu-24.04
         ipv4: opensbpm-primary-ip
@@ -76,8 +79,8 @@
     - name: Fetch the kubectl config from the remote server
       ansible.builtin.fetch:
         src: /root/.kube/config
-        #dest: ~/.kube/opensbm@hetzner
-        dest: /mnt/c/Users/stefan/.kube/opensbm@hetzner
+        #dest: ~/.kube/opensbpm@hetzner
+        dest: /mnt/c/Users/stefan/.kube/opensbpm@hetzner.yaml
         flat: yes
 
     - name: Activate microk8s plugins

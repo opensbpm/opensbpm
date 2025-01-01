@@ -1,22 +1,22 @@
 
 '''
-kubectl --kubeconfig ~/.kube/opensbm\@hetzner -k . apply
+kubectl --kubeconfig ~/.kube/opensbpm@hetzner.yaml -k . apply
 '''
 
 == only needed for local development
 '''
-kubectl --kubeconfig ~/.kube/opensbm\@hetzner create -n opensbpm secret generic engine-db-password --from-literal=password=OpenSBPM
-kubectl --kubeconfig ~/.kube/opensbm\@hetzner create -n opensbpm secret generic keycloak-db-password --from-literal=password=OpenSBPM
+kubectl --kubeconfig ~/.kube/opensbpm@hetzner.yaml create -n opensbpm secret generic engine-db-password --from-literal=password=OpenSBPM
+kubectl --kubeconfig ~/.kube/opensbpm@hetzner.yaml create -n opensbpm secret generic keycloak-db-password --from-literal=password=OpenSBPM
 '''
 
 === fetch tls secret
 '''
-kubectl --kubeconfig ~/.kube/opensbm\@hetzner get secret -n opensbpm opensbpm-tls -o yaml > k8s/secret-tls.yaml
+kubectl --kubeconfig ~/.kube/opensbpm@hetzner.yaml get secret -n opensbpm opensbpm-tls -o yaml > k8s/secret-tls.yaml
 '''
 
 === ingress logs
 '''
-kubectl --kubeconfig ~/.kube/opensbm\@hetzner logs -n ingress -l name=nginx-ingress-microk8s
+kubectl --kubeconfig ~/.kube/opensbpm@hetzner.yaml logs -n ingress -l name=nginx-ingress-microk8s
 '''
 
 == Dashboard access with port-forwarding
