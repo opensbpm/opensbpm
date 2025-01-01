@@ -28,6 +28,7 @@ node('jdk17'){
                         sh "mvn clean test verify sonar:sonar package -Pproduction"
                     }
                     stash(name: 'engine-jar', includes: 'engine/service/target/engine-service-exec.jar')
+                    stash(name: 'e2e-jar', includes: 'engine/e2e/target/e2e-exec.jar')
                     stash(name: 'vaadinui-jar', includes: 'vaadinui/target/vaadinui-exec.jar')
                 }
                 //junit '**/target/*-reports/TEST-*.xml'
@@ -53,6 +54,15 @@ node('jdk17'){
                     dir('engine/service'){
                         docker.withRegistry('', 'sedstef@hub.docker.com') {
                             def image = docker.build("sedstef/opensbpm-engine:${env.BUILD_ID}")
+                            image.push("${env.BUILD_ID}")
+                            image.push("latest")
+                        }
+                    }
+
+                    unstash('e2e-jar')
+                    dir('engine/e2e'){
+                        docker.withRegistry('', 'sedstef@hub.docker.com') {
+                            def image = docker.build("sedstef/opensbpm-e2e:${env.BUILD_ID}")
                             image.push("${env.BUILD_ID}")
                             image.push("latest")
                         }
