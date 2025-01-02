@@ -53,11 +53,7 @@ class UserClient {
 
 
     private UserClient(Configuration configuration, ExecutorService taskExecutorService, Credentials credentials) {
-        if (configuration.hasAuthUrl()) {
-            engineServiceClient = EngineServiceClient.create(configuration.getAuthUrl(), configuration.getUrl(), credentials);
-        } else {
-            engineServiceClient = EngineServiceClient.create(configuration.getUrl(), credentials);
-        }
+        engineServiceClient = configuration.createEngineServiceClient( credentials);
         this.taskExecutorService = taskExecutorService;
     }
 

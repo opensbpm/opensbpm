@@ -28,6 +28,7 @@ import org.apache.cxf.jaxrs.client.JAXRSClientFactoryBean;
 import org.apache.cxf.jaxrs.client.WebClient;
 import org.apache.cxf.transport.http.HTTPConduit;
 import org.opensbpm.engine.server.api.EngineResource;
+import org.opensbpm.engine.server.api.ProcessInstanceResource;
 import org.opensbpm.engine.server.api.ProcessModelResource;
 import org.opensbpm.engine.server.api.UserResource;
 
@@ -68,7 +69,11 @@ public abstract class EngineServiceClient {
                                 ))
                                 .build();
                         HttpResponse<String> authResponse = httpClient.send(authRequest, HttpResponse.BodyHandlers.ofString());
-                        return new ObjectMapper().readValue(authResponse.body(), Authentication.class);
+                        if(200 == authResponse.statusCode()) {
+                            return new ObjectMapper().readValue(authResponse.body(), Authentication.class);
+                        }else{
+                            throw new IOException(authResponse.body());
+                        }
                     }
 
                 };
@@ -92,6 +97,7 @@ public abstract class EngineServiceClient {
     private final ThreadLocal<UserResource> userResource = of(() -> createResourceClient(UserResource.class));
     private final ThreadLocal<ProcessModelResource> processModelResource = of(() -> createResourceClient(ProcessModelResource.class));
     private final ThreadLocal<EngineResource> engineResource = of(() -> newEngineResource());
+    private final ThreadLocal<ProcessInstanceResource> instanceResource = of(() -> createResourceClient(ProcessInstanceResource.class));
 
     public EngineServiceClient(String baseAddress) {
         this.baseAddress = Objects.requireNonNull(baseAddress, "baseAddress must not be null");
@@ -124,6 +130,10 @@ public abstract class EngineServiceClient {
 
     public EngineResource getEngineResource() {
         return engineResource.get();
+    }
+
+    public ProcessInstanceResource getProcessInstanceResource() {
+        return instanceResource.get();
     }
 
     private <T> T createResourceClient(Class<T> type) {
