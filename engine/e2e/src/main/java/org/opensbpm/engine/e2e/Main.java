@@ -27,6 +27,7 @@ import org.apache.commons.cli.ParseException;
 import org.opensbpm.engine.api.ProcessNotFoundException;
 import org.opensbpm.engine.api.UserNotFoundException;
 import org.opensbpm.engine.api.instance.*;
+import org.opensbpm.engine.client.Credentials;
 
 import java.io.IOException;
 import java.util.logging.Level;
@@ -70,25 +71,57 @@ public class Main {
 
     public void execute() throws UserNotFoundException, ProcessNotFoundException,
             IOException, InterruptedException, ExecutionException, GeneralSecurityException {
+        List<Credentials> allCredentials = asList(
+                Credentials.of("alice", "alice".toCharArray()),
+                Credentials.of("jdoe", "jdoe".toCharArray()),
+                Credentials.of("jodoe", "jodoe".toCharArray()),
+                Credentials.of("miriam", "miriam".toCharArray())
+        );
+
+        if (configuration.isIndexed()) {
+            Integer index = Integer.valueOf(System.getenv("JOB_COMPLETION_INDEX"));
+            if (index == 0) {
+                LOGGER.log(Level.INFO, "Running as Controller");
+                //send info when all started processed are finished
+            } else {
+                Credentials credentials = allCredentials.get(index - 1);
+                LOGGER.log(Level.INFO, "Running as User " + credentials.getUserName());
+                UserClient userClient = UserClient.of(configuration, credentials);
+
+                ExecutorService executorService = Executors.newSingleThreadExecutor();
+                executorService.submit(userClient::start);
+                executorService.shutdown();
+
+                //send info about started processed
+
+                //retrieve info when to stop
+
+
+            }
+        } else {
+            executeSinglePod(allCredentials);
+        }
+    }
+
+    private  void executeSinglePod(List<Credentials> allCredentials) {
         ExecutorService taskExecutorService = Executors.newFixedThreadPool(8);
 
-        List<UserClient> userClients = asList(
-                UserClient.of(configuration,taskExecutorService, "alice", "alice"),
-                UserClient.of(configuration, taskExecutorService,"jdoe", "jdoe"),
-                UserClient.of(configuration, taskExecutorService, "jodoe", "jodoe"),
-                UserClient.of(configuration,taskExecutorService, "miriam", "miriam")
-        );
-        ExecutorService executorService = Executors.newFixedThreadPool(userClients.size());
-        for (UserClient client : userClients) {
-            executorService.submit(new Runnable() {
-                @Override
-                public void run() {
-                    client.start();
-                }
-            });
-        }
+        ExecutorService executorService = Executors.newFixedThreadPool(allCredentials.size());
+        List<UserClient> userClients = allCredentials.stream()
+                .map(credentials -> UserClient.of(configuration,taskExecutorService, credentials))
+                .collect(Collectors.toList());
+
+        userClients.forEach(client->{
+                    executorService.submit(() -> client.start());
+                });
         executorService.shutdown();
-        executorService.awaitTermination(10, TimeUnit.MINUTES);
+        try {
+            executorService.awaitTermination(10, TimeUnit.MINUTES);
+        } catch (InterruptedException ex) {
+            LOGGER.log(Level.SEVERE, ex.getMessage(), ex);
+            // Restore interrupted state...
+            Thread.currentThread().interrupt();
+        }
 
         boolean allFinished = false;
         while (!allFinished) {
@@ -121,7 +154,13 @@ public class Main {
         for (UserClient client : userClients) {
             client.stop();
         }
-        executorService.awaitTermination(5, TimeUnit.MINUTES);
+        try {
+            executorService.awaitTermination(5, TimeUnit.MINUTES);
+        } catch (InterruptedException ex) {
+            LOGGER.log(Level.SEVERE, ex.getMessage(), ex);
+            // Restore interrupted state...
+            Thread.currentThread().interrupt();
+        }
         LOGGER.info("Everything done");
     }
 

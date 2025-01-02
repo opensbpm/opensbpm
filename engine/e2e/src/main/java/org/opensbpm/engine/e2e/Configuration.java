@@ -25,23 +25,29 @@ import org.apache.commons.cli.Options;
 
 public class Configuration {
 
-    private static final Option URLOPTION = Option.builder("u")
+    private static final Option URL_OPTION = Option.builder("u")
             .longOpt("url")
             .hasArg(true)
             .argName("url")
             .desc("url of OpenSBPM-Engine")
             .required(true)
             .build();
-    private static final Option AUTHURLOPTION = Option.builder("a")
+    private static final Option AUTHURL_OPTION = Option.builder("a")
             .longOpt("authurl")
             .hasArg(true)
             .argName("authurl")
             .desc("Use different url for authentication")
             .build();
+    private static final Option INDEXED_OPTION = Option.builder("i")
+            .longOpt("indexed")
+            .argName("indexed")
+            .desc("Run in indexed mode using env variable JOB_COMPLETION_INDEX")
+            .build();
     public static Configuration parseArgs(String[] args) throws ParseException {
         Options options = new Options();
-        options.addOption(URLOPTION);
-        options.addOption(AUTHURLOPTION);
+        options.addOption(URL_OPTION);
+        options.addOption(AUTHURL_OPTION);
+        options.addOption(INDEXED_OPTION);
         try {
             CommandLine cmd = new DefaultParser().parse(options, args, true);
             return new Configuration(cmd);
@@ -61,15 +67,19 @@ public class Configuration {
     }
 
     public String getUrl() {
-        return cmd.getOptionValue(URLOPTION.getOpt());
+        return cmd.getOptionValue(URL_OPTION.getOpt());
     }
 
     public boolean hasAuthUrl(){
-        return cmd.hasOption(AUTHURLOPTION.getOpt());
+        return cmd.hasOption(AUTHURL_OPTION.getOpt());
     }
 
     public String getAuthUrl() {
-        return cmd.getOptionValue(AUTHURLOPTION.getOpt());
+        return cmd.getOptionValue(AUTHURL_OPTION.getOpt());
+    }
+
+    public boolean isIndexed() {
+        return cmd.hasOption(AUTHURL_OPTION.getOpt());
     }
 
 }
