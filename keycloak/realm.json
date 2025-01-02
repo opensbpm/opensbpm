@@ -6,6 +6,22 @@
   ],
   "users": [
     {
+      "username": "admin",
+      "firstName": "admin",
+      "lastName": "admin",
+      "email": "admin@opensbpm.org",
+      "enabled": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "admin"
+        }
+      ],
+      "realmRoles": [
+        "user"
+      ]
+    },
+    {
       "username": "alice",
       "firstName": "Alice",
       "lastName": "Liddel",
