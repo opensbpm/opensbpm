@@ -88,7 +88,7 @@ public class Main {
             });
         }
         executorService.shutdown();
-        executorService.awaitTermination(1, TimeUnit.MINUTES);
+        executorService.awaitTermination(10, TimeUnit.MINUTES);
 
         boolean allFinished = false;
         while (!allFinished) {
