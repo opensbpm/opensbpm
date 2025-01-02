@@ -104,7 +104,7 @@ public class Main {
     }
 
     private  void executeSinglePod(List<Credentials> allCredentials) {
-        ExecutorService taskExecutorService = Executors.newFixedThreadPool(8);
+        ExecutorService taskExecutorService = Executors.newWorkStealingPool();
 
         ExecutorService executorService = Executors.newFixedThreadPool(allCredentials.size());
         List<UserClient> userClients = allCredentials.stream()
@@ -162,6 +162,15 @@ public class Main {
             Thread.currentThread().interrupt();
         }
         LOGGER.info("Everything done");
+
+        StringBuilder builder = new StringBuilder("start,end,duration,taskcount\n");
+        String data = userClients.stream()
+                .flatMap(UserClient::getStatistics)
+                .map(Statistics::toString)
+        .collect(Collectors.joining("\n"));
+        builder.append(data).append("\n");
+
+        LOGGER.info("statistics: \n" + builder.toString());
     }
 
     private static String asString(ProcessInfo processInfo) {

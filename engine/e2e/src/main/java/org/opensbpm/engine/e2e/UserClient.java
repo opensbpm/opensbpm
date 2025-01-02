@@ -8,8 +8,10 @@ import org.opensbpm.engine.client.EngineServiceClient;
 import org.opensbpm.engine.server.api.EngineResource.ProcessModelResource;
 import org.opensbpm.engine.server.api.EngineResource.ProcessInstanceResource;
 import org.opensbpm.engine.server.api.EngineResource.TaskResource;
+import org.opensbpm.engine.server.api.dto.instance.Audits;
 
 import java.io.Serializable;
+import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.function.Function;
@@ -17,18 +19,20 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 class UserClient {
     private static final Logger LOGGER = Logger.getLogger(UserClient.class.getName());
     private final static TaskInfo TASK_EMPTY = new TaskInfo();
 
-    public static UserClient of(Configuration configuration,ExecutorService taskExecutorService, Credentials credentials) {
+    public static UserClient of(Configuration configuration, ExecutorService taskExecutorService, Credentials credentials) {
         return new UserClient(
                 configuration,
                 taskExecutorService,
                 credentials
         );
     }
+
     public static UserClient of(Configuration configuration, Credentials credentials) {
         return new UserClient(
                 configuration,
@@ -48,7 +52,7 @@ class UserClient {
     private Timer tasksFetcher;
 
 
-    private UserClient(Configuration configuration,ExecutorService taskExecutorService, Credentials credentials) {
+    private UserClient(Configuration configuration, ExecutorService taskExecutorService, Credentials credentials) {
         if (configuration.hasAuthUrl()) {
             engineServiceClient = EngineServiceClient.create(configuration.getAuthUrl(), configuration.getUrl(), credentials);
         } else {
@@ -94,11 +98,11 @@ class UserClient {
                             });
                 } catch (ClientErrorException ex) {
                     LOGGER.log(Level.SEVERE, "User[" + userToken.getName() + "]: " + ex.getMessage() /*, ex*/);
-                    if(ex.getResponse().getStatus() == 401){
+                    if (ex.getResponse().getStatus() == 401) {
                         engineServiceClient.refreshToken();
                     }
                 } catch (Exception ex) {
-                    LOGGER.severe("User[" + getUserToken().getName() + "] "+ ex.getMessage());
+                    LOGGER.severe("User[" + getUserToken().getName() + "] " + ex.getMessage());
                 }
             }
         }, 50, 500);
@@ -107,7 +111,7 @@ class UserClient {
         startedProcesses = getProcessModelResource().index().getProcessModelInfos().stream()
                 .flatMap(model -> {
                     LOGGER.info("User[" + getUserToken().getName() + "] starting process " + model.getName());
-                    return IntStream.range(0, 50).boxed()
+                    return IntStream.range(0, 5).boxed()
                             .map(idx -> {
                                 ProcessModelResource modelResource = engineServiceClient.newEngineResource().getProcessModelResource(getUserId());
                                 return modelResource.start(model.getId());
@@ -120,7 +124,7 @@ class UserClient {
         });
     }
 
-    public void stop()  {
+    public void stop() {
         LOGGER.info("User[" + getUserToken().getName() + "] closing client");
         tasksFetcher.cancel();
     }
@@ -150,7 +154,7 @@ class UserClient {
                 LOGGER.log(Level.FINE, ex.getMessage() /*, ex*/);
             } catch (ClientErrorException ex) {
                 LOGGER.log(Level.SEVERE, "User[" + userToken.getName() + "] task " + taskInfo + ": " + ex.getMessage() /*, ex*/);
-                if(ex.getResponse().getStatus() == 401){
+                if (ex.getResponse().getStatus() == 401) {
                     engineServiceClient.refreshToken();
                 }
                 processedTasks.remove(taskInfo);
@@ -216,7 +220,7 @@ class UserClient {
 
     }
 
-    public List<ProcessInfo> getActiveProcesses() {
+    public Stream<ProcessInfo> getStartedProcesses() {
         return startedProcesses.stream()
                 .map(task -> {
                     try {
@@ -224,7 +228,7 @@ class UserClient {
                         return processInstanceResource.retrieve(task.getProcessId());
                     } catch (ClientErrorException ex) {
                         LOGGER.log(Level.SEVERE, "User[" + userToken.getName() + "] process " + task.getProcessId() + ": " + ex.getMessage() /*, ex*/);
-                        if(ex.getResponse().getStatus() == 401){
+                        if (ex.getResponse().getStatus() == 401) {
                             engineServiceClient.refreshToken();
                         }
                         return null;
@@ -234,9 +238,27 @@ class UserClient {
                         return null;
                     }
                 })
-                .filter(Objects::nonNull)
+                .filter(Objects::nonNull);
+    }
+
+    public List<ProcessInfo> getActiveProcesses() {
+        return getStartedProcesses()
                 .filter(processInfo -> processInfo.getState() == ProcessInstanceState.ACTIVE)
                 .toList();
     }
+
+    public Stream<Statistics> getStatistics() {
+        return getStartedProcesses().map(processInfo -> {
+            Audits audits = engineServiceClient.getProcessInstanceResource().retrieveAudit(processInfo.getId());
+            return new Statistics(
+                    processInfo.getStartTime(),
+                    processInfo.getEndTime(),
+                    Duration.between(processInfo.getStartTime(), processInfo.getEndTime()),
+                    audits.getAuditTrails().size());
+        });
+
+
+    }
+
 
 }
