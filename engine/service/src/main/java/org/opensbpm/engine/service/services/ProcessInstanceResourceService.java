@@ -26,8 +26,7 @@ import java.util.EnumSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jakarta.ws.rs.NotFoundException;
-import org.opensbpm.engine.server.api.EngineResource;
-import org.opensbpm.engine.server.api.EngineResource.ProcessInstanceResource;
+import org.opensbpm.engine.server.api.ProcessInstanceResource;
 import org.opensbpm.engine.server.api.dto.instance.Audits;
 import org.opensbpm.engine.server.api.dto.instance.Processes;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,11 +43,6 @@ public class ProcessInstanceResourceService implements ProcessInstanceResource {
     private InstanceService instanceService;
 
     @Override
-    public Processes index() {
-        return new Processes(new ArrayList<>(instanceService.findAllByStates(EnumSet.allOf(ProcessInstanceState.class))));
-    }
-
-    //@Override
     public Processes search(SearchFilter searchFilter) {
 //        SearchSpecificationBuilder<ProcessInstance> searchSpecificationBuilder = new SearchSpecificationBuilder<ProcessInstance>(searchFilter) {
 //            @Override
@@ -76,22 +70,20 @@ public class ProcessInstanceResourceService implements ProcessInstanceResource {
                 .orElseThrow(() -> new NotFoundException("ProcessInstance with id '" + id + "' not found"));
     }
 
-    //@Override
+    @Override
     public Audits retrieveAudit(Long id) {
         try {
             return new Audits(instanceService.getAuditTrail(ProcessRequest.of(id)));
         } catch (ProcessNotFoundException ex) {
-            LOGGER.log(Level.SEVERE, ex.getMessage(), ex);
             throw new NotFoundException(ex.getMessage(), ex);
         }
     }
 
-    //@Override
+    @Override
     public ProcessInfo stop(Long id) {
         try {
             return instanceService.stopProcess(ProcessRequest.of(id));
         } catch (ProcessNotFoundException ex) {
-            LOGGER.log(Level.SEVERE, ex.getMessage(), ex);
             throw new NotFoundException(ex.getMessage(), ex);
         }
     }
