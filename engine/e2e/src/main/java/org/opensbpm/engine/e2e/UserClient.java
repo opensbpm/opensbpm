@@ -22,11 +22,18 @@ class UserClient {
     private static final Logger LOGGER = Logger.getLogger(UserClient.class.getName());
     private final static TaskInfo TASK_EMPTY = new TaskInfo();
 
-    public static UserClient of(Configuration configuration,ExecutorService taskExecutorService, String userName, String password) {
+    public static UserClient of(Configuration configuration,ExecutorService taskExecutorService, Credentials credentials) {
         return new UserClient(
                 configuration,
                 taskExecutorService,
-                Credentials.of(userName, password.toCharArray())
+                credentials
+        );
+    }
+    public static UserClient of(Configuration configuration, Credentials credentials) {
+        return new UserClient(
+                configuration,
+                Executors.newFixedThreadPool(8),
+                credentials
         );
     }
 
@@ -113,7 +120,7 @@ class UserClient {
         });
     }
 
-    public void stop() throws InterruptedException, ExecutionException {
+    public void stop()  {
         LOGGER.info("User[" + getUserToken().getName() + "] closing client");
         tasksFetcher.cancel();
     }
