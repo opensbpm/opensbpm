@@ -11,4 +11,4 @@ spec:
           image: sedstef/opensbpm-e2e
           args: ["--url",  "https://cloud-dev.opensbpm.org"]
       restartPolicy: Never
-  backoffLimit: 4
+  backoffLimit: 1
