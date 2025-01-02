@@ -18,6 +18,7 @@
  */
 package org.opensbpm.engine.e2e;
 
+import java.io.InputStream;
 import java.security.GeneralSecurityException;
 import java.util.*;
 import java.util.concurrent.*;
@@ -27,7 +28,12 @@ import org.apache.commons.cli.ParseException;
 import org.opensbpm.engine.api.ProcessNotFoundException;
 import org.opensbpm.engine.api.UserNotFoundException;
 import org.opensbpm.engine.api.instance.*;
+import org.opensbpm.engine.api.model.ProcessModelInfo;
 import org.opensbpm.engine.client.Credentials;
+import org.opensbpm.engine.client.EngineServiceClient;
+import org.springframework.boot.CommandLineRunner;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 import java.io.IOException;
 import java.util.logging.Level;
@@ -37,15 +43,20 @@ import java.util.stream.Collectors;
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
 
-
-public class Main {
+@SpringBootApplication
+public class Main implements CommandLineRunner {
 
     private static final Logger LOGGER = Logger.getLogger(Main.class.getName());
 
     public static void main(String[] args) {
+        SpringApplication.run(Main.class, args);
+    }
+
+    @Override
+    public void run(String... args) {
         try {
             LogManager.getLogManager().readConfiguration(Main.class.getResourceAsStream("/logging.properties"));
-            new Main(Configuration.parseArgs(args)).execute();
+            execute(Configuration.parseArgs(args));
         } catch (ParseException ex) {
             //ParseException is already dumped to System.out, log here for debugging purpose
             LOGGER.log(Level.FINEST, ex.getMessage(), ex);
@@ -63,14 +74,18 @@ public class Main {
         }
     }
 
-    private final Configuration configuration;
-
-    private Main(Configuration configuration) {
-        this.configuration = configuration;
-    }
-
-    public void execute() throws UserNotFoundException, ProcessNotFoundException,
+    public void execute(Configuration configuration) throws UserNotFoundException, ProcessNotFoundException,
             IOException, InterruptedException, ExecutionException, GeneralSecurityException {
+
+        try {
+            EngineServiceClient adminClient = configuration.createEngineServiceClient(Credentials.of("admin", "admin".toCharArray()));
+            InputStream modelResource = Main.class.getResourceAsStream("/models/" + "dienstreiseantrag_simple.xml");
+            ProcessModelInfo processModelInfo = adminClient.getProcessModelResource().create(modelResource);
+            LOGGER.info("ProcessModel " + processModelInfo.getName()+" uploaded");
+        } catch (Exception ex) {
+            throw new RuntimeException(ex);
+        }
+
         List<Credentials> allCredentials = asList(
                 Credentials.of("alice", "alice".toCharArray()),
                 Credentials.of("jdoe", "jdoe".toCharArray()),
@@ -99,11 +114,11 @@ public class Main {
 
             }
         } else {
-            executeSinglePod(allCredentials);
+            executeSinglePod(configuration, allCredentials);
         }
     }
 
-    private  void executeSinglePod(List<Credentials> allCredentials) {
+    private void executeSinglePod(Configuration configuration, List<Credentials> allCredentials) {
         ExecutorService taskExecutorService = Executors.newWorkStealingPool();
 
         ExecutorService executorService = Executors.newFixedThreadPool(allCredentials.size());

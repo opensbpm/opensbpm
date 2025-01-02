@@ -22,6 +22,8 @@ import org.apache.commons.cli.ParseException;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
+import org.opensbpm.engine.client.Credentials;
+import org.opensbpm.engine.client.EngineServiceClient;
 
 public class Configuration {
 
@@ -81,5 +83,16 @@ public class Configuration {
     public boolean isIndexed() {
         return cmd.hasOption(AUTHURL_OPTION.getOpt());
     }
+
+    public EngineServiceClient createEngineServiceClient(Credentials credentials) {
+        final EngineServiceClient engineServiceClient;
+        if (hasAuthUrl()) {
+            engineServiceClient = EngineServiceClient.create(getAuthUrl(), getUrl(), credentials);
+        } else {
+            engineServiceClient = EngineServiceClient.create(getUrl(), credentials);
+        }
+        return engineServiceClient;
+    }
+
 
 }
