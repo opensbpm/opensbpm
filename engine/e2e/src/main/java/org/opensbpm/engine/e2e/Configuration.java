@@ -1,16 +1,16 @@
 /*******************************************************************************
  * Copyright (C) 2024 Stefan Sedelmaier
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published
  * by the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Affero General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
@@ -31,8 +31,8 @@ public class Configuration {
             .longOpt("url")
             .hasArg(true)
             .argName("url")
-            .desc("url of OpenSBPM-Engine")
             .required(true)
+            .desc("url of OpenSBPM-Engine")
             .build();
     private static final Option AUTHURL_OPTION = Option.builder("a")
             .longOpt("authurl")
@@ -45,11 +45,21 @@ public class Configuration {
             .argName("indexed")
             .desc("Run in indexed mode using env variable JOB_COMPLETION_INDEX")
             .build();
+
+    private static final Option PROCESSES_OPTION = Option.builder("p")
+            .longOpt("processes")
+            .hasArg(true)
+            .argName("processes")
+            .required(true)
+            .desc("Number of processes to run")
+            .build();
+
     public static Configuration parseArgs(String[] args) throws ParseException {
         Options options = new Options();
         options.addOption(URL_OPTION);
         options.addOption(AUTHURL_OPTION);
         options.addOption(INDEXED_OPTION);
+        options.addOption(PROCESSES_OPTION);
         try {
             CommandLine cmd = new DefaultParser().parse(options, args, true);
             return new Configuration(cmd);
@@ -72,7 +82,7 @@ public class Configuration {
         return cmd.getOptionValue(URL_OPTION.getOpt());
     }
 
-    public boolean hasAuthUrl(){
+    public boolean hasAuthUrl() {
         return cmd.hasOption(AUTHURL_OPTION.getOpt());
     }
 
@@ -82,6 +92,10 @@ public class Configuration {
 
     public boolean isIndexed() {
         return cmd.hasOption(AUTHURL_OPTION.getOpt());
+    }
+
+    public Integer getProcessesCount() {
+        return Integer.valueOf(cmd.getOptionValue(PROCESSES_OPTION.getOpt()));
     }
 
     public EngineServiceClient createEngineServiceClient(Credentials credentials) {
