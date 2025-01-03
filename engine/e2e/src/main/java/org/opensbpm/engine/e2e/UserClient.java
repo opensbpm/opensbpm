@@ -44,6 +44,7 @@ class UserClient {
     //
     private final Set<TaskInfo> processedTasks = new HashSet<>();
     //
+    private final Configuration configuration;
     private final EngineServiceClient engineServiceClient;
     private final ExecutorService taskExecutorService;
     //
@@ -53,7 +54,8 @@ class UserClient {
 
 
     private UserClient(Configuration configuration, ExecutorService taskExecutorService, Credentials credentials) {
-        engineServiceClient = configuration.createEngineServiceClient( credentials);
+        this.configuration = configuration;
+        engineServiceClient = this.configuration.createEngineServiceClient( credentials);
         this.taskExecutorService = taskExecutorService;
     }
 
@@ -107,7 +109,7 @@ class UserClient {
         startedProcesses = getProcessModelResource().index().getProcessModelInfos().stream()
                 .flatMap(model -> {
                     LOGGER.info("User[" + getUserToken().getName() + "] starting process " + model.getName());
-                    return IntStream.range(0, 100).boxed()
+                    return IntStream.range(0, configuration.getProcessesCount()).boxed()
                             .map(idx -> {
                                 ProcessModelResource modelResource = engineServiceClient.newEngineResource().getProcessModelResource(getUserId());
                                 return modelResource.start(model.getId());
