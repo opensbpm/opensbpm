@@ -107,7 +107,7 @@ class UserClient {
         startedProcesses = getProcessModelResource().index().getProcessModelInfos().stream()
                 .flatMap(model -> {
                     LOGGER.info("User[" + getUserToken().getName() + "] starting process " + model.getName());
-                    return IntStream.range(0, 5).boxed()
+                    return IntStream.range(0, 100).boxed()
                             .map(idx -> {
                                 ProcessModelResource modelResource = engineServiceClient.newEngineResource().getProcessModelResource(getUserId());
                                 return modelResource.start(model.getId());
@@ -244,8 +244,10 @@ class UserClient {
     }
 
     public Stream<Statistics> getStatistics() {
-        return getStartedProcesses().map(processInfo -> {
-            Audits audits = engineServiceClient.getProcessInstanceResource().retrieveAudit(processInfo.getId());
+        return startedProcesses.stream()
+                .map(task -> {
+                    ProcessInfo processInfo = engineServiceClient.getProcessInstanceResource().retrieve(task.getProcessId());
+                    Audits audits = engineServiceClient.getProcessInstanceResource().retrieveAudit(processInfo.getId());
             return new Statistics(
                     processInfo.getStartTime(),
                     processInfo.getEndTime(),

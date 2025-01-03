@@ -79,7 +79,7 @@ public class Main implements CommandLineRunner {
 
         try {
             EngineServiceClient adminClient = configuration.createEngineServiceClient(Credentials.of("admin", "admin".toCharArray()));
-            InputStream modelResource = Main.class.getResourceAsStream("/models/" + "dienstreiseantrag_simple.xml");
+            InputStream modelResource = Main.class.getResourceAsStream("/models/" + "dienstreiseantrag_extended.xml");
             ProcessModelInfo processModelInfo = adminClient.getProcessModelResource().create(modelResource);
             LOGGER.info("ProcessModel " + processModelInfo.getName()+" uploaded");
         } catch (Exception ex) {
@@ -89,7 +89,7 @@ public class Main implements CommandLineRunner {
         List<Credentials> allCredentials = asList(
                 Credentials.of("alice", "alice".toCharArray()),
                 Credentials.of("jdoe", "jdoe".toCharArray()),
-                Credentials.of("jodoe", "jodoe".toCharArray()),
+                //Credentials.of("jodoe", "jodoe".toCharArray()),
                 Credentials.of("miriam", "miriam".toCharArray())
         );
 

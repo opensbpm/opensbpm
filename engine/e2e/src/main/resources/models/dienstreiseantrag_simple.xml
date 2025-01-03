@@ -86,10 +86,6 @@
                 <object>Genehmigung</object>
                 <toState>Buchung von Reisestelle empfangen</toState>
             </message>
-            <message>
-                <object>Ablehnung</object>
-                <toState>DR-Antrag zurückziehen/ändern</toState>
-            </message>
         </receiveState>
         <receiveState>
             <name>Buchung von Reisestelle empfangen</name>
@@ -148,56 +144,6 @@
         </functionState>
         <functionState eventType="END">
             <name>DR beendet</name>
-        </functionState>
-        <functionState>
-            <name>DR-Antrag zurückziehen/ändern</name>
-            <object>
-                <name>DR-Antrag</name>
-                <attribute>
-                    <name>Name</name>                        
-                    <permission>READ</permission>                        
-                </attribute>
-                <attribute>
-                    <name>Reisebeginn</name>
-                    <permission>WRITE</permission>
-                    <mandatory>true</mandatory>
-                </attribute>
-                <attribute>
-                    <name>Reiseende</name>
-                    <permission>WRITE</permission>
-                    <mandatory>true</mandatory>
-                </attribute>
-                <attribute>
-                    <name>Reiseziel</name>
-                    <permission>WRITE</permission>
-                    <mandatory>true</mandatory>
-                </attribute>
-                <object>
-                    <name>Mitreisende</name>
-                    <!--attribute>
-                        <name>Antragsteller</name>                        
-                        <permission>WRITE</permission>                        
-                        <mandatory>true</mandatory>
-                    </attribute-->
-                    <attribute>
-                        <name>Bemerkung</name>
-                        <permission>WRITE</permission>
-                        <mandatory>true</mandatory>
-                    </attribute>                    
-                </object>
-            </object>
-            <object>
-                <name>Ablehnung</name>
-                <attribute>
-                    <name>Begründung</name>
-                    <permission>READ</permission>
-                </attribute>
-            </object>
-            <toState>DR-Antrag an Vorgesetzer senden</toState>
-            <toState>DR-Antrag zurückziehen</toState>            
-        </functionState>
-        <functionState eventType="END">
-            <name>DR-Antrag zurückziehen</name>
         </functionState>
     </userSubject>
     <userSubject>
@@ -272,7 +218,7 @@
                 </attribute>
             </object>
             <toState>Genehmigen</toState>
-            <toState>Ablehnen</toState>
+            <toState>Abgelehnt</toState>
         </functionState>
         <!-- TODO merge these two SendStates to one SendState with multiple messages -->
         <sendState async="true">
@@ -286,11 +232,9 @@
             <receiver>Reisestelle</receiver>
             <message>genehmigter DR-Antrag</message>
         </sendState>
-        <sendState eventType="END">
-            <name>Ablehnen</name>
-            <receiver>Mitarbeiter</receiver>
-            <message>Ablehnung</message>
-        </sendState>
+        <functionState eventType="END">
+            <name>Abgelehnt</name>
+        </functionState>
     </userSubject>
     <userSubject>
         <name>Reisestelle</name>
