@@ -59,21 +59,28 @@ public class EngineResourceService implements EngineResource {
 
     @Override
     public ProcessModelResource getProcessModelResource(Long userId) {
-        UserToken userToken = retrieveToken(SecurityContextHolder.getContext().getAuthentication());
-        if (userId.compareTo(userToken.getId()) != 0) {
-            throw new ClientErrorException("User mismatch", Status.FORBIDDEN);
-        }
+        UserToken userToken = validateUser(userId);
         return new ProcessModelResourceService(userToken);
     }
 
     @Override
     public ProcessInstanceResource getProcessInstanceResource(Long userId) {
-        return new ProcessInstanceResourceService();
+        UserToken userToken = validateUser(userId);
+        return new ProcessInstanceResourceService(userToken);
     }
 
     @Override
     public TaskResource getTaskResource(Long userId) {
-        return new TaskResourceService();
+        UserToken userToken = validateUser(userId);
+        return new TaskResourceService(userToken);
+    }
+
+    private UserToken validateUser(Long userId) {
+        UserToken userToken = retrieveToken(SecurityContextHolder.getContext().getAuthentication());
+        if (userId.compareTo(userToken.getId()) != 0) {
+            throw new ClientErrorException("User mismatch", Status.FORBIDDEN);
+        }
+        return userToken;
     }
 
     private UserToken retrieveToken(Authentication authentication) {
@@ -104,7 +111,6 @@ public class EngineResourceService implements EngineResource {
         @Override
         public ProcessModelInfo retrieve(Long modelId) {
             try {
-                UserToken userToken = retrieveToken(SecurityContextHolder.getContext().getAuthentication());
                 return findProcessModels(userToken).stream().filter(modelInfo -> modelId.equals(modelInfo.getId())).findFirst().orElseThrow(() -> new NotFoundException());
             } catch (UserNotFoundException ex) {
                 throw new NotFoundException(ex.getMessage(), ex);
@@ -114,7 +120,6 @@ public class EngineResourceService implements EngineResource {
         @Override
         public TaskInfo start(Long modelId) {
             try {
-                UserToken userToken = retrieveToken(SecurityContextHolder.getContext().getAuthentication());
                 return engineService.startProcess(userToken, ModelRequest.of(modelId));
             } catch (UserNotFoundException | ModelNotFoundException ex) {
                 Logger.getLogger(ProcessModelResourceService.class.getName()).log(Level.SEVERE, ex.getMessage(), ex);
@@ -128,6 +133,11 @@ public class EngineResourceService implements EngineResource {
     }
 
     public class ProcessInstanceResourceService implements ProcessInstanceResource {
+        private final UserToken userToken;
+
+        public ProcessInstanceResourceService(UserToken userToken) {
+            this.userToken = userToken;
+        }
 
         @Override
         public Processes index() {
@@ -141,14 +151,16 @@ public class EngineResourceService implements EngineResource {
         @Override
         public ProcessInfo retrieve(Long instanceId) {
             try {
-                return findProcessInfos().stream().filter(process -> process.getId().equals(instanceId)).findFirst().orElseThrow(() -> new NotFoundException());
+                return findProcessInfos().stream()
+                        .filter(process -> process.getId().equals(instanceId))
+                        .findFirst()
+                        .orElseThrow(() -> new NotFoundException());
             } catch (UserNotFoundException ex) {
                 throw new NotFoundException(ex.getMessage(), ex);
             }
         }
 
         private Collection<ProcessInfo> findProcessInfos() throws UserNotFoundException {
-            UserToken userToken = retrieveToken(SecurityContextHolder.getContext().getAuthentication());
             return engineService.findAllByUserAndState(userToken, ProcessInstanceState.ACTIVE);
         }
 
@@ -156,10 +168,15 @@ public class EngineResourceService implements EngineResource {
 
     public class TaskResourceService implements TaskResource {
 
+        private final UserToken userToken;
+
+        public TaskResourceService(UserToken userToken) {
+            this.userToken = userToken;
+        }
+
         @Override
         public Tasks index() {
             try {
-                UserToken userToken = retrieveToken(SecurityContextHolder.getContext().getAuthentication());
                 return new Tasks(engineService.getTasks(userToken));
             } catch (UserNotFoundException ex) {
                 throw new NotFoundException(ex.getMessage(), ex);
@@ -169,7 +186,6 @@ public class EngineResourceService implements EngineResource {
         @Override
         public TaskResponse retrieve(Long taskId) {
             try {
-                UserToken userToken = retrieveToken(SecurityContextHolder.getContext().getAuthentication());
                 TaskInfo taskInfo = filterToOne(engineService.getTasks(userToken),
                         task -> Objects.equals(task.getId(), taskId))
                         .orElseThrow(() -> new ClientErrorException("Task with id " + taskId + " doesn't exists anymore", Status.GONE));
@@ -184,7 +200,6 @@ public class EngineResourceService implements EngineResource {
         @Override
         public void submit(Long taskId, TaskRequest taskRequest) {
             try {
-                UserToken userToken = retrieveToken(SecurityContextHolder.getContext().getAuthentication());
                 if (!taskId.equals(taskRequest.getId())) {
                     throw new ClientErrorException("Task id " + taskId + " doesn't match TaskRequest " + taskRequest.getId(), Status.BAD_REQUEST);
                 }
