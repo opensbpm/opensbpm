@@ -18,13 +18,17 @@
  */
 package org.opensbpm.engine.e2e;
 
-import java.io.InputStream;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.security.GeneralSecurityException;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.logging.LogManager;
 
 import org.apache.commons.cli.ParseException;
+import org.apache.commons.io.IOUtils;
 import org.opensbpm.engine.api.ProcessNotFoundException;
 import org.opensbpm.engine.api.UserNotFoundException;
 import org.opensbpm.engine.api.instance.*;
@@ -35,7 +39,6 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -48,7 +51,7 @@ public class Main implements CommandLineRunner {
 
     private static final Logger LOGGER = Logger.getLogger(Main.class.getName());
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws GeneralSecurityException, IOException {
         SpringApplication.run(Main.class, args);
     }
 
@@ -186,6 +189,13 @@ public class Main implements CommandLineRunner {
         builder.append(data).append("\n");
 
         LOGGER.info("statistics: \n" + builder.toString());
+
+        try {
+            Files.writeString(
+                    Path.of("/var/run/e2e-client/statistics.csv"),builder.toString());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private static String asString(ProcessInfo processInfo) {
