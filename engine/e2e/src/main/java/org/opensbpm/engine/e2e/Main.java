@@ -51,14 +51,13 @@ public class Main implements CommandLineRunner {
 
     private static final Logger LOGGER = Logger.getLogger(Main.class.getName());
 
-    public static void main(String[] args) throws GeneralSecurityException, IOException {
+    public static void main(String[] args) {
         SpringApplication.run(Main.class, args);
     }
 
     @Override
     public void run(String... args) {
         try {
-            LogManager.getLogManager().readConfiguration(Main.class.getResourceAsStream("/logging.properties"));
             execute(Configuration.parseArgs(args));
         } catch (ParseException ex) {
             //ParseException is already dumped to System.out, log here for debugging purpose
