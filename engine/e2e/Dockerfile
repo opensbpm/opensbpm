@@ -8,5 +8,5 @@ ENTRYPOINT [\
     "java", \
     "-Xms256m", "-Xmx768m", \
     "-XX:+UseG1GC", "-XX:InitiatingHeapOccupancyPercent=75", "-XX:MaxGCPauseMillis=200", \
-    "-jar","/e2e-exec.jar"\
+    "-jar","e2e-exec.jar"\
     ]
