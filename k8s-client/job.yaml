@@ -10,24 +10,14 @@ spec:
         - name: opensbpm-e2e-client
           image: sedstef/opensbpm-e2e
           args: ["--url",  "https://cloud-dev.opensbpm.org" ,"--processes", "10"]
+          #see https://docs.spring.io/spring-boot/reference/features/external-config.html#features.external-config.files
           volumeMounts:
-            - name: e2e-client-storage
-              mountPath: /var/run/e2e-client
+            - name: e2e-client-volume
+              mountPath: /workspace/config/application.yaml
+              subPath: application.yaml
       volumes:
-        - name: e2e-client-storage
-          persistentVolumeClaim:
-            claimName: e2e-client-pv-claim
+        - name: e2e-client-volume
+          configMap:
+            name: e2e-client
       restartPolicy: Never
   backoffLimit: 1
----
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: e2e-client-pv-claim
-spec:
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: 1Gi
-  storageClassName: standard
