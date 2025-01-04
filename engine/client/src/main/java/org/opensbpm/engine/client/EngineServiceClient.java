@@ -16,6 +16,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.function.Supplier;
 
+import com.fasterxml.jackson.jakarta.rs.json.JacksonXmlBindJsonProvider;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.cxf.configuration.jsse.TLSClientParameters;
 
@@ -56,19 +57,13 @@ public abstract class EngineServiceClient {
                     }
 
                     private Authentication doAuthenticate() throws IOException, GeneralSecurityException, InterruptedException {
-                        SSLContext sslContext = SSLContext.getInstance("TLS");
-                        sslContext.init(null, SslConfiguration.getTrustAllCerts(), new SecureRandom());
-
-                        HttpClient httpClient = HttpClient.newBuilder()
-                                .sslContext(sslContext)
-                                .build();
                         HttpRequest authRequest = HttpRequest.newBuilder(URI.create(String.format("%s/auth/realms/quickstart/protocol/openid-connect/token", authAddress)))
                                 .header("content-type", "application/x-www-form-urlencoded")
                                 .POST(BodyPublishers.ofString(
                                         String.format("client_id=opensbpm-ui&username=%s&password=%s&grant_type=password", credentials.getUserName(), String.valueOf(credentials.getPassword()))
                                 ))
                                 .build();
-                        HttpResponse<String> authResponse = httpClient.send(authRequest, HttpResponse.BodyHandlers.ofString());
+                        HttpResponse<String> authResponse = HttpClient.newHttpClient().send(authRequest, HttpResponse.BodyHandlers.ofString());
                         if(200 == authResponse.statusCode()) {
                             return new ObjectMapper().readValue(authResponse.body(), Authentication.class);
                         }else{
@@ -138,7 +133,6 @@ public abstract class EngineServiceClient {
 
     private <T> T createResourceClient(Class<T> type) {
         List<Object> providers = Arrays.asList(
-                /*new JacksonJaxbXMLProvider(),*/
                 new JacksonJsonProvider(new ObjectMapper()
                         .registerModule(new JavaTimeModule()))
         );
@@ -151,22 +145,6 @@ public abstract class EngineServiceClient {
 
         Client client = WebClient.client(proxy);
         client.header("Authorization", "Bearer " + getAuthentication().getAccessToken());
-
-        WebClient httpClient = WebClient.fromClient(client);
-        HTTPConduit httpConduit = (HTTPConduit) WebClient.getConfig(httpClient).getConduit();
-        try {
-            TLSClientParameters tlsClientParameters = ObjectUtils.firstNonNull(httpConduit.getTlsClientParameters(), new TLSClientParameters());
-
-            SSLContext sslContext = SSLContext.getInstance("TLS");
-            sslContext.init(null, SslConfiguration.getTrustAllCerts(), new SecureRandom());
-            tlsClientParameters.setSslContext(sslContext);
-            tlsClientParameters.setSSLSocketFactory(sslContext.getSocketFactory());
-            tlsClientParameters.setHostnameVerifier(SslConfiguration.getAllHostnameVerifier());
-
-            httpConduit.setTlsClientParameters(tlsClientParameters);
-        } catch (Exception ex) {
-            throw new RuntimeException(ex);
-        }
 
         return proxy;
     }
