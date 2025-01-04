@@ -61,6 +61,7 @@ public class Main implements CommandLineRunner {
     public void run(String... args) {
         try {
             execute(Configuration.parseArgs(args));
+            System.exit(0);
         } catch (ParseException ex) {
             //ParseException is already dumped to System.out, log here for debugging purpose
             LOGGER.log(Level.FINEST, ex.getMessage(), ex);
@@ -182,10 +183,18 @@ public class Main implements CommandLineRunner {
         }
         LOGGER.info("Everything done");
 
-        StringBuilder builder = new StringBuilder("start,end,duration,taskcount\n");
+        StringBuilder builder = new StringBuilder("processcount,start,end,duration,taskcount\n");
         String data = userClients.stream()
                 .flatMap(UserClient::getStatistics)
-                .map(Statistics::toString)
+                .map(statistics ->
+                        String.format("%s,%s,%s,%s,%s",
+                                configuration.getProcessesCount(),
+                                statistics.getStartTime(),
+                                statistics.getEndTime(),
+                                statistics.getDuration(),
+                                statistics.getCount()
+                        )
+                )
                 .collect(Collectors.joining("\n"));
         builder.append(data).append("\n");
         String statData = builder.toString();
