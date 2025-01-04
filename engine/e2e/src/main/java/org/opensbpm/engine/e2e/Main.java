@@ -20,6 +20,7 @@ package org.opensbpm.engine.e2e;
 
 import java.io.*;
 import java.security.GeneralSecurityException;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.*;
 
@@ -189,9 +190,9 @@ public class Main implements CommandLineRunner {
                 .map(statistics ->
                         String.format("%s,%s,%s,%s,%s",
                                 configuration.getProcessesCount(),
-                                statistics.getStartTime(),
-                                statistics.getEndTime(),
-                                statistics.getDuration(),
+                                statistics.getStartTime().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME),
+                                statistics.getEndTime().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME),
+                                statistics.getDuration().toMillis(),
                                 statistics.getCount()
                         )
                 )
