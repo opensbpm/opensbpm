@@ -1,0 +1,11 @@
+# see https://docs.spring.io/spring-boot/appendix/application-properties/index.html
+
+spring:
+  application:
+    name: engine-server
+    version: "@java:version@"
+
+#debug: true
+#logging.level:
+  #    root: INFO
+  #org.opensbpm.engine.e2e.UserClient: DEBUG
