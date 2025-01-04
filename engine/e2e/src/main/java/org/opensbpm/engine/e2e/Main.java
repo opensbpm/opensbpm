@@ -19,16 +19,11 @@
 package org.opensbpm.engine.e2e;
 
 import java.io.*;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.security.GeneralSecurityException;
 import java.util.*;
 import java.util.concurrent.*;
-import java.util.logging.LogManager;
 
 import org.apache.commons.cli.ParseException;
-import org.apache.commons.io.IOUtils;
 import org.opensbpm.engine.api.ProcessNotFoundException;
 import org.opensbpm.engine.api.UserNotFoundException;
 import org.opensbpm.engine.api.instance.*;
@@ -51,8 +46,15 @@ public class Main implements CommandLineRunner {
 
     private static final Logger LOGGER = Logger.getLogger(Main.class.getName());
 
+
     public static void main(String[] args) {
         SpringApplication.run(Main.class, args);
+    }
+
+    private final WebdavUploaderService uploaderService;
+
+    public Main(WebdavUploaderService uploaderService) {
+        this.uploaderService = uploaderService;
     }
 
     @Override
@@ -83,7 +85,7 @@ public class Main implements CommandLineRunner {
             EngineServiceClient adminClient = configuration.createEngineServiceClient(Credentials.of("admin", "admin".toCharArray()));
             InputStream modelResource = Main.class.getResourceAsStream("/models/" + "dienstreiseantrag_extended.xml");
             ProcessModelInfo processModelInfo = adminClient.getProcessModelResource().create(modelResource);
-            LOGGER.info("ProcessModel " + processModelInfo.getName()+" uploaded");
+            LOGGER.info("ProcessModel " + processModelInfo.getName() + " uploaded");
         } catch (Exception ex) {
             throw new RuntimeException(ex);
         }
@@ -125,12 +127,12 @@ public class Main implements CommandLineRunner {
 
         ExecutorService executorService = Executors.newFixedThreadPool(allCredentials.size());
         List<UserClient> userClients = allCredentials.stream()
-                .map(credentials -> UserClient.of(configuration,taskExecutorService, credentials))
+                .map(credentials -> UserClient.of(configuration, taskExecutorService, credentials))
                 .collect(Collectors.toList());
 
-        userClients.forEach(client->{
-                    executorService.submit(() -> client.start());
-                });
+        userClients.forEach(client -> {
+            executorService.submit(() -> client.start());
+        });
         executorService.shutdown();
         try {
             executorService.awaitTermination(10, TimeUnit.MINUTES);
@@ -146,7 +148,7 @@ public class Main implements CommandLineRunner {
                     .mapToLong(userClient -> userClient.getActiveProcesses().size())
                     .sum() == 0;
 
-            if(LOGGER.isLoggable(Level.FINEST)) {
+            if (LOGGER.isLoggable(Level.FINEST)) {
                 for (UserClient userClient : userClients) {
                     List<ProcessInfo> activeProcesses = userClient.getActiveProcesses();
                     if (!activeProcesses.isEmpty()) {
@@ -184,17 +186,12 @@ public class Main implements CommandLineRunner {
         String data = userClients.stream()
                 .flatMap(UserClient::getStatistics)
                 .map(Statistics::toString)
-        .collect(Collectors.joining("\n"));
+                .collect(Collectors.joining("\n"));
         builder.append(data).append("\n");
+        String statData = builder.toString();
 
-        LOGGER.info("statistics: \n" + builder.toString());
-
-        try {
-            Files.writeString(
-                    Path.of("/var/run/e2e-client/statistics.csv"),builder.toString());
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        LOGGER.info("statistics: \n" + statData);
+        uploaderService.uploadStatistic(configuration, statData);
     }
 
     private static String asString(ProcessInfo processInfo) {
