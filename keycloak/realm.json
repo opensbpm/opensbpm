@@ -1,6 +1,7 @@
 {
   "realm": "quickstart",
   "enabled": true,
+  "oauth2DeviceCodeLifespan": 3540,
   "requiredCredentials": [
     "password"
   ],
