@@ -46,32 +46,35 @@ public abstract class EngineServiceClient {
         requireAddress(authAddress);
         requireAddress(serviceAddress);
         Objects.requireNonNull(credentials, "Credentials must not be null");
-        return new EngineServiceClient(serviceAddress){
+        return new EngineServiceClient(serviceAddress) {
             @Override
             protected Authentication authenticate() {
                 try {
                     return doAuthenticate();
-                } catch (IOException | GeneralSecurityException | InterruptedException ex) {
+                } catch (InterruptedException ex) {
+                    Thread.currentThread().interrupt();
+                    throw new RuntimeException(ex);
+                } catch (IOException | GeneralSecurityException ex) {
                     throw new RuntimeException(ex);
                 }
-                    }
+            }
 
-                    private Authentication doAuthenticate() throws IOException, GeneralSecurityException, InterruptedException {
-                        HttpRequest authRequest = HttpRequest.newBuilder(URI.create(String.format("%s/auth/realms/quickstart/protocol/openid-connect/token", authAddress)))
-                                .header("content-type", "application/x-www-form-urlencoded")
-                                .POST(BodyPublishers.ofString(
-                                        String.format("client_id=opensbpm-ui&username=%s&password=%s&grant_type=password", credentials.getUserName(), String.valueOf(credentials.getPassword()))
-                                ))
-                                .build();
-                        HttpResponse<String> authResponse = HttpClient.newHttpClient().send(authRequest, HttpResponse.BodyHandlers.ofString());
-                        if(200 == authResponse.statusCode()) {
-                            return new ObjectMapper().readValue(authResponse.body(), Authentication.class);
-                        }else{
-                            throw new IOException(authResponse.body());
-                        }
-                    }
+            private Authentication doAuthenticate() throws IOException, GeneralSecurityException, InterruptedException {
+                HttpRequest authRequest = HttpRequest.newBuilder(URI.create(String.format("%s/auth/realms/quickstart/protocol/openid-connect/token", authAddress)))
+                        .header("content-type", "application/x-www-form-urlencoded")
+                        .POST(BodyPublishers.ofString(
+                                String.format("client_id=opensbpm-ui&username=%s&password=%s&grant_type=password", credentials.getUserName(), String.valueOf(credentials.getPassword()))
+                        ))
+                        .build();
+                HttpResponse<String> authResponse = HttpClient.newHttpClient().send(authRequest, HttpResponse.BodyHandlers.ofString());
+                if (200 == authResponse.statusCode()) {
+                    return new ObjectMapper().readValue(authResponse.body(), Authentication.class);
+                } else {
+                    throw new IOException(authResponse.body());
+                }
+            }
 
-                };
+        };
     }
 
     private static String requireAddress(String authAddress) {
@@ -101,7 +104,7 @@ public abstract class EngineServiceClient {
 
     private Authentication getAuthentication() {
         if (authentication == null) {
-            synchronized(lock) {
+            synchronized (lock) {
                 LOGGER.log(Level.FINER, "request authentication");
                 authentication = authenticate();
             }
@@ -151,7 +154,7 @@ public abstract class EngineServiceClient {
 
     public void refreshToken() {
         LOGGER.log(Level.INFO, "Refreshing token");
-        synchronized(lock) {
+        synchronized (lock) {
             authentication = null;
         }
     }
