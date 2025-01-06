@@ -63,7 +63,7 @@
 
         <!-- dependency versions -->
         <opensbpm.version>1.1-SNAPSHOT</opensbpm.version>
-        <spring.boot.version>3.4.0</spring.boot.version>
+        <spring.boot.version>3.4.1</spring.boot.version>
         <apache.cxf.version>4.0.4</apache.cxf.version>
     </properties>
 
