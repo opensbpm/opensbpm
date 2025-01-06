@@ -12,7 +12,7 @@ node('docker'){
         stage('Prepare'){        
             checkout scm
 
-            env.JDK_HOME = tool(type: 'jdk',name: 'jdk21')
+            env.JDK_HOME = tool(type: 'jdk',name: 'jdk17')
             env.PATH="${env.JDK_HOME}/bin:${env.PATH}"
 
         }
@@ -20,7 +20,7 @@ node('docker'){
 //        parallel buildService: {
             stage('Build Services'){
                 withMaven(
-                    jdk: 'jdk21',
+                    jdk: 'jdk17',
                     maven: 'default',
                     mavenSettingsConfig: '05894f91-85e1-4e6d-8eb5-a101d90c62e3'
                 ) {
@@ -41,7 +41,7 @@ node('docker'){
 
             stage('Deploy OCI-Images'){
                 withMaven(
-                    jdk: 'jdk21',
+                    jdk: 'jdk17',
                     maven: 'default',
                     mavenSettingsConfig: '05894f91-85e1-4e6d-8eb5-a101d90c62e3'
                 ) {
