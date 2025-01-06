@@ -36,7 +36,7 @@ spec:
     spec:
       containers:
         - name: engine
-          image: sedstef/opensbpm-engine:latest
+          image: opensbpm/engine:latest
           imagePullPolicy: Always
           env:
             - name: SPRING_DATASOURCE_URL

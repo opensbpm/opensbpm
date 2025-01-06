@@ -166,6 +166,10 @@
                     <systemPropertyVariables>
                         <java.net.preferIPv4Stack>true</java.net.preferIPv4Stack>
                     </systemPropertyVariables>
+                    <image>
+                        <!--name>docker.io/opensbpm/${project.artifactId}:${project.version}</name-->
+                        <name>docker.io/opensbpm/engine</name>
+                    </image>
                 </configuration>
                 <executions>
                     <execution>
