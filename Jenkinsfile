@@ -7,7 +7,7 @@ properties([
         pipelineTriggers([snapshotDependencies()])
     ])
 
-node('docker'){
+node('docker nodejs jdk17'){
     try{
         stage('Prepare'){        
             checkout scm
