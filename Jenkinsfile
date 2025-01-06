@@ -7,7 +7,7 @@ properties([
         pipelineTriggers([snapshotDependencies()])
     ])
 
-node('jdk17'){
+node('docker'){
     try{
         stage('Prepare'){        
             checkout scm
@@ -27,7 +27,16 @@ node('jdk17'){
                     withSonarQubeEnv('Sonarqube') {
                         sh "mvn clean test verify sonar:sonar package -Pproduction"
                     }
-                    stash(name: 'engine-jar', includes: 'engine/service/target/engine-service-exec.jar')
+
+                    stage('Deploy OCI-Images'){
+                        docker.withRegistry('', 'opensbpm@hub.docker.com') {
+                            sh """
+                                mvn -pl engine/service spring-boot:build-image
+                                docker push docker.io/opensbpm/engine:latest
+                            """
+                        }
+                    }
+//                    stash(name: 'engine-jar', includes: 'engine/service/target/engine-service-exec.jar')
                     stash(name: 'e2e-jar', includes: 'engine/e2e/target/e2e-exec.jar')
                     stash(name: 'vaadinui-jar', includes: 'vaadinui/target/vaadinui-exec.jar')
                 }
@@ -50,19 +59,7 @@ node('jdk17'){
                         }
                     }
 
-                    docker.withRegistry('', 'opensbpm@hub.docker.com') {
-                        withMaven(
-                            jdk: 'jdk17',
-                            maven: 'default',
-                            mavenSettingsConfig: '05894f91-85e1-4e6d-8eb5-a101d90c62e3'
-                        ) {
-                            sh """
-                                mvn -pl engine/service -am install
-                                mvn -pl engine/service spring-boot:build-image
-                                docker push docker.io/opensbpm/engine:latest
-                            """
-                        }
-                    }
+
 //                     unstash('engine-jar')
 //                     dir('engine/service'){
 //                         docker.withRegistry('', 'opensbpm@hub.docker.com') {
