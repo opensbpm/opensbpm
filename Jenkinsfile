@@ -45,7 +45,7 @@ node('docker && nodejs && jdk17'){
                     mavenSettingsConfig: '05894f91-85e1-4e6d-8eb5-a101d90c62e3'
                 ) {
                     sh "mvn -DskipTests -U install"
-                    sh "mvn -X -pl engine/service spring-boot:build-image"
+                    sh "mvn -pl engine/service spring-boot:build-image"
                 }
                 docker.withRegistry('', 'opensbpm@hub.docker.com') {
                     sh "docker push docker.io/opensbpm/engine:latest"
