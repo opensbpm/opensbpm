@@ -114,7 +114,7 @@
         <repository>
             <id>opensbpm-snapshots</id>
             <name>OpenSBPM Snapshots</name>
-            <url>http://team.sedelmaier.at/archiva/repository/opensbpm-snapshots/</url>
+            <url>https://team.sedelmaier.at/archiva/repository/opensbpm-snapshots/</url>
             <releases>
                 <enabled>false</enabled>
             </releases>
