@@ -54,7 +54,7 @@ spec:
             requests:
               memory: "512Mi"
             limits:
-              memory: "1Gi"
+              memory: "768Mi"
           ports:
             - name: engine-http
               containerPort: 8090
