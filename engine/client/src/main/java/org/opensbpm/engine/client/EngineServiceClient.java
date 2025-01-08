@@ -115,6 +115,11 @@ public abstract class EngineServiceClient {
     private final String baseAddress;
     //
     private UserToken userToken;
+    private Supplier<UserResource> userResource = of(UserResource.class);
+    private Supplier<EngineResource> engineResource = of(EngineResource.class);
+    private Supplier<ProcessInstanceResource> processInstanceResource = of(ProcessInstanceResource.class);
+    private Supplier<ProcessModelResource> processModelResource = of(ProcessModelResource.class);
+
 
     public EngineServiceClient(String baseAddress) {
         this.baseAddress = Objects.requireNonNull(baseAddress, "baseAddress must not be null");
@@ -134,40 +139,63 @@ public abstract class EngineServiceClient {
     }
 
     public <T> T onUserResource(Function<UserResource, T> function) {
-        return onResource(() -> createResourceClient(UserResource.class), function);
+        return onResource(() -> userResource.get(), function);
     }
 
     public <T> T onEngineModelResource(Function<EngineResource.ProcessModelResource, T> function) {
-        return onEngineResource(
-                resource -> function.apply(resource.getProcessModelResource(getUserId()))
-        );
+        return onEngineResource(resource -> function.apply(resource.getProcessModelResource(getUserId())));
     }
 
     public <T> T onEngineTaskResource(Function<EngineResource.TaskResource, T> function) {
-        return onEngineResource(
-                resource -> function.apply(resource.getTaskResource(getUserId()))
-        );
+        return onEngineResource(resource -> function.apply(resource.getTaskResource(getUserId())));
     }
 
     public <T> T onEngineResource(Function<EngineResource, T> function) {
-        return onResource(() -> createResourceClient(EngineResource.class), function);
+        return onResource(() -> engineResource.get(), function);
     }
 
     public <T> T onProcessInstanceResource(Function<ProcessInstanceResource, T> function) {
-        return onResource(() -> createResourceClient(ProcessInstanceResource.class), function);
+        return onResource(() -> processInstanceResource.get(), function);
     }
+
     public <T> T onProcessModelResource(Function<ProcessModelResource, T> function) {
-        return onResource(() -> createResourceClient(ProcessModelResource.class), function);
+        return onResource(() -> processModelResource.get(), function);
     }
 
     private <R, T> T onResource(Supplier<R> resourceSupplier, Function<R, T> function) {
         R resource = resourceSupplier.get();
+        Client client = WebClient.client(resource);
+        client.header("Authorization", "Bearer " + getAuthenticationToken());
         try {
             return function.apply(resource);
         } finally {
-            Client client = WebClient.client(resource);
-            client.close();
+            client.reset();
+            //client.close();
         }
+    }
+
+
+    private <T> Supplier<T> of(Class<T> type) {
+        return new Supplier<>() {
+            private T resourceClient;
+
+            @Override
+            public T get() {
+                //if (resourceClient == null) {
+                    resourceClient = createResourceClient(type);
+                //}
+                return resourceClient;
+            }
+        };
+    }
+
+    private <T> ThreadLocal<T> ofThreadLocal(Class<T> type) {
+        return new ThreadLocal<>() {
+            @Override
+            protected T initialValue() {
+                return createResourceClient(type);
+            }
+        };
     }
 
     private <T> T createResourceClient(Class<T> type) {
@@ -179,12 +207,8 @@ public abstract class EngineServiceClient {
         factoryBean.setAddress(String.format("%s/api/services", baseAddress));
         factoryBean.setProviders(providers);
         factoryBean.setInheritHeaders(true);
+        //factoryBean.setThreadSafe(true);
         factoryBean.setServiceClass(type);
-        final T proxy = factoryBean.create(type);
-
-        Client client = WebClient.client(proxy);
-        client.header("Authorization", "Bearer " + getAuthenticationToken());
-
-        return proxy;
+        return factoryBean.create(type);
     }
 }
