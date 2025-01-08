@@ -23,7 +23,6 @@ import org.opensbpm.engine.api.InstanceService.ProcessRequest;
 import org.opensbpm.engine.api.instance.ProcessInfo;
 import java.util.ArrayList;
 import java.util.EnumSet;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import jakarta.ws.rs.NotFoundException;
 import org.opensbpm.engine.server.api.ProcessInstanceResource;
@@ -64,10 +63,11 @@ public class ProcessInstanceResourceService implements ProcessInstanceResource {
     @Override
     public ProcessInfo retrieve(Long id) {
         //TODO use and implement SearchFilter
-        return instanceService.findAllByStates(EnumSet.allOf(ProcessInstanceState.class)).stream()
-                .filter(processInfo -> processInfo.getId().equals(id))
-                .findFirst()
-                .orElseThrow(() -> new NotFoundException("ProcessInstance with id '" + id + "' not found"));
+        try {
+            return instanceService.findById(ProcessRequest.of(id));
+        } catch (ProcessNotFoundException ex) {
+            throw new NotFoundException(ex.getMessage(), ex);
+        }
     }
 
     @Override
