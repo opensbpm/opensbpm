@@ -107,7 +107,7 @@ public class Main implements CommandLineRunner {
             } else {
                 Credentials credentials = allCredentials.get(index - 1);
                 LOGGER.log(Level.INFO, "Running as User " + credentials.getUserName());
-                UserClient userClient = UserClient.of(configuration, credentials);
+                UserClient userClient = UserClient.of(configuration, credentials, Executors.newWorkStealingPool());
 
                 ExecutorService executorService = Executors.newSingleThreadExecutor();
                 executorService.submit(userClient::startProcesses);
@@ -125,8 +125,9 @@ public class Main implements CommandLineRunner {
     }
 
     private void executeSinglePod(Configuration configuration, List<Credentials> allCredentials) {
+        ExecutorService taskExecutorService = Executors.newWorkStealingPool();
         List<UserClient> userClients = allCredentials.stream()
-                .map(credentials -> UserClient.of(configuration, credentials))
+                .map(credentials -> UserClient.of(configuration, credentials, taskExecutorService ))
                 .collect(Collectors.toList());
 
         userClients.forEach(client -> client.startProcesses());
@@ -182,6 +183,7 @@ public class Main implements CommandLineRunner {
         for (UserClient client : userClients) {
             client.stop();
         }
+        taskExecutorService.shutdown();
         LOGGER.info("Everything done");
     }
 

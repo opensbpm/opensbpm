@@ -22,10 +22,10 @@ class UserClient {
 
     private static final Logger LOGGER = Logger.getLogger(UserClient.class.getName());
 
-    public static UserClient of(Configuration configuration, Credentials credentials) {
+    public static UserClient of(Configuration configuration, Credentials credentials, ExecutorService executorService) {
         return new UserClient(
                 configuration,
-                credentials
+                credentials, executorService
         );
     }
 
@@ -39,10 +39,10 @@ class UserClient {
     private List<TaskInfo> startedProcesses = Collections.emptyList();
     private Timer tasksFetcher;
 
-    private UserClient(Configuration configuration, Credentials credentials) {
+    private UserClient(Configuration configuration, Credentials credentials, ExecutorService executorService) {
         this.configuration = configuration;
         engineServiceClient = this.configuration.createEngineServiceClient(credentials);
-        taskExecutorService = Executors.newWorkStealingPool();
+        this.taskExecutorService = executorService;
 
         LOGGER.info("User[" + getUserToken().getName() + "] with Roles " + getUserToken().getRoles().stream()
                 .map(RoleToken::getName)
@@ -91,7 +91,6 @@ class UserClient {
     public void stop() {
         LOGGER.info("User[" + getUserToken().getName() + "] stopping task-fetcher");
         tasksFetcher.cancel();
-        taskExecutorService.shutdown();
     }
 
     private static class TaskExecutor {
