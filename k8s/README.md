@@ -37,3 +37,4 @@ microk8s kubectl create token default
 '''
 microk8s kubectl port-forward -n observability service/kube-prom-stack-grafana --address 0.0.0.0 3000:80 
 '''
+Use http://168.119.255.223:3000/
