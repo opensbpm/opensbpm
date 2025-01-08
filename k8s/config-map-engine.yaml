@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: engine-config
+data:
+  application.yaml: |
+    #debug: true
+    logging.level:
+      org.springframework.security.oauth2: DEBUG
+    #  org.apache.cxf: DEBUG
