@@ -1,6 +1,6 @@
 
 '''
-kubectl --kubeconfig ~/.kube/opensbpm@hetzner.yaml -k . apply
+kubectl --kubeconfig ~/.kube/opensbpm@hetzner.yaml -k k8s apply
 '''
 
 == only needed for local development

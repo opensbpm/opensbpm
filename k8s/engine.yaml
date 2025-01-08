@@ -69,4 +69,12 @@ spec:
               port: 8090
               path: /api/actuator/health/readiness
             initialDelaySeconds: 35
+          volumeMounts:
+            - name: engine-config-volume
+              mountPath: /workspace/config/application.yaml
+              subPath: application.yaml
+      volumes:
+        - name: engine-config-volume
+          configMap:
+            name: engine-config
       restartPolicy: Always
