@@ -5,6 +5,6 @@ metadata:
 data:
   application.yaml: |
     #debug: true
-    logging.level:
-      org.springframework.security.oauth2: DEBUG
+    #logging.level:
+    #  org.springframework.security.oauth2: DEBUG
     #  org.apache.cxf: DEBUG
