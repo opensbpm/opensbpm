@@ -56,7 +56,7 @@ public abstract class EngineServiceClient {
             }
 
             private Authentication authenticate() {
-                LOGGER.info("Authenticating user " + credentials.getUserName());
+                LOGGER.finer("Authenticating user " + credentials.getUserName());
                 return requestToken(
                         BodyPublishers.ofString(
                                 String.format("client_id=opensbpm-ui&grant_type=password&username=%s&password=%s", credentials.getUserName(), String.valueOf(credentials.getPassword()))
@@ -65,7 +65,7 @@ public abstract class EngineServiceClient {
             }
 
             private Authentication refreshToken(String refreshToken) {
-                LOGGER.info("Refreshing token for user " + credentials.getUserName());
+                LOGGER.finer("Refreshing token for user " + credentials.getUserName());
                 return requestToken(
                         BodyPublishers.ofString(
                                 String.format("client_id=opensbpm-ui&grant_type=refresh_token&refresh_token=%s", refreshToken)
