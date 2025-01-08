@@ -86,7 +86,7 @@ public class Main implements CommandLineRunner {
         try {
             EngineServiceClient adminClient = configuration.createEngineServiceClient(Credentials.of("admin", "admin".toCharArray()));
             InputStream modelResource = Main.class.getResourceAsStream("/models/" + "dienstreiseantrag_extended.xml");
-            ProcessModelInfo processModelInfo = adminClient.getProcessModelResource().create(modelResource);
+            ProcessModelInfo processModelInfo = adminClient.onProcessModelResource(processModelResource -> processModelResource.create(modelResource));
             LOGGER.info("ProcessModel " + processModelInfo.getName() + " uploaded");
         } catch (Exception ex) {
             throw new RuntimeException(ex);
