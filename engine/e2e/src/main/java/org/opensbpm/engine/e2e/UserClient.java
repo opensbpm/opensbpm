@@ -1,7 +1,7 @@
 package org.opensbpm.engine.e2e;
 
-import jakarta.ws.rs.ClientErrorException;
 import jakarta.ws.rs.ProcessingException;
+import jakarta.ws.rs.WebApplicationException;
 import org.opensbpm.engine.api.instance.*;
 import org.opensbpm.engine.client.Credentials;
 import org.opensbpm.engine.client.EngineServiceClient;
@@ -19,20 +19,12 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 class UserClient {
-    private static final Logger LOGGER = Logger.getLogger(UserClient.class.getName());
 
-    public static UserClient of(Configuration configuration, ExecutorService taskExecutorService, Credentials credentials) {
-        return new UserClient(
-                configuration,
-                taskExecutorService,
-                credentials
-        );
-    }
+    private static final Logger LOGGER = Logger.getLogger(UserClient.class.getName());
 
     public static UserClient of(Configuration configuration, Credentials credentials) {
         return new UserClient(
                 configuration,
-                Executors.newFixedThreadPool(8),
                 credentials
         );
     }
@@ -47,22 +39,11 @@ class UserClient {
     private List<TaskInfo> startedProcesses = Collections.emptyList();
     private Timer tasksFetcher;
 
-
-    private UserClient(Configuration configuration, ExecutorService taskExecutorService, Credentials credentials) {
+    private UserClient(Configuration configuration, Credentials credentials) {
         this.configuration = configuration;
         engineServiceClient = this.configuration.createEngineServiceClient(credentials);
-        this.taskExecutorService = taskExecutorService;
-    }
+        taskExecutorService = Executors.newWorkStealingPool();
 
-    public UserToken getUserToken() {
-        return engineServiceClient.getUserToken();
-    }
-
-    private Long getUserId() {
-        return engineServiceClient.getUserId();
-    }
-
-    public void start() {
         LOGGER.info("User[" + getUserToken().getName() + "] with Roles " + getUserToken().getRoles().stream()
                 .map(RoleToken::getName)
                 .collect(Collectors.joining(",")));
@@ -78,23 +59,29 @@ class UserClient {
                             taskExecutorService.submit(() -> new TaskExecutor(getUserToken(), engineServiceClient).execute(taskInfo));
                         });
             }
-        }, 50, 100);
+        }, 50, 300);
+    }
 
+    public UserToken getUserToken() {
+        return engineServiceClient.getUserToken();
+    }
 
-        startedProcesses = engineServiceClient.onEngineModelResource(processModelResource ->
-                processModelResource.index().getProcessModelInfos().stream()
-                        .flatMap(model -> {
+    public void startProcesses() {
+        startedProcesses = engineServiceClient.onEngineModelResource(processModelResource
+                -> processModelResource.index().getProcessModelInfos().stream()
+                        .flatMap(model -> IntStream.range(0, configuration.getProcessesCount()).boxed()
+                        .parallel()
+                        .map(idx
+                                -> {
                             LOGGER.info("User[" + getUserToken().getName() + "] starting process " + model.getName());
-                            return IntStream.range(0, configuration.getProcessesCount()).boxed()
-                                    .map(idx ->
-                                            engineServiceClient.onEngineModelResource(modelResource -> modelResource.start(model.getId()))
-                                    );
-                        })
+                            TaskInfo taskInfo = engineServiceClient.onEngineModelResource(modelResource -> modelResource.start(model.getId()));
+                            processedTasks.add(asKey(taskInfo));
+                            taskExecutorService.submit(() -> new TaskExecutor(getUserToken(), engineServiceClient).execute(taskInfo));
+                            return taskInfo;
+                        }
+                        )
+                        )
                         .toList());
-        startedProcesses.forEach(taskInfo -> {
-            processedTasks.add(asKey(taskInfo));
-            taskExecutorService.submit(() -> new TaskExecutor(getUserToken(), engineServiceClient).execute(taskInfo));
-        });
     }
 
     private static String asKey(TaskInfo taskInfo) {
@@ -102,11 +89,13 @@ class UserClient {
     }
 
     public void stop() {
-        LOGGER.info("User[" + getUserToken().getName() + "] closing client");
+        LOGGER.info("User[" + getUserToken().getName() + "] stopping task-fetcher");
         tasksFetcher.cancel();
+        taskExecutorService.shutdown();
     }
 
-    private class TaskExecutor {
+    private static class TaskExecutor {
+
         private final UserToken userToken;
         private final EngineServiceClient engineServiceClient;
 
@@ -116,8 +105,8 @@ class UserClient {
         }
 
         public void execute(TaskInfo taskInfo) {
-            engineServiceClient.onEngineTaskResource(taskResource -> {
-                try {
+            try {
+                engineServiceClient.onEngineTaskResource(taskResource -> {
                     Task task = new Task(taskInfo, taskResource.retrieve(taskInfo.getId()));
                     if (task.getNextStates() == null || task.getNextStates().isEmpty()) {
                         LOGGER.log(Level.SEVERE, "no nextState for {0}", task);
@@ -131,29 +120,26 @@ class UserClient {
 
                         NextState nextState = stateValue.apply(task);
                         LOGGER.log(Level.FINEST, "User[{0}]: executing task {0}", new Object[]{
-                                userToken.getName(),
-                                task
+                            userToken.getName(),
+                            task
                         });
                         taskResource.submit(task.getId(), task.createTaskRequest(nextState));
                         LOGGER.log(Level.INFO, "User[{0}]: task {1} successfully changed to state {2}", new Object[]{
-                                userToken.getName(),
-                                task.getStateName(),
-                                nextState.getName()
+                            userToken.getName(),
+                            task.getStateName(),
+                            nextState.getName()
                         });
                     }
-                } catch (ProcessingException ex) {
-                    LOGGER.log(Level.FINE, ex.getMessage() /*, ex*/);
-                } catch (ClientErrorException ex) {
-                    LOGGER.log(Level.SEVERE, "User[" + userToken.getName() + "] task " + taskInfo + ": " + ex.getMessage() /*, ex*/);
-//                if (ex.getResponse().getStatus() == 401) {
-//                    engineServiceClient.refreshToken();
-//                }
-                } catch (Throwable ex) {
-                    //TODO handle uncaught exceptions correctly
-                    LOGGER.log(Level.SEVERE, "User[" + userToken.getName() + "] task " + taskInfo + ": " + ex.getMessage(), ex);
-                }
-                return null;
-            });
+                    return null;
+                });
+            } catch (ProcessingException ex) {
+                LOGGER.log(Level.FINER, ex.getMessage() /*, ex*/);
+            } catch (WebApplicationException ex) {
+                LOGGER.log(Level.FINE, "User[" + userToken.getName() + "] task " + taskInfo + ": " + ex.getMessage() /*, ex*/);
+            } catch (Throwable ex) {
+                //TODO handle uncaught exceptions correctly
+                LOGGER.log(Level.SEVERE, "User[" + userToken.getName() + "] task " + taskInfo + ": " + ex.getMessage(), ex);
+            }
         }
 
         private void setValues(List<AttributeSchema> attributes, Map<Long, Serializable> attributeData, Function<SimpleAttributeSchema, Serializable> fieldValue) {
@@ -195,42 +181,31 @@ class UserClient {
 
     public Stream<ProcessInfo> getStartedProcesses() {
         return startedProcesses.stream()
-                .map(task -> {
-                    try {
-                        return engineServiceClient.onProcessInstanceResource(processInstanceResource ->
-                                processInstanceResource.retrieve(task.getProcessId()));
-                    } catch (ClientErrorException ex) {
-                        LOGGER.log(Level.SEVERE, "User[" + getUserToken().getName() + "] process " + task.getProcessId() + ": " + ex.getMessage() /*, ex*/);
-                        return null;
-                    } catch (Exception ex) {
-                        LOGGER.info("User[" + getUserToken().getName() + "] process " + task.getProcessId() + ": " + ex.getMessage());
-                        //LOGGER.log(Level.SEVERE, ex.getMessage(), ex);
-                        return null;
-                    }
-                })
-                .filter(Objects::nonNull);
+                .map(task -> engineServiceClient.onProcessInstanceResource(processInstanceResource
+                -> {
+            LOGGER.finest("retrieve info about" + task.getProcessId());
+            return processInstanceResource.retrieve(task.getProcessId());
+        }));
     }
 
     public List<ProcessInfo> getActiveProcesses() {
-        return getStartedProcesses()
+        return getStartedProcesses().toList().stream()
                 .filter(processInfo -> processInfo.getState() == ProcessInstanceState.ACTIVE)
                 .toList();
     }
 
     public Stream<Statistics> getStatistics() {
-        return startedProcesses.stream()
-                .map(task ->
-                        engineServiceClient.onProcessInstanceResource(processInstanceResource -> {
-                            ProcessInfo processInfo = processInstanceResource.retrieve(task.getProcessId());
-                            Audits audits = processInstanceResource.retrieveAudit(processInfo.getId());
-                            return new Statistics(
-                                    processInfo.getStartTime(),
-                                    processInfo.getEndTime(),
-                                    Duration.between(processInfo.getStartTime(), processInfo.getEndTime()),
-                                    audits.getAuditTrails().size());
-                        })
+        return getStartedProcesses()
+                .map(processInfo
+                        -> engineServiceClient.onProcessInstanceResource(processInstanceResource -> {
+                    Audits audits = processInstanceResource.retrieveAudit(processInfo.getId());
+                    return new Statistics(
+                            processInfo.getStartTime(),
+                            processInfo.getEndTime(),
+                            Duration.between(processInfo.getStartTime(), processInfo.getEndTime()),
+                            audits.getAuditTrails().size());
+                })
                 );
     }
-
 
 }

@@ -110,7 +110,7 @@ public class Main implements CommandLineRunner {
                 UserClient userClient = UserClient.of(configuration, credentials);
 
                 ExecutorService executorService = Executors.newSingleThreadExecutor();
-                executorService.submit(userClient::start);
+                executorService.submit(userClient::startProcesses);
                 executorService.shutdown();
 
                 //send info about started processed
@@ -125,27 +125,15 @@ public class Main implements CommandLineRunner {
     }
 
     private void executeSinglePod(Configuration configuration, List<Credentials> allCredentials) {
-        ExecutorService taskExecutorService = Executors.newWorkStealingPool();
-
-        ExecutorService executorService = Executors.newFixedThreadPool(allCredentials.size());
         List<UserClient> userClients = allCredentials.stream()
-                .map(credentials -> UserClient.of(configuration, taskExecutorService, credentials))
+                .map(credentials -> UserClient.of(configuration, credentials))
                 .collect(Collectors.toList());
 
-        userClients.forEach(client -> {
-            executorService.submit(() -> client.start());
-        });
-        executorService.shutdown();
-        try {
-            executorService.awaitTermination(10, TimeUnit.MINUTES);
-        } catch (InterruptedException ex) {
-            LOGGER.log(Level.SEVERE, ex.getMessage(), ex);
-            // Restore interrupted state...
-            Thread.currentThread().interrupt();
-        }
+        userClients.forEach(client -> client.startProcesses());
 
         boolean allFinished = false;
         while (!allFinished) {
+            LOGGER.finest("Check started processes finished");
             allFinished = userClients.stream()
                     .mapToLong(userClient -> userClient.getActiveProcesses().size())
                     .sum() == 0;
@@ -171,18 +159,6 @@ public class Main implements CommandLineRunner {
             }
         }
         LOGGER.info("All started processes finished");
-        taskExecutorService.shutdown();
-        for (UserClient client : userClients) {
-            client.stop();
-        }
-        try {
-            executorService.awaitTermination(5, TimeUnit.MINUTES);
-        } catch (InterruptedException ex) {
-            LOGGER.log(Level.SEVERE, ex.getMessage(), ex);
-            // Restore interrupted state...
-            Thread.currentThread().interrupt();
-        }
-        LOGGER.info("Everything done");
 
         StringBuilder builder = new StringBuilder("processcount,start,end,duration,taskcount\n");
         String data = userClients.stream()
@@ -202,6 +178,11 @@ public class Main implements CommandLineRunner {
 
         LOGGER.info("statistics: \n" + statData);
         uploaderService.uploadStatistic(configuration, statData);
+
+        for (UserClient client : userClients) {
+            client.stop();
+        }
+        LOGGER.info("Everything done");
     }
 
     private static String asString(ProcessInfo processInfo) {
