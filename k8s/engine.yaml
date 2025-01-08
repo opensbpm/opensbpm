@@ -51,8 +51,8 @@ spec:
             - name: SPRING_JPA_HIBERNATE_DDLAUTO
               value: update
           resources:
-            requests:
-              memory: "512Mi"
+#            requests:
+#              memory: "512Mi"
             limits:
               memory: "768Mi"
           ports:
