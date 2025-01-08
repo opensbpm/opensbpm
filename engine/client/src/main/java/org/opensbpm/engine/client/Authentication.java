@@ -2,6 +2,8 @@ package org.opensbpm.engine.client;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import java.time.LocalDateTime;
+
 public class Authentication {
     @JsonProperty("access_token")
     private String accessToken;
@@ -26,6 +28,11 @@ public class Authentication {
 
     @JsonProperty("scope")
     private String scope;
+
+    private LocalDateTime createAt;
+    public Authentication() {
+        this.createAt = LocalDateTime.now();
+    }
 
     public String getAccessToken() {
         return accessToken;
@@ -57,5 +64,15 @@ public class Authentication {
 
     public String getScope() {
         return scope;
+    }
+
+    public boolean isExpired() {
+        return LocalDateTime.now().plusSeconds(10)
+                .isAfter(createAt.plusSeconds(getExpiresIn()));
+    }
+
+    public boolean isRefreshExpired() {
+        return LocalDateTime.now().plusSeconds(10)
+                .isAfter(createAt.plusSeconds(getRefreshExpiresIn()));
     }
 }
