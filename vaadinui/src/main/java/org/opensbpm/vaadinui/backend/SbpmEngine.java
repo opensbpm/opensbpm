@@ -28,7 +28,6 @@ import org.springframework.security.oauth2.core.oidc.user.DefaultOidcUser;
 public class SbpmEngine {
 
     private EngineServiceClient engineServiceClient;
-    private UserToken userToken;
 
     private EngineServiceClient getEngineServiceClient() {
         if (engineServiceClient == null) {
@@ -42,13 +41,6 @@ public class SbpmEngine {
             };
         }
         return engineServiceClient;
-    }
-
-    private UserToken getUserToken() {
-        if (userToken == null) {
-            userToken = getEngineServiceClient().getUserToken();
-        }
-        return userToken;
     }
 
     public ProcessModelInfo uploadModel(InputStream inputStream) {
