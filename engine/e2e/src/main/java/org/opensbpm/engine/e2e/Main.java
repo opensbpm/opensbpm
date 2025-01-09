@@ -130,7 +130,10 @@ public class Main implements CommandLineRunner {
                 .map(credentials -> UserClient.of(configuration, credentials, taskExecutorService ))
                 .collect(Collectors.toList());
 
-        userClients.forEach(client -> client.startProcesses());
+
+        userClients.forEach(client -> taskExecutorService.submit(()-> client.startProcesses()));
+
+        userClients.forEach(client -> taskExecutorService.submit(()-> client.startTaskFetcher()));
 
         boolean allFinished = false;
         while (!allFinished) {
@@ -159,6 +162,9 @@ public class Main implements CommandLineRunner {
                 Thread.currentThread().interrupt();
             }
         }
+        userClients.forEach(UserClient::stopTaskFetcher);
+        taskExecutorService.shutdown();
+
         LOGGER.info("All started processes finished");
 
         StringBuilder builder = new StringBuilder("processcount,start,end,duration,taskcount\n");
@@ -180,10 +186,6 @@ public class Main implements CommandLineRunner {
         LOGGER.info("statistics: \n" + statData);
         uploaderService.uploadStatistic(configuration, statData);
 
-        for (UserClient client : userClients) {
-            client.stop();
-        }
-        taskExecutorService.shutdown();
         LOGGER.info("Everything done");
     }
 

@@ -85,7 +85,7 @@ public class SbpmEngine {
     }
 
     private Stream<TaskInfo> getAllTasks() throws UserNotFoundException {
-        return getEngineServiceClient().onEngineTaskResource(resource -> resource.index().getTaskInfos()).stream();
+        return getEngineServiceClient().onEngineTaskResource(resource -> resource.index(0,50).getTaskInfos()).stream();
     }
 
     public TaskInfo getNextTask(TaskInfo taskInfo) throws UserNotFoundException {

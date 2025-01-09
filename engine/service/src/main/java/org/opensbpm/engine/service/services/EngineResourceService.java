@@ -43,6 +43,7 @@ import org.opensbpm.engine.server.api.dto.instance.Tasks;
 import org.opensbpm.engine.server.api.dto.model.ProcessModels;
 import org.opensbpm.engine.service.authentication.SpringAuthentication;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
@@ -175,9 +176,9 @@ public class EngineResourceService implements EngineResource {
         }
 
         @Override
-        public Tasks index() {
+        public Tasks index(int page, int size) {
             try {
-                return new Tasks(engineService.getTasks(userToken));
+                return new Tasks(engineService.getTasks(userToken, PageRequest.of(page,size)));
             } catch (UserNotFoundException ex) {
                 throw new NotFoundException(ex.getMessage(), ex);
             }
@@ -186,7 +187,7 @@ public class EngineResourceService implements EngineResource {
         @Override
         public TaskResponse retrieve(Long taskId) {
             try {
-                TaskInfo taskInfo = filterToOne(engineService.getTasks(userToken),
+                TaskInfo taskInfo = filterToOne(engineService.getTasks(userToken, PageRequest.of(0, Integer.MAX_VALUE)),
                         task -> Objects.equals(task.getId(), taskId))
                         .orElseThrow(() -> new ClientErrorException("Task with id " + taskId + " doesn't exists anymore", Status.GONE));
                 return engineService.getTaskResponse(userToken, taskInfo);

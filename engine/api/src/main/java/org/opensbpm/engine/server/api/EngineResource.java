@@ -17,6 +17,7 @@
 package org.opensbpm.engine.server.api;
 
 import io.swagger.v3.oas.annotations.Operation;
+import jakarta.ws.rs.*;
 import org.opensbpm.engine.api.instance.ProcessInfo;
 import org.opensbpm.engine.api.instance.TaskInfo;
 import org.opensbpm.engine.api.instance.TaskRequest;
@@ -25,12 +26,6 @@ import org.opensbpm.engine.api.model.ProcessModelInfo;
 import org.opensbpm.engine.server.api.dto.instance.Processes;
 import org.opensbpm.engine.server.api.dto.instance.Tasks;
 import jakarta.annotation.security.PermitAll;
-import jakarta.ws.rs.Consumes;
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.POST;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.PathParam;
-import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 import org.opensbpm.engine.server.api.dto.model.ProcessModels;
 
@@ -81,7 +76,7 @@ public interface EngineResource {
     public interface TaskResource {
 
         @GET
-        Tasks index();
+        Tasks index(@QueryParam("page") int page,@QueryParam("size") int size);
 
         @GET
         @Path(value = "/{taskId}")

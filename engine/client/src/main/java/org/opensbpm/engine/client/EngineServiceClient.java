@@ -115,10 +115,10 @@ public abstract class EngineServiceClient {
     private final String baseAddress;
     //
     private UserToken userToken;
-    private Supplier<UserResource> userResource = of(UserResource.class);
-    private Supplier<EngineResource> engineResource = of(EngineResource.class);
-    private Supplier<ProcessInstanceResource> processInstanceResource = of(ProcessInstanceResource.class);
-    private Supplier<ProcessModelResource> processModelResource = of(ProcessModelResource.class);
+    private final Supplier<UserResource> userResource = of(UserResource.class);
+    private final Supplier<EngineResource> engineResource = of(EngineResource.class);
+    private final Supplier<ProcessInstanceResource> processInstanceResource = of(ProcessInstanceResource.class);
+    private final Supplier<ProcessModelResource> processModelResource = of(ProcessModelResource.class);
 
 
     public EngineServiceClient(String baseAddress) {
@@ -139,7 +139,7 @@ public abstract class EngineServiceClient {
     }
 
     public <T> T onUserResource(Function<UserResource, T> function) {
-        return onResource(() -> userResource.get(), function);
+        return onResource(userResource, function);
     }
 
     public <T> T onEngineModelResource(Function<EngineResource.ProcessModelResource, T> function) {
@@ -151,15 +151,15 @@ public abstract class EngineServiceClient {
     }
 
     public <T> T onEngineResource(Function<EngineResource, T> function) {
-        return onResource(() -> engineResource.get(), function);
+        return onResource(engineResource, function);
     }
 
     public <T> T onProcessInstanceResource(Function<ProcessInstanceResource, T> function) {
-        return onResource(() -> processInstanceResource.get(), function);
+        return onResource(processInstanceResource, function);
     }
 
     public <T> T onProcessModelResource(Function<ProcessModelResource, T> function) {
-        return onResource(() -> processModelResource.get(), function);
+        return onResource(processModelResource, function);
     }
 
     private <R, T> T onResource(Supplier<R> resourceSupplier, Function<R, T> function) {
@@ -177,14 +177,12 @@ public abstract class EngineServiceClient {
 
     private <T> Supplier<T> of(Class<T> type) {
         return new Supplier<>() {
-            private T resourceClient;
+//            private final ThreadLocal<T> resourceClient = ofThreadLocal(type);
 
             @Override
             public T get() {
-                //if (resourceClient == null) {
-                    resourceClient = createResourceClient(type);
-                //}
-                return resourceClient;
+//                return resourceClient.get();
+                return createResourceClient(type);
             }
         };
     }

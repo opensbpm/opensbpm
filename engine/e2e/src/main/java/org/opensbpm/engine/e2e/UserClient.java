@@ -29,6 +29,7 @@ class UserClient {
         );
     }
 
+    private final Object lock = new Object();
     //
     private final List<String> processedTasks = new CopyOnWriteArrayList<>();
     //
@@ -37,6 +38,7 @@ class UserClient {
     private final ExecutorService taskExecutorService;
     //
     private List<TaskInfo> startedProcesses = Collections.emptyList();
+    private Collection<ProcessInfo> processInfos;
     private Timer tasksFetcher;
 
     private UserClient(Configuration configuration, Credentials credentials, ExecutorService executorService) {
@@ -48,18 +50,6 @@ class UserClient {
                 .map(RoleToken::getName)
                 .collect(Collectors.joining(",")));
 
-        tasksFetcher = new Timer("TasksFetcher for " + getUserToken().getName());
-        tasksFetcher.schedule(new TimerTask() {
-            @Override
-            public void run() {
-                LOGGER.finest("User[" + getUserToken().getName() + "] fetching tasks");
-                engineServiceClient.onEngineTaskResource(taskResource -> taskResource.index().getTaskInfos()).stream()
-                        .filter(taskInfo -> processedTasks.add(asKey(taskInfo)))
-                        .forEach(taskInfo -> {
-                            taskExecutorService.submit(() -> new TaskExecutor(getUserToken(), engineServiceClient).execute(taskInfo));
-                        });
-            }
-        }, 50, 300);
     }
 
     public UserToken getUserToken() {
@@ -67,28 +57,45 @@ class UserClient {
     }
 
     public void startProcesses() {
-        startedProcesses = engineServiceClient.onEngineModelResource(processModelResource
-                -> processModelResource.index().getProcessModelInfos().stream()
-                        .flatMap(model -> IntStream.range(0, configuration.getProcessesCount()).boxed()
-                        .parallel()
-                        .map(idx
-                                -> {
-                            LOGGER.info("User[" + getUserToken().getName() + "] starting process " + model.getName());
-                            TaskInfo taskInfo = engineServiceClient.onEngineModelResource(modelResource -> modelResource.start(model.getId()));
-                            processedTasks.add(asKey(taskInfo));
+        synchronized (lock) {
+            startedProcesses = engineServiceClient.onEngineModelResource(modelResource-> modelResource.index().getProcessModelInfos()).stream()
+                    .flatMap(model -> IntStream.range(0, configuration.getProcessesCount()).boxed()
+                            //.parallel()
+                            .map(idx
+                                            -> {
+                                        LOGGER.info("User[" + getUserToken().getName() + "] starting process " + model.getName());
+                                        TaskInfo taskInfo = engineServiceClient.onEngineModelResource(modelResource -> modelResource.start(model.getId()));
+//                                        processedTasks.add(asKey(taskInfo));
+//                                        taskExecutorService.submit(() -> new TaskExecutor(getUserToken(), engineServiceClient).execute(taskInfo));
+                                        return taskInfo;
+                                    }
+                            )
+                    )
+                    .toList();
+            LOGGER.info("User[" + getUserToken().getName() + "] started "+startedProcesses.size()+" processes");
+        }
+    }
+
+    public void startTaskFetcher() {
+        tasksFetcher = new Timer("TasksFetcher for " + getUserToken().getName());
+        tasksFetcher.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                LOGGER.finest("User[" + getUserToken().getName() + "] fetching tasks");
+                engineServiceClient.onEngineTaskResource(taskResource -> taskResource.index(0,50).getTaskInfos()).stream()
+                        .filter(taskInfo -> processedTasks.add(asKey(taskInfo)))
+                        .forEach(taskInfo -> {
                             taskExecutorService.submit(() -> new TaskExecutor(getUserToken(), engineServiceClient).execute(taskInfo));
-                            return taskInfo;
-                        }
-                        )
-                        )
-                        .toList());
+                        });
+            }
+        }, 0, 1000);
     }
 
     private static String asKey(TaskInfo taskInfo) {
         return taskInfo.getId() + "-" + taskInfo.getProcessId();
     }
 
-    public void stop() {
+    public void stopTaskFetcher() {
         LOGGER.info("User[" + getUserToken().getName() + "] stopping task-fetcher");
         tasksFetcher.cancel();
     }
@@ -119,14 +126,14 @@ class UserClient {
 
                         NextState nextState = stateValue.apply(task);
                         LOGGER.log(Level.FINEST, "User[{0}]: executing task {0}", new Object[]{
-                            userToken.getName(),
-                            task
+                                userToken.getName(),
+                                task
                         });
                         taskResource.submit(task.getId(), task.createTaskRequest(nextState));
                         LOGGER.log(Level.INFO, "User[{0}]: task {1} successfully changed to state {2}", new Object[]{
-                            userToken.getName(),
-                            task.getStateName(),
-                            nextState.getName()
+                                userToken.getName(),
+                                task.getStateName(),
+                                nextState.getName()
                         });
                     }
                     return null;
@@ -178,32 +185,37 @@ class UserClient {
 
     }
 
-    public Stream<ProcessInfo> getStartedProcesses() {
-        return startedProcesses.stream()
-                .map(task -> engineServiceClient.onProcessInstanceResource(processInstanceResource
-                -> {
-            LOGGER.finest("retrieve info about" + task.getProcessId());
-            return processInstanceResource.retrieve(task.getProcessId());
-        }));
+    public Collection<ProcessInfo> getStartedProcesses(boolean refresh) {
+        if (processInfos == null || refresh)
+            synchronized (lock) {
+                processInfos = startedProcesses.stream()
+                        .map(task -> engineServiceClient.onProcessInstanceResource(processInstanceResource
+                                -> {
+                            LOGGER.finest("retrieve info about" + task.getProcessId());
+                            return processInstanceResource.retrieve(task.getProcessId());
+                        }))
+                        .toList();
+            }
+        return processInfos;
     }
 
     public List<ProcessInfo> getActiveProcesses() {
-        return getStartedProcesses().toList().stream()
+        return getStartedProcesses(true).stream()
                 .filter(processInfo -> processInfo.getState() == ProcessInstanceState.ACTIVE)
                 .toList();
     }
 
     public Stream<Statistics> getStatistics() {
-        return getStartedProcesses()
+        return getStartedProcesses(false).stream()
                 .map(processInfo
-                        -> engineServiceClient.onProcessInstanceResource(processInstanceResource -> {
-                    Audits audits = processInstanceResource.retrieveAudit(processInfo.getId());
-                    return new Statistics(
-                            processInfo.getStartTime(),
-                            processInfo.getEndTime(),
-                            Duration.between(processInfo.getStartTime(), processInfo.getEndTime()),
-                            audits.getAuditTrails().size());
-                })
+                                -> engineServiceClient.onProcessInstanceResource(processInstanceResource -> {
+                            Audits audits = processInstanceResource.retrieveAudit(processInfo.getId());
+                            return new Statistics(
+                                    processInfo.getStartTime(),
+                                    processInfo.getEndTime(),
+                                    Duration.between(processInfo.getStartTime(), processInfo.getEndTime()),
+                                    audits.getAuditTrails().size());
+                        })
                 );
     }
 
