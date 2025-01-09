@@ -28,8 +28,6 @@ node('docker && nodejs && jdk17'){
                         sh "mvn clean test verify sonar:sonar package -Pproduction"
                     }
 
-//                    stash(name: 'engine-jar', includes: 'engine/service/target/engine-service-exec.jar')
-                    stash(name: 'e2e-jar', includes: 'engine/e2e/target/e2e-exec.jar')
                     stash(name: 'vaadinui-jar', includes: 'vaadinui/target/vaadinui-exec.jar')
                 }
                 //junit '**/target/*-reports/TEST-*.xml'
@@ -45,9 +43,10 @@ node('docker && nodejs && jdk17'){
                     mavenSettingsConfig: '05894f91-85e1-4e6d-8eb5-a101d90c62e3'
                 ) {
                     sh "mvn -DskipTests -U install"
-                    sh "mvn -pl engine/service spring-boot:build-image"
+                    sh "mvn -pl engine/e2e,engine/service spring-boot:build-image"
                 }
                 docker.withRegistry('', 'opensbpm@hub.docker.com') {
+                    sh "docker push docker.io/opensbpm/e2e-client:latest"
                     sh "docker push docker.io/opensbpm/engine:latest"
                 }
             }
@@ -64,24 +63,6 @@ node('docker && nodejs && jdk17'){
                         }
                     }
 
-
-//                     unstash('engine-jar')
-//                     dir('engine/service'){
-//                         docker.withRegistry('', 'opensbpm@hub.docker.com') {
-//                             def image = docker.build("opensbpm/opensbpm-engine:${env.BUILD_ID}")
-//                             image.push("${env.BUILD_ID}")
-//                             image.push("latest")
-//                         }
-//                     }
-
-                    unstash('e2e-jar')
-                    dir('engine/e2e'){
-                        docker.withRegistry('', 'sedstef@hub.docker.com') {
-                            def image = docker.build("sedstef/opensbpm-e2e:${env.BUILD_ID}")
-                            image.push("${env.BUILD_ID}")
-                            image.push("latest")
-                        }
-                    }
 
                     unstash('vaadinui-jar')
                     dir('vaadinui'){

@@ -122,6 +122,10 @@
                     <layers>
                         <enabled>true</enabled>
                     </layers>
+                    <image>
+                        <!--name>docker.io/opensbpm/${project.artifactId}:${project.version}</name-->
+                        <name>docker.io/opensbpm/e2e-client</name>
+                    </image>
                 </configuration>
                 <executions>
                     <execution>

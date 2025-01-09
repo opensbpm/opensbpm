@@ -8,7 +8,7 @@ spec:
     spec:
       containers:
         - name: opensbpm-e2e-client
-          image: sedstef/opensbpm-e2e
+          image: opensbpm/e2e-client
           args: ["--url",  "https://cloud-dev.opensbpm.org" ,"--processes", "10"]
           #see https://docs.spring.io/spring-boot/reference/features/external-config.html#features.external-config.files
           volumeMounts:
