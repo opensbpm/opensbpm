@@ -32,9 +32,21 @@ microk8s kubectl create token default
 '''
 
 
+==  Prometheus UI with port-forwarding
+(see https://www.server-world.info/en/note?os=Ubuntu_24.04&p=microk8s&f=8 )
+
+'''
+root@dlp:~# microk8s kubectl port-forward -n observability service/prometheus-operated --address 0.0.0.0 9090:9090
+'''
+Use http://168.119.255.223:9090/
+
+
 == Grafana access with port-forwarding
 (see https://www.server-world.info/en/note?os=Ubuntu_24.04&p=microk8s&f=8 )
 '''
 microk8s kubectl port-forward -n observability service/kube-prom-stack-grafana --address 0.0.0.0 3000:80 
 '''
 Use http://168.119.255.223:3000/
+
+Micrometer Dashboard
+https://grafana.com/grafana/dashboards/4701-jvm-micrometer/

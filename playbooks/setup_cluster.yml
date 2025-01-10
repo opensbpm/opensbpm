@@ -83,14 +83,25 @@
         dest: /mnt/c/Users/stefan/.kube/opensbpm@hetzner.yaml
         flat: yes
 
+    - name: Create opensbpm directory
+      ansible.builtin.file:
+        path: /srv/opensbpm
+        state: directory
+
+    - name: Copy observability values
+      ansible.builtin.copy:
+        src: data/observability/values.yaml
+        dest: /srv/opensbpm/observability-values.yaml
+
     - name: Activate microk8s plugins
       become: yes
       shell: |
         microk8s enable dns 
         microk8s enable ingress 
         microk8s enable cert-manager 
-        microk8s enable observability 
+        microk8s enable observability --kube-prometheus-stack-values=/srv/opensbpm/observability-values.yaml
         microk8s enable dashboard
+      #https://github.com/canonical/microk8s-core-addons/blob/main/addons/observability/enable
 
     - name: Create OpenSBPM namespace in k8s
       kubernetes.core.k8s:
