@@ -60,13 +60,13 @@ class UserClient {
         synchronized (lock) {
             startedProcesses = engineServiceClient.onEngineModelResource(modelResource-> modelResource.index().getProcessModelInfos()).stream()
                     .flatMap(model -> IntStream.range(0, configuration.getProcessesCount()).boxed()
-                            //.parallel()
+                            .parallel()
                             .map(idx
                                             -> {
-                                        LOGGER.info("User[" + getUserToken().getName() + "] starting process " + model.getName());
+                                        LOGGER.fine("User[" + getUserToken().getName() + "] starting process " + model.getName());
                                         TaskInfo taskInfo = engineServiceClient.onEngineModelResource(modelResource -> modelResource.start(model.getId()));
-//                                        processedTasks.add(asKey(taskInfo));
-//                                        taskExecutorService.submit(() -> new TaskExecutor(getUserToken(), engineServiceClient).execute(taskInfo));
+                                        processedTasks.add(asKey(taskInfo));
+                                        taskExecutorService.submit(() -> new TaskExecutor(getUserToken(), engineServiceClient).execute(taskInfo));
                                         return taskInfo;
                                     }
                             )
@@ -88,7 +88,7 @@ class UserClient {
                             taskExecutorService.submit(() -> new TaskExecutor(getUserToken(), engineServiceClient).execute(taskInfo));
                         });
             }
-        }, 0, 1000);
+        }, 0, 500);
     }
 
     private static String asKey(TaskInfo taskInfo) {
