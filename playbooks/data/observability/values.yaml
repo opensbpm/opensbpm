@@ -1,0 +1,7 @@
+# see https://github.com/prometheus-community/helm-charts/blob/main/charts/kube-prometheus-stack/values.yaml#L3998
+additionalScrapeConfigs:
+  - job_name: 'opensbpm-engine'
+    metrics_path: '/api/actuator/prometheus'
+    scrape_interval: 15s # This can be adjusted based on our needs
+    static_configs:
+      - targets: ['engine.opensbpm.svc.cluster.local:8090']
