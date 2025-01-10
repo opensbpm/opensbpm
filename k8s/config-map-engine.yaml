@@ -5,6 +5,17 @@ metadata:
 data:
   application.yaml: |
     #debug: true
+    
+    #spring.jpa.show-sql: true
+    #spring.jpa.properties.hibernate.format_sql: true
+    #spring.jpa.properties.hibernate.generate_statistics: true
+    
+    #spring.datasource.hikari.pool-name=MyHikariPool
+    #spring.datasource.hikari.connection-timeout: 50000
+    #spring.datasource.hikari.metrics-tracking: true
+    #spring.datasource.hikari.leak-detection-threshold: 2000
+    
+    #logging.level.org.springframework.transaction.interceptor: TRACE
     #logging.level:
     #  org.springframework.security.oauth2: DEBUG
     #  org.apache.cxf: DEBUG
