@@ -67,19 +67,20 @@ prometheus:
     ##
     additionalScrapeConfigs:
       - job_name: 'opensbpm-engine'
-        metrics_path: '/api/actuator/prometheus'
         scrape_interval: 5s # This can be adjusted based on our needs
-        static_configs:
-          - targets: ['engine.opensbpm.svc.cluster.local:8090']
-      #from chatGPT
-#      - job_name: 'spring-boot-app'
-#        kubernetes_sd_configs:
-#          - role: endpoints
-#        relabel_configs:
-#          - source_labels: [ __meta_kubernetes_service_name ]
-#            action: keep
-#            regex: spring-boot-app
-
+        metrics_path: '/api/actuator/prometheus'
+        kubernetes_sd_configs:
+          - role: endpoints
+        relabel_configs:
+          # scrap only namespaces with name 'opensbpm'
+          - source_labels: [ __meta_kubernetes_namespace ]
+            action: keep
+            regex: opensbpm
+          # scrap only endpoints with name 'engine'
+          - source_labels: [ __meta_kubernetes_endpoints_name ]
+            action: keep
+            regex: engine
+        #To check in prometheus ui execute: scrape_series_added{job="opensbpm-engine"}
 
     # - job_name: kube-etcd
     #   kubernetes_sd_configs:
