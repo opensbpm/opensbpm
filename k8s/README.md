@@ -36,7 +36,7 @@ microk8s kubectl create token default
 (see https://www.server-world.info/en/note?os=Ubuntu_24.04&p=microk8s&f=8 )
 
 '''
-root@dlp:~# microk8s kubectl port-forward -n observability service/prometheus-operated --address 0.0.0.0 9090:9090
+microk8s kubectl port-forward -n observability service/prometheus-operated --address 0.0.0.0 9090:9090
 '''
 Use http://168.119.255.223:9090/
 
