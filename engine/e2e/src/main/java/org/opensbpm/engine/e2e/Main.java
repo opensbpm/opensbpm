@@ -94,6 +94,7 @@ public class Main implements CommandLineRunner {
 
         List<Credentials> allCredentials = asList(
                 Credentials.of("alice", "alice".toCharArray()),
+                Credentials.of("blice", "blice".toCharArray()),
                 Credentials.of("jdoe", "jdoe".toCharArray()),
                 //Credentials.of("jodoe", "jodoe".toCharArray()),
                 Credentials.of("miriam", "miriam".toCharArray())

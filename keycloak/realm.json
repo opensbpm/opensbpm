@@ -39,6 +39,23 @@
       ]
     },
     {
+      "username": "blice",
+      "firstName": "Blice",
+      "lastName": "Liddel",
+      "email": "blice@opensbpm.org",
+      "enabled": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "blice"
+        }
+      ],
+      "realmRoles": [
+        "Angestellte",
+        "user"
+      ]
+    },
+    {
       "username": "jdoe",
       "firstName": "jdoe",
       "lastName": "jdoe",
