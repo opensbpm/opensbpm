@@ -36,6 +36,10 @@ grafana:
        hosts:
        - monitoring.cloud-dev.opensbpm.org
 
+  grafana.ini:
+    server:
+      serve_from_sub_path: true
+      root_url: https://monitoring.cloud-dev.opensbpm.org/grafana
 
 
 
@@ -67,6 +71,16 @@ prometheus:
         scrape_interval: 5s # This can be adjusted based on our needs
         static_configs:
           - targets: ['engine.opensbpm.svc.cluster.local:8090']
+      #from chatGPT
+#      - job_name: 'spring-boot-app'
+#        kubernetes_sd_configs:
+#          - role: endpoints
+#        relabel_configs:
+#          - source_labels: [ __meta_kubernetes_service_name ]
+#            action: keep
+#            regex: spring-boot-app
+
+
     # - job_name: kube-etcd
     #   kubernetes_sd_configs:
     #     - role: node
