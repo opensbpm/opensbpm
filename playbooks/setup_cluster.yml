@@ -100,7 +100,7 @@
         microk8s enable ingress 
         microk8s enable cert-manager 
         microk8s enable observability --kube-prometheus-stack-values=/srv/opensbpm/observability-values.yaml
-        microk8s enable dashboard
+
       #https://github.com/canonical/microk8s-core-addons/blob/main/addons/observability/enable
 
     - name: Create OpenSBPM namespace in k8s
