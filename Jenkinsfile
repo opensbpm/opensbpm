@@ -56,8 +56,8 @@ node('docker && nodejs && jdk17'){
                     checkout scm
 
                     dir('keycloak'){
-                        docker.withRegistry('', 'sedstef@hub.docker.com') {
-                            def image = docker.build("sedstef/keycloak-init:${env.BUILD_ID}")
+                        docker.withRegistry('', 'opensbpm@hub.docker.com') {
+                            def image = docker.build("opensbpm/keycloak-init:${env.BUILD_ID}")
                             image.push("${env.BUILD_ID}")
                             image.push("latest")
                         }
