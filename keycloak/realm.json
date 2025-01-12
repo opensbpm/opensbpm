@@ -39,23 +39,6 @@
       ]
     },
     {
-      "username": "blice",
-      "firstName": "Blice",
-      "lastName": "Liddel",
-      "email": "blice@opensbpm.org",
-      "enabled": true,
-      "credentials": [
-        {
-          "type": "password",
-          "value": "blice"
-        }
-      ],
-      "realmRoles": [
-        "Angestellte",
-        "user"
-      ]
-    },
-    {
       "username": "jdoe",
       "firstName": "jdoe",
       "lastName": "jdoe",
@@ -65,24 +48,6 @@
         {
           "type": "password",
           "value": "jdoe"
-        }
-      ],
-      "realmRoles": [
-        "Abteilungsleiter",
-        "user",
-        "user_premium"
-      ]
-    },
-    {
-      "username": "jodoe",
-      "firstName": "jodoe",
-      "lastName": "jodoe",
-      "email": "jodoe@opensbpm.org",
-      "enabled": true,
-      "credentials": [
-        {
-          "type": "password",
-          "value": "jodoe"
         }
       ],
       "realmRoles": [
