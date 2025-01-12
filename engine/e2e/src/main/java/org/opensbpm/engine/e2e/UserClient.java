@@ -31,7 +31,7 @@ class UserClient {
 
     private final Object lock = new Object();
     //
-    private final List<String> processedTasks = new CopyOnWriteArrayList<>();
+    private final Set<Integer> processedTasks = Collections.synchronizedSet(new HashSet<>());
     //
     private final Configuration configuration;
     private final EngineServiceClient engineServiceClient;
@@ -91,8 +91,8 @@ class UserClient {
         }, 0, 500);
     }
 
-    private static String asKey(TaskInfo taskInfo) {
-        return taskInfo.getId() + "-" + taskInfo.getProcessId();
+    private static int asKey(TaskInfo taskInfo) {
+        return Objects.hash(taskInfo.getId(), taskInfo.getProcessId());
     }
 
     public void stopTaskFetcher() {
