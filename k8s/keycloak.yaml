@@ -31,7 +31,7 @@ spec:
     spec:
       initContainers:
         - name: init-keycloak
-          image: sedstef/keycloak-init:latest
+          image: opensbpm/keycloak-init
           imagePullPolicy: Always
 #          command:
 #            - /opt/keycloak/bin/kc.sh
