@@ -19,16 +19,9 @@
     xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
     xmlns:pm='http://api.opensbpm.org/processmodel'>
 
-    <name>Erweiterter Dienstreiseantrag</name>
+    <name>Dienstreiseantrag</name>
     <version>1</version>
-    <description>Erweiterter Dienstreiseantrag von 'Subjektorientiertes Prozessmanagment' Seite 105
-        Erweiterungen:
-        Mitarbeiter:DR antreten erst wenn die Buchung der Reisestelle eingetroffen ist
-        Mitarbeiter:DR antreten mit Bemerkung der Genehmigung
-        Mitarbeiter:DR-Antrag zurückziehen/ändern mit Begründung der Ablehnung
-        Vorgesetzter:Genehmigung mit Bemerkung und sofortigen Ende
-        Vorgesetzter:Ablehnung mit Begründung und sofortigen Ende
-    </description>
+    <description>Dienstreiseantrag von 'Subjektorientiertes Prozessmanagment' Seite 105</description>
 
     <userSubject starter="true">
         <name>Mitarbeiter</name>
