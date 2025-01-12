@@ -11,14 +11,17 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpRequest.BodyPublisher;
 import java.net.http.HttpRequest.BodyPublishers;
 import java.net.http.HttpResponse;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-import java.util.Objects;
 import java.util.logging.Logger;
 
+import jakarta.ws.rs.ProcessingException;
+import org.apache.cxf.interceptor.Fault;
 import org.apache.cxf.jaxrs.client.Client;
 import org.apache.cxf.jaxrs.client.JAXRSClientFactoryBean;
 import org.apache.cxf.jaxrs.client.WebClient;
@@ -111,14 +114,14 @@ public abstract class EngineServiceClient {
     }
 
     private final static Logger LOGGER = Logger.getLogger(EngineServiceClient.class.getName());
-    //
-    private final String baseAddress;
-    //
-    private UserToken userToken;
     private final Supplier<UserResource> userResource = of(UserResource.class);
     private final Supplier<EngineResource> engineResource = of(EngineResource.class);
     private final Supplier<ProcessInstanceResource> processInstanceResource = of(ProcessInstanceResource.class);
     private final Supplier<ProcessModelResource> processModelResource = of(ProcessModelResource.class);
+    //
+    private final String baseAddress;
+    //
+    private UserToken userToken;
 
 
     public EngineServiceClient(String baseAddress) {
@@ -177,21 +180,14 @@ public abstract class EngineServiceClient {
 
     private <T> Supplier<T> of(Class<T> type) {
         return new Supplier<>() {
-//            private final ThreadLocal<T> resourceClient = ofThreadLocal(type);
+            private T resourceClient;
 
             @Override
             public T get() {
-//                return resourceClient.get();
-                return createResourceClient(type);
-            }
-        };
-    }
-
-    private <T> ThreadLocal<T> ofThreadLocal(Class<T> type) {
-        return new ThreadLocal<>() {
-            @Override
-            protected T initialValue() {
-                return createResourceClient(type);
+                if (resourceClient == null) {
+                    resourceClient = createResourceClient(type);
+                }
+                return resourceClient;
             }
         };
     }
@@ -205,8 +201,15 @@ public abstract class EngineServiceClient {
         factoryBean.setAddress(String.format("%s/api/services", baseAddress));
         factoryBean.setProviders(providers);
         factoryBean.setInheritHeaders(true);
-        //factoryBean.setThreadSafe(true);
         factoryBean.setServiceClass(type);
+
+        factoryBean.setThreadSafe(true);
+
+        Map<String, Object> properties = new HashMap<>();
+        //see https://cwiki.apache.org/confluence/pages/viewpage.action?pageId=49941
+        properties.put("force.urlconnection.http.conduit", true);
+        factoryBean.setProperties(properties);
+
         return factoryBean.create(type);
     }
 }
