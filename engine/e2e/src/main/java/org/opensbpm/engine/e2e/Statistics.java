@@ -5,15 +5,15 @@ import java.time.LocalDateTime;
 
 public class Statistics {
 
-private final LocalDateTime startTime;
+    private final LocalDateTime startTime;
     private final LocalDateTime endTime;
     private final Duration duration;
     private final long count;
 
-    public Statistics(LocalDateTime startTime, LocalDateTime endTime, Duration duration, long count) {
+    public Statistics(LocalDateTime startTime, LocalDateTime endTime, long count) {
         this.startTime = startTime;
         this.endTime = endTime;
-        this.duration = duration;
+        this.duration = Duration.between(startTime, endTime);
         this.count = count;
     }
 

@@ -20,6 +20,8 @@ package org.opensbpm.engine.e2e;
 
 import java.io.*;
 import java.security.GeneralSecurityException;
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.*;
@@ -38,6 +40,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
@@ -53,7 +56,7 @@ public class Main implements CommandLineRunner {
     }
 
     private final WebdavUploaderService uploaderService;
-
+    private LocalDateTime startTime;
     public Main(WebdavUploaderService uploaderService) {
         this.uploaderService = uploaderService;
     }
@@ -126,6 +129,7 @@ public class Main implements CommandLineRunner {
     }
 
     private void executeSinglePod(Configuration configuration, List<Credentials> allCredentials) {
+        startTime = LocalDateTime.now();
         ExecutorService taskExecutorService = Executors.newWorkStealingPool(
                 Runtime.getRuntime().availableProcessors() * 2 /*allCredentials.size()*/
         );
@@ -168,19 +172,43 @@ public class Main implements CommandLineRunner {
         userClients.forEach(UserClient::stopTaskFetcher);
         taskExecutorService.shutdown();
 
+        LocalDateTime endTime = LocalDateTime.now();
         LOGGER.info("All started processes finished");
 
-        StringBuilder builder = new StringBuilder("processcount,start,end,duration,taskcount\n");
-        String data = userClients.stream()
+        Duration duration = Duration.between(startTime, endTime);
+        StringBuilder builder = new StringBuilder()
+                .append("node_count,")
+                .append("pod_count,")
+                .append("test_start,")
+                .append("test_end,")
+                .append("test_duration,")
+                .append("test_task_count,")
+                .append("process_count,")
+                .append("process_start,")
+                .append("process_end,")
+                .append("process_duration,")
+                .append("process_task_count\n");
+        List<Statistics> statistics = userClients.stream()
                 .flatMap(UserClient::getStatistics)
-                .map(statistics ->
-                        String.format("%s,%s,%s,%s,%s",
-                                configuration.getProcessesCount(),
-                                statistics.getStartTime().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME),
-                                statistics.getEndTime().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME),
-                                statistics.getDuration().toMillis(),
-                                statistics.getCount()
-                        )
+                .toList();
+        long testTaskCount = statistics.stream()
+                .mapToLong(statistic -> statistic.getCount())
+                .sum();
+        String data = statistics.stream()
+                .map(statistic ->
+                        new StringBuilder()
+                                .append(configuration.getNodeCount()).append(",")
+                                .append(configuration.getPodCount()).append(",")
+                                .append(asString(startTime)).append(",")
+                                .append(asString(endTime)).append(",")
+                                .append(duration.toMillis()).append(",")
+                                .append(testTaskCount).append(",")
+                                .append(configuration.getProcessCount()).append(",")
+                                .append(asString(statistic.getStartTime())).append(",")
+                                .append(asString(statistic.getEndTime())).append(",")
+                                .append(statistic.getDuration().toMillis()).append(",")
+                                .append(statistic.getCount())
+                                .toString()
                 )
                 .collect(Collectors.joining("\n"));
         builder.append(data).append("\n");
@@ -190,6 +218,10 @@ public class Main implements CommandLineRunner {
         uploaderService.uploadStatistic(configuration, statData);
 
         LOGGER.info("Everything done");
+    }
+
+    private static String asString(LocalDateTime dateTime) {
+        return dateTime.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
     }
 
     private static String asString(ProcessInfo processInfo) {
@@ -202,4 +234,6 @@ public class Main implements CommandLineRunner {
                         .collect(Collectors.joining(","))
         );
     }
+
+
 }
