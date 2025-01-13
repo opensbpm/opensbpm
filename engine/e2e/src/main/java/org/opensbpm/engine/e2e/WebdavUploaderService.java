@@ -22,7 +22,7 @@ public class WebdavUploaderService {
 
     public void uploadStatistic(Configuration configuration, String statData) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd_HH-mm-ss");
-        String fileName = String.format("statistics-%s-%s.csv", configuration.getProcessesCount(), LocalDateTime.now().format(formatter));
+        String fileName = String.format("statistics-%s-%s.csv", configuration.getProcessCount(), LocalDateTime.now().format(formatter));
 
         RestTemplate restTemplate = new RestTemplateBuilder()
                 .basicAuthentication(username, password)

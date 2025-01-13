@@ -46,7 +46,23 @@ public class Configuration {
             .desc("Run in indexed mode using env variable JOB_COMPLETION_INDEX")
             .build();
 
-    private static final Option PROCESSES_OPTION = Option.builder("p")
+    private static final Option NODES_OPTION = Option.builder("n")
+            .longOpt("nodes")
+            .hasArg(true)
+            .argName("nodes")
+            .required(true)
+            .desc("Number of nodes running")
+            .build();
+
+    private static final Option PODS_OPTION = Option.builder("p")
+            .longOpt("pods")
+            .hasArg(true)
+            .argName("pods")
+            .required(true)
+            .desc("Number of pods running")
+            .build();
+
+    private static final Option PROCESSES_OPTION = Option.builder("c")
             .longOpt("processes")
             .hasArg(true)
             .argName("processes")
@@ -59,6 +75,8 @@ public class Configuration {
         options.addOption(URL_OPTION);
         options.addOption(AUTHURL_OPTION);
         options.addOption(INDEXED_OPTION);
+        options.addOption(NODES_OPTION);
+        options.addOption(PODS_OPTION);
         options.addOption(PROCESSES_OPTION);
         try {
             CommandLine cmd = new DefaultParser().parse(options, args, true);
@@ -94,7 +112,15 @@ public class Configuration {
         return cmd.hasOption(AUTHURL_OPTION.getOpt());
     }
 
-    public Integer getProcessesCount() {
+    public Integer getNodeCount() {
+        return Integer.valueOf(cmd.getOptionValue(NODES_OPTION.getOpt()));
+    }
+
+    public Integer getPodCount() {
+        return Integer.valueOf(cmd.getOptionValue(PODS_OPTION.getOpt()));
+    }
+
+    public Integer getProcessCount() {
         return Integer.valueOf(cmd.getOptionValue(PROCESSES_OPTION.getOpt()));
     }
 

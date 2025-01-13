@@ -8,7 +8,6 @@ import org.opensbpm.engine.client.EngineServiceClient;
 import org.opensbpm.engine.server.api.dto.instance.Audits;
 
 import java.io.Serializable;
-import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.function.Function;
@@ -59,7 +58,7 @@ class UserClient {
     public void startProcesses() {
         synchronized (lock) {
             startedProcesses = engineServiceClient.onEngineModelResource(modelResource-> modelResource.index().getProcessModelInfos()).stream()
-                    .flatMap(model -> IntStream.range(0, configuration.getProcessesCount()).boxed()
+                    .flatMap(model -> IntStream.range(0, configuration.getProcessCount()).boxed()
                             .parallel()
                             .map(idx
                                             -> {
@@ -215,7 +214,6 @@ class UserClient {
                             return new Statistics(
                                     processInfo.getStartTime(),
                                     processInfo.getEndTime(),
-                                    Duration.between(processInfo.getStartTime(), processInfo.getEndTime()),
                                     audits.getAuditTrails().size());
                         })
                 );
