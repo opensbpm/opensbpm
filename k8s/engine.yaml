@@ -59,12 +59,12 @@ spec:
           ports:
             - name: engine-http
               containerPort: 8090
-          livenessProbe:
-            httpGet:
-              port: 8090
-              path: /api/actuator/health/liveness
-            initialDelaySeconds: 3
-            #periodSeconds: 2
+#          livenessProbe:
+#            httpGet:
+#              port: 8090
+#              path: /api/actuator/health/liveness
+#            initialDelaySeconds: 25
+#            #periodSeconds: 2
           readinessProbe:
             httpGet:
               port: 8090
