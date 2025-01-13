@@ -85,7 +85,7 @@ public class Main implements CommandLineRunner {
 
         try {
             EngineServiceClient adminClient = configuration.createEngineServiceClient(Credentials.of("admin", "admin".toCharArray()));
-            InputStream modelResource = Main.class.getResourceAsStream("/models/" + "dienstreiseantrag_extended.xml");
+            InputStream modelResource = Main.class.getResourceAsStream("/models/" + "dienstreiseantrag.xml");
             ProcessModelInfo processModelInfo = adminClient.onProcessModelResource(processModelResource -> processModelResource.create(modelResource));
             LOGGER.info("ProcessModel " + processModelInfo.getName() + " uploaded");
         } catch (Exception ex) {
@@ -94,9 +94,9 @@ public class Main implements CommandLineRunner {
 
         List<Credentials> allCredentials = asList(
                 Credentials.of("alice", "alice".toCharArray()),
-                Credentials.of("blice", "blice".toCharArray()),
+//                Credentials.of("blice", "blice".toCharArray()),
                 Credentials.of("jdoe", "jdoe".toCharArray()),
-                //Credentials.of("jodoe", "jodoe".toCharArray()),
+//                Credentials.of("jodoe", "jodoe".toCharArray()),
                 Credentials.of("miriam", "miriam".toCharArray())
         );
 
@@ -126,7 +126,9 @@ public class Main implements CommandLineRunner {
     }
 
     private void executeSinglePod(Configuration configuration, List<Credentials> allCredentials) {
-        ExecutorService taskExecutorService = Executors.newWorkStealingPool();
+        ExecutorService taskExecutorService = Executors.newWorkStealingPool(
+                Runtime.getRuntime().availableProcessors() * 2 /*allCredentials.size()*/
+        );
         List<UserClient> userClients = allCredentials.stream()
                 .map(credentials -> UserClient.of(configuration, credentials, taskExecutorService ))
                 .collect(Collectors.toList());

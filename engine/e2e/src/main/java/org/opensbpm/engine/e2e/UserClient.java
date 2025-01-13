@@ -31,7 +31,7 @@ class UserClient {
 
     private final Object lock = new Object();
     //
-    private final Set<Integer> processedTasks = Collections.synchronizedSet(new HashSet<>());
+    private final Set<TaskInfo> processedTasks = Collections.synchronizedSet(new HashSet<>());
     //
     private final Configuration configuration;
     private final EngineServiceClient engineServiceClient;
@@ -65,8 +65,11 @@ class UserClient {
                                             -> {
                                         LOGGER.fine("User[" + getUserToken().getName() + "] starting process " + model.getName());
                                         TaskInfo taskInfo = engineServiceClient.onEngineModelResource(modelResource -> modelResource.start(model.getId()));
-                                        processedTasks.add(asKey(taskInfo));
-                                        taskExecutorService.submit(() -> new TaskExecutor(getUserToken(), engineServiceClient).execute(taskInfo));
+                                        processedTasks.add(taskInfo);
+                                        taskExecutorService.submit(() -> {
+                                            new TaskExecutor(getUserToken(), engineServiceClient).execute(taskInfo);
+                                            processedTasks.remove(taskInfo);
+                                        });
                                         return taskInfo;
                                     }
                             )
@@ -83,16 +86,15 @@ class UserClient {
             public void run() {
                 LOGGER.finest("User[" + getUserToken().getName() + "] fetching tasks");
                 engineServiceClient.onEngineTaskResource(taskResource -> taskResource.index(0,50).getTaskInfos()).stream()
-                        .filter(taskInfo -> processedTasks.add(asKey(taskInfo)))
+                        .filter(taskInfo -> processedTasks.add(taskInfo))
                         .forEach(taskInfo -> {
-                            taskExecutorService.submit(() -> new TaskExecutor(getUserToken(), engineServiceClient).execute(taskInfo));
+                            taskExecutorService.submit(() -> {
+                                new TaskExecutor(getUserToken(), engineServiceClient).execute(taskInfo);
+                                processedTasks.remove(taskInfo);
+                            });
                         });
             }
         }, 0, 500);
-    }
-
-    private static int asKey(TaskInfo taskInfo) {
-        return Objects.hash(taskInfo.getId(), taskInfo.getProcessId());
     }
 
     public void stopTaskFetcher() {
