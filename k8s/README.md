@@ -50,3 +50,6 @@ Use http://168.119.255.223:3000/
 
 Micrometer Dashboard
 https://grafana.com/grafana/dashboards/4701-jvm-micrometer/
+
+=== Check lets-encrypt certificate
+kubectl --kubeconfig ~/.kube/opensbpm@hetzner.yaml describe certificate -n observability
