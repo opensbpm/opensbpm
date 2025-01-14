@@ -2,6 +2,7 @@ package org.opensbpm.engine.client;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.fasterxml.jackson.jakarta.rs.cfg.Annotations;
 import com.fasterxml.jackson.jakarta.rs.json.JacksonJsonProvider;
 
 import java.io.IOException;
@@ -18,9 +19,12 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.logging.Logger;
 
+import jakarta.xml.bind.JAXBContext;
+import jakarta.xml.bind.JAXBException;
 import org.apache.cxf.jaxrs.client.Client;
 import org.apache.cxf.jaxrs.client.JAXRSClientFactoryBean;
 import org.apache.cxf.jaxrs.client.WebClient;
+import org.opensbpm.engine.api.instance.TaskResponse;
 import org.opensbpm.engine.api.instance.UserToken;
 import org.opensbpm.engine.server.api.EngineResource;
 import org.opensbpm.engine.server.api.ProcessInstanceResource;
@@ -40,6 +44,7 @@ public abstract class EngineServiceClient {
         requireAddress(authAddress);
         requireAddress(serviceAddress);
         requireNonNull(credentials, "Credentials must not be null");
+
         return new EngineServiceClient(serviceAddress) {
             private final Object lock = new Object();
             private Authentication authentication;
@@ -112,6 +117,7 @@ public abstract class EngineServiceClient {
     }
 
     private final static Logger LOGGER = Logger.getLogger(EngineServiceClient.class.getName());
+    private final ClassLoader jaxbContextClassLoader;
     private final Supplier<UserResource> userResource = of(UserResource.class);
     private final Supplier<EngineResource> engineResource = of(EngineResource.class);
     private final Supplier<ProcessInstanceResource> processInstanceResource = of(ProcessInstanceResource.class);
@@ -124,6 +130,12 @@ public abstract class EngineServiceClient {
 
     public EngineServiceClient(String baseAddress) {
         this.baseAddress = requireNonNull(baseAddress, "baseAddress must not be null");
+        try {
+            JAXBContext jaxbContext = JAXBContext.newInstance(TaskResponse.class);
+            jaxbContextClassLoader = jaxbContext.getClass().getClassLoader();
+        } catch (JAXBException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     protected abstract String getAuthenticationToken();
@@ -168,6 +180,7 @@ public abstract class EngineServiceClient {
         Client client = WebClient.client(resource);
         client.header("Authorization", "Bearer " + getAuthenticationToken());
         try {
+            Thread.currentThread().setContextClassLoader(jaxbContextClassLoader);
             return function.apply(resource);
         } finally {
             client.reset();
@@ -193,7 +206,8 @@ public abstract class EngineServiceClient {
     private <T> T createResourceClient(Class<T> type) {
         List<Object> providers = asList(
                 new JacksonJsonProvider(new ObjectMapper()
-                        .registerModule(new JavaTimeModule()))
+                        .registerModule(new JavaTimeModule()),
+                        new Annotations[]{Annotations.JAKARTA_XML_BIND})
         );
         JAXRSClientFactoryBean factoryBean = new JAXRSClientFactoryBean();
         factoryBean.setAddress(String.format("%s/api/services", baseAddress));
