@@ -18,222 +18,29 @@
  */
 package org.opensbpm.engine.e2e;
 
-import java.io.*;
-import java.security.GeneralSecurityException;
-import java.time.Duration;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.*;
-import java.util.concurrent.*;
-
-import org.apache.commons.cli.ParseException;
-import org.opensbpm.engine.api.ProcessNotFoundException;
-import org.opensbpm.engine.api.UserNotFoundException;
-import org.opensbpm.engine.api.instance.*;
-import org.opensbpm.engine.api.model.ProcessModelInfo;
-import org.opensbpm.engine.client.Credentials;
-import org.opensbpm.engine.client.EngineServiceClient;
-import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import static java.lang.String.format;
-import static java.util.Arrays.asList;
+import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.context.annotation.Bean;
+import org.springframework.core.env.ConfigurableEnvironment;
 
 @SpringBootApplication
-public class Main implements CommandLineRunner {
-
-    private static final Logger LOGGER = Logger.getLogger(Main.class.getName());
-
+public class Main {
 
     public static void main(String[] args) {
-        SpringApplication.run(Main.class, args);
-    }
-
-    private final WebdavUploaderService uploaderService;
-    private LocalDateTime startTime;
-    public Main(WebdavUploaderService uploaderService) {
-        this.uploaderService = uploaderService;
-    }
-
-    @Override
-    public void run(String... args) {
-        try {
-            execute(Configuration.parseArgs(args));
-            System.exit(0);
-        } catch (ParseException ex) {
-            //ParseException is already dumped to System.out, log here for debugging purpose
-            LOGGER.log(Level.FINEST, ex.getMessage(), ex);
-            System.exit(1);
-        } catch (InterruptedException ex) {
-            LOGGER.log(Level.SEVERE, ex.getMessage(), ex);
-            // Restore interrupted state...
-            Thread.currentThread().interrupt();
-            System.exit(1);
-        } catch (ProcessNotFoundException | UserNotFoundException
-                 | IOException | SecurityException
-                 | ExecutionException | GeneralSecurityException ex) {
-            LOGGER.log(Level.SEVERE, ex.getMessage(), ex);
-            System.exit(1);
-        }
-    }
-
-    public void execute(Configuration configuration) throws UserNotFoundException, ProcessNotFoundException,
-            IOException, InterruptedException, ExecutionException, GeneralSecurityException {
+        ConfigurableApplicationContext context = SpringApplication.run(Main.class, args);
 
         try {
-            EngineServiceClient adminClient = configuration.createEngineServiceClient(Credentials.of("admin", "admin".toCharArray()));
-            InputStream modelResource = Main.class.getResourceAsStream("/models/" + "dienstreiseantrag.xml");
-            ProcessModelInfo processModelInfo = adminClient.onProcessModelResource(processModelResource -> processModelResource.create(modelResource));
-            LOGGER.info("ProcessModel " + processModelInfo.getName() + " uploaded");
-        } catch (Exception ex) {
-            throw new RuntimeException(ex);
-        }
-
-        List<Credentials> allCredentials = asList(
-                Credentials.of("alice", "alice".toCharArray()),
-//                Credentials.of("blice", "blice".toCharArray()),
-                Credentials.of("jdoe", "jdoe".toCharArray()),
-//                Credentials.of("jodoe", "jodoe".toCharArray()),
-                Credentials.of("miriam", "miriam".toCharArray())
-        );
-
-        if (configuration.isIndexed()) {
-            Integer index = Integer.valueOf(System.getenv("JOB_COMPLETION_INDEX"));
-            if (index == 0) {
-                LOGGER.log(Level.INFO, "Running as Controller");
-                //send info when all started processed are finished
-            } else {
-                Credentials credentials = allCredentials.get(index - 1);
-                LOGGER.log(Level.INFO, "Running as User " + credentials.getUserName());
-                UserClient userClient = UserClient.of(configuration, credentials, Executors.newWorkStealingPool());
-
-                ExecutorService executorService = Executors.newSingleThreadExecutor();
-                executorService.submit(userClient::startProcesses);
-                executorService.shutdown();
-
-                //send info about started processed
-
-                //retrieve info when to stop
-
-
-            }
-        } else {
-            executeSinglePod(configuration, allCredentials);
+            WorkflowOrchestrator workflowOrchestrator = context.getBean(WorkflowOrchestrator.class);
+            workflowOrchestrator.execute();
+        }finally {
+            SpringApplication.exit(context);
         }
     }
 
-    private void executeSinglePod(Configuration configuration, List<Credentials> allCredentials) {
-        startTime = LocalDateTime.now();
-        ExecutorService taskExecutorService = Executors.newWorkStealingPool(
-                Runtime.getRuntime().availableProcessors() * 2 /*allCredentials.size()*/
-        );
-        List<UserClient> userClients = allCredentials.stream()
-                .map(credentials -> UserClient.of(configuration, credentials, taskExecutorService ))
-                .collect(Collectors.toList());
-
-
-        userClients.forEach(client -> taskExecutorService.submit(()-> client.startProcesses()));
-
-        userClients.forEach(client -> taskExecutorService.submit(()-> client.startTaskFetcher()));
-
-        boolean allFinished = false;
-        while (!allFinished) {
-            LOGGER.finest("Check started processes finished");
-            allFinished = userClients.stream()
-                    .mapToLong(userClient -> userClient.getActiveProcesses().size())
-                    .sum() == 0;
-
-            if (LOGGER.isLoggable(Level.FINEST)) {
-                for (UserClient userClient : userClients) {
-                    List<ProcessInfo> activeProcesses = userClient.getActiveProcesses();
-                    if (!activeProcesses.isEmpty()) {
-                        LOGGER.finest("User[" + userClient.getUserToken().getName() + "] has active processes " +
-                                activeProcesses.stream()
-                                        .map(processInfo -> asString(processInfo))
-                                        .collect(Collectors.joining(","))
-                        );
-                    }
-                }
-            }
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException ex) {
-                LOGGER.log(Level.SEVERE, ex.getMessage(), ex);
-                // Restore interrupted state...
-                Thread.currentThread().interrupt();
-            }
-        }
-        userClients.forEach(UserClient::stopTaskFetcher);
-        taskExecutorService.shutdown();
-
-        LocalDateTime endTime = LocalDateTime.now();
-        LOGGER.info("All started processes finished");
-
-        Duration duration = Duration.between(startTime, endTime);
-        StringBuilder builder = new StringBuilder()
-                .append("node_count,")
-                .append("pod_count,")
-                .append("test_start,")
-                .append("test_end,")
-                .append("test_duration,")
-                .append("test_task_count,")
-                .append("process_count,")
-                .append("process_start,")
-                .append("process_end,")
-                .append("process_duration,")
-                .append("process_task_count\n");
-        List<Statistics> statistics = userClients.stream()
-                .flatMap(UserClient::getStatistics)
-                .toList();
-        long testTaskCount = statistics.stream()
-                .mapToLong(statistic -> statistic.getCount())
-                .sum();
-        String data = statistics.stream()
-                .map(statistic ->
-                        new StringBuilder()
-                                .append(configuration.getNodeCount()).append(",")
-                                .append(configuration.getPodCount()).append(",")
-                                .append(asString(startTime)).append(",")
-                                .append(asString(endTime)).append(",")
-                                .append(duration.toMillis()).append(",")
-                                .append(testTaskCount).append(",")
-                                .append(configuration.getProcessCount()).append(",")
-                                .append(asString(statistic.getStartTime())).append(",")
-                                .append(asString(statistic.getEndTime())).append(",")
-                                .append(statistic.getDuration().toMillis()).append(",")
-                                .append(statistic.getCount())
-                                .toString()
-                )
-                .collect(Collectors.joining("\n"));
-        builder.append(data).append("\n");
-        String statData = builder.toString();
-
-        LOGGER.info("statistics: \n" + statData);
-        uploaderService.uploadStatistic(configuration, statData);
-
-        LOGGER.info("Everything done");
+    @Bean
+    public UserClientConfiguration userClientConfiguration(ConfigurableEnvironment environment) {
+        return new UserClientConfiguration(environment);
     }
-
-    private static String asString(LocalDateTime dateTime) {
-        return dateTime.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
-    }
-
-    private static String asString(ProcessInfo processInfo) {
-        return format("%s started at %s by %s in state %s",
-                processInfo.getProcessModelInfo().getName(),
-                processInfo.getStartTime(),
-                processInfo.getOwner().getName(),
-                processInfo.getSubjects().stream()
-                        .map(ProcessInfo.SubjectStateInfo::getStateName)
-                        .collect(Collectors.joining(","))
-        );
-    }
-
 
 }

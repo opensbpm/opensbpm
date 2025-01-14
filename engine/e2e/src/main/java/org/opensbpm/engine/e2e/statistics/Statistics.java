@@ -1,4 +1,4 @@
-package org.opensbpm.engine.e2e;
+package org.opensbpm.engine.e2e.statistics;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
