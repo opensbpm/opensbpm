@@ -3,14 +3,13 @@
 spring:
   application:
     name: opensbpm-e2e-client
-    version: "@java:version@"
 
 #  main:
 #    web-application-type: none
 server:
   port: -1
 
-  #debug: true
+#debug: true
 #logging.level:
   #    root: INFO
   #org.opensbpm.engine.e2e.user.UserClient: DEBUG
