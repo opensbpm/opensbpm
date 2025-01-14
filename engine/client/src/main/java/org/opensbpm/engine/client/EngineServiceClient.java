@@ -11,17 +11,13 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpRequest.BodyPublisher;
 import java.net.http.HttpRequest.BodyPublishers;
 import java.net.http.HttpResponse;
-import java.util.*;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 import java.util.function.Supplier;
-
 import java.util.logging.Logger;
 
-import jakarta.ws.rs.ProcessingException;
-import org.apache.cxf.interceptor.Fault;
 import org.apache.cxf.jaxrs.client.Client;
 import org.apache.cxf.jaxrs.client.JAXRSClientFactoryBean;
 import org.apache.cxf.jaxrs.client.WebClient;
@@ -31,8 +27,10 @@ import org.opensbpm.engine.server.api.ProcessInstanceResource;
 import org.opensbpm.engine.server.api.ProcessModelResource;
 import org.opensbpm.engine.server.api.UserResource;
 
-public abstract class EngineServiceClient {
+import static java.util.Arrays.asList;
+import static java.util.Objects.requireNonNull;
 
+public abstract class EngineServiceClient {
 
     public static EngineServiceClient create(String baseAddress, Credentials credentials) {
         return create(baseAddress, baseAddress, credentials);
@@ -41,7 +39,7 @@ public abstract class EngineServiceClient {
     public static EngineServiceClient create(String authAddress, String serviceAddress, Credentials credentials) {
         requireAddress(authAddress);
         requireAddress(serviceAddress);
-        Objects.requireNonNull(credentials, "Credentials must not be null");
+        requireNonNull(credentials, "Credentials must not be null");
         return new EngineServiceClient(serviceAddress) {
             private final Object lock = new Object();
             private Authentication authentication;
@@ -106,7 +104,7 @@ public abstract class EngineServiceClient {
     }
 
     private static String requireAddress(String authAddress) {
-        Objects.requireNonNull(authAddress, "Address must not be null");
+        requireNonNull(authAddress, "Address must not be null");
         if (authAddress.endsWith("/")) {
             throw new IllegalArgumentException(authAddress + " must not end with /");
         }
@@ -125,7 +123,7 @@ public abstract class EngineServiceClient {
 
 
     public EngineServiceClient(String baseAddress) {
-        this.baseAddress = Objects.requireNonNull(baseAddress, "baseAddress must not be null");
+        this.baseAddress = requireNonNull(baseAddress, "baseAddress must not be null");
     }
 
     protected abstract String getAuthenticationToken();
@@ -193,7 +191,7 @@ public abstract class EngineServiceClient {
     }
 
     private <T> T createResourceClient(Class<T> type) {
-        List<Object> providers = Arrays.asList(
+        List<Object> providers = asList(
                 new JacksonJsonProvider(new ObjectMapper()
                         .registerModule(new JavaTimeModule()))
         );

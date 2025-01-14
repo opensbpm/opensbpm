@@ -1,10 +1,12 @@
-package org.opensbpm.engine.e2e;
+package org.opensbpm.engine.e2e.user;
 
 import jakarta.ws.rs.ProcessingException;
 import jakarta.ws.rs.WebApplicationException;
 import org.opensbpm.engine.api.instance.*;
 import org.opensbpm.engine.client.Credentials;
 import org.opensbpm.engine.client.EngineServiceClient;
+import org.opensbpm.engine.e2e.AppParameters;
+import org.opensbpm.engine.e2e.statistics.Statistics;
 import org.opensbpm.engine.server.api.dto.instance.Audits;
 
 import java.io.Serializable;
@@ -17,22 +19,15 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-class UserClient {
+public class UserClient {
 
     private static final Logger LOGGER = Logger.getLogger(UserClient.class.getName());
-
-    public static UserClient of(Configuration configuration, Credentials credentials, ExecutorService executorService) {
-        return new UserClient(
-                configuration,
-                credentials, executorService
-        );
-    }
 
     private final Object lock = new Object();
     //
     private final Set<TaskInfo> processedTasks = Collections.synchronizedSet(new HashSet<>());
     //
-    private final Configuration configuration;
+    private final AppParameters appParameters;
     private final EngineServiceClient engineServiceClient;
     private final ExecutorService taskExecutorService;
     //
@@ -40,15 +35,15 @@ class UserClient {
     private Collection<ProcessInfo> processInfos;
     private Timer tasksFetcher;
 
-    private UserClient(Configuration configuration, Credentials credentials, ExecutorService executorService) {
-        this.configuration = configuration;
-        engineServiceClient = this.configuration.createEngineServiceClient(credentials);
-        this.taskExecutorService = executorService;
+
+    public UserClient(AppParameters appParameters, Credentials credentials) {
+        this.appParameters = appParameters;
+        engineServiceClient = appParameters.createEngineServiceClient(credentials);
+        this.taskExecutorService = Executors.newWorkStealingPool();
 
         LOGGER.info("User[" + getUserToken().getName() + "] with Roles " + getUserToken().getRoles().stream()
                 .map(RoleToken::getName)
                 .collect(Collectors.joining(",")));
-
     }
 
     public UserToken getUserToken() {
@@ -57,11 +52,10 @@ class UserClient {
 
     public void startProcesses() {
         synchronized (lock) {
-            startedProcesses = engineServiceClient.onEngineModelResource(modelResource-> modelResource.index().getProcessModelInfos()).stream()
-                    .flatMap(model -> IntStream.range(0, configuration.getProcessCount()).boxed()
+            startedProcesses = engineServiceClient.onEngineModelResource(modelResource -> modelResource.index().getProcessModelInfos()).stream()
+                    .flatMap(model -> IntStream.range(0, appParameters.getProcessCount()).boxed()
                             .parallel()
-                            .map(idx
-                                            -> {
+                            .map(idx -> {
                                         LOGGER.fine("User[" + getUserToken().getName() + "] starting process " + model.getName());
                                         TaskInfo taskInfo = engineServiceClient.onEngineModelResource(modelResource -> modelResource.start(model.getId()));
                                         processedTasks.add(taskInfo);
@@ -74,7 +68,7 @@ class UserClient {
                             )
                     )
                     .toList();
-            LOGGER.info("User[" + getUserToken().getName() + "] started "+startedProcesses.size()+" processes");
+            LOGGER.info("User[" + getUserToken().getName() + "] started " + startedProcesses.size() + " processes");
         }
     }
 
@@ -84,7 +78,7 @@ class UserClient {
             @Override
             public void run() {
                 LOGGER.finest("User[" + getUserToken().getName() + "] fetching tasks");
-                engineServiceClient.onEngineTaskResource(taskResource -> taskResource.index(0,50).getTaskInfos()).stream()
+                engineServiceClient.onEngineTaskResource(taskResource -> taskResource.index(0, 50).getTaskInfos()).stream()
                         .filter(taskInfo -> processedTasks.add(taskInfo))
                         .forEach(taskInfo -> {
                             taskExecutorService.submit(() -> {
@@ -99,6 +93,7 @@ class UserClient {
     public void stopTaskFetcher() {
         LOGGER.info("User[" + getUserToken().getName() + "] stopping task-fetcher");
         tasksFetcher.cancel();
+        taskExecutorService.shutdown();
     }
 
     private static class TaskExecutor {
