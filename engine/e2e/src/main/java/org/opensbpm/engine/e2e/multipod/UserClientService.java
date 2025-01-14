@@ -6,14 +6,14 @@ import jakarta.jms.Message;
 import jakarta.jms.Session;
 import org.opensbpm.engine.client.Credentials;
 import org.opensbpm.engine.e2e.AppParameters;
-import org.opensbpm.engine.e2e.statistics.Statistics;
-import org.opensbpm.engine.e2e.user.UserClient;
+import org.opensbpm.engine.stresstest.Statistics;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.jms.annotation.JmsListener;
 import org.springframework.jms.core.JmsTemplate;
 import org.springframework.jms.core.MessageCreator;
 import org.springframework.stereotype.Component;
+import org.opensbpm.engine.stresstest.UserClient;
 
 import java.util.ArrayList;
 import java.util.Timer;
@@ -42,7 +42,7 @@ public class UserClientService implements AutoCloseable{
     @PostConstruct
     public void init() {
         Credentials credentials = applicationContext.getBean("credentials_" + (appParameters.getJobCompletionIndex() - 1), Credentials.class);
-        userClient = new UserClient(appParameters, credentials);
+        userClient = new UserClient(appParameters.createEngineServiceClient(credentials));
         LOGGER.log(Level.INFO, "Running as User " + credentials.getUserName());
         userClient.startTaskFetcher();
 
@@ -66,7 +66,7 @@ public class UserClientService implements AutoCloseable{
 
     @JmsListener(destination = "models")
     public void startProcesses(String content) {
-        userClient.startProcesses();
+        userClient.startProcesses(appParameters.getProcessCount());
     }
 
     @Override

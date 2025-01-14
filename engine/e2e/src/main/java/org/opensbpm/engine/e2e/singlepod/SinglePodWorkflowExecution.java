@@ -5,9 +5,9 @@ import org.opensbpm.engine.api.model.ProcessModelInfo;
 import org.opensbpm.engine.client.Credentials;
 import org.opensbpm.engine.client.EngineServiceClient;
 import org.opensbpm.engine.e2e.AppParameters;
-import org.opensbpm.engine.e2e.user.UserClient;
+import org.opensbpm.engine.stresstest.UserClient;
 import org.opensbpm.engine.e2e.WorkflowExecution;
-import org.opensbpm.engine.e2e.statistics.Statistics;
+import org.opensbpm.engine.stresstest.Statistics;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
@@ -58,11 +58,11 @@ public class SinglePodWorkflowExecution implements WorkflowExecution {
 
     private List<Statistics> executeSinglePod() {
         Collection<UserClient> userClients = applicationContext.getBeansOfType(Credentials.class).values().stream()
-                .map(credentials -> new UserClient(appParameters, credentials))
+                .map(credentials -> new UserClient(appParameters.createEngineServiceClient(credentials)))
                 .toList();
 
         ExecutorService taskExecutorService = Executors.newWorkStealingPool();
-        userClients.forEach(client -> taskExecutorService.submit(() -> client.startProcesses()));
+        userClients.forEach(client -> taskExecutorService.submit(() -> client.startProcesses(appParameters.getProcessCount())));
         userClients.forEach(client -> taskExecutorService.submit(() -> client.startTaskFetcher()));
         taskExecutorService.shutdown();
         try {

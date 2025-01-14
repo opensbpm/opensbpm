@@ -1,12 +1,9 @@
-package org.opensbpm.engine.e2e.user;
+package org.opensbpm.engine.stresstest;
 
 import jakarta.ws.rs.ProcessingException;
 import jakarta.ws.rs.WebApplicationException;
 import org.opensbpm.engine.api.instance.*;
-import org.opensbpm.engine.client.Credentials;
 import org.opensbpm.engine.client.EngineServiceClient;
-import org.opensbpm.engine.e2e.AppParameters;
-import org.opensbpm.engine.e2e.statistics.Statistics;
 import org.opensbpm.engine.server.api.dto.instance.Audits;
 
 import java.io.Serializable;
@@ -27,7 +24,6 @@ public class UserClient {
     //
     private final Set<TaskInfo> processedTasks = Collections.synchronizedSet(new HashSet<>());
     //
-    private final AppParameters appParameters;
     private final EngineServiceClient engineServiceClient;
     private final ExecutorService taskExecutorService;
     //
@@ -36,9 +32,8 @@ public class UserClient {
     private Timer tasksFetcher;
 
 
-    public UserClient(AppParameters appParameters, Credentials credentials) {
-        this.appParameters = appParameters;
-        engineServiceClient = appParameters.createEngineServiceClient(credentials);
+    public UserClient(EngineServiceClient engineServiceClient) {
+        this.engineServiceClient = engineServiceClient;
         this.taskExecutorService = Executors.newWorkStealingPool();
 
         LOGGER.info("User[" + getUserToken().getName() + "] with Roles " + getUserToken().getRoles().stream()
@@ -50,10 +45,10 @@ public class UserClient {
         return engineServiceClient.getUserToken();
     }
 
-    public void startProcesses() {
+    public void startProcesses(int processCount) {
         synchronized (lock) {
             startedProcesses = engineServiceClient.onEngineModelResource(modelResource -> modelResource.index().getProcessModelInfos()).stream()
-                    .flatMap(model -> IntStream.range(0, appParameters.getProcessCount()).boxed()
+                    .flatMap(model -> IntStream.range(0, processCount).boxed()
                             .parallel()
                             .map(idx -> {
                                         LOGGER.fine("User[" + getUserToken().getName() + "] starting process " + model.getName());
@@ -73,6 +68,7 @@ public class UserClient {
     }
 
     public void startTaskFetcher() {
+        LOGGER.info("User[" + getUserToken().getName() + "] start tasks-fetcher");
         tasksFetcher = new Timer("TasksFetcher for " + getUserToken().getName());
         tasksFetcher.schedule(new TimerTask() {
             @Override
@@ -81,17 +77,21 @@ public class UserClient {
                 engineServiceClient.onEngineTaskResource(taskResource -> taskResource.index(0, 50).getTaskInfos()).stream()
                         .filter(taskInfo -> processedTasks.add(taskInfo))
                         .forEach(taskInfo -> {
-                            taskExecutorService.submit(() -> {
-                                new TaskExecutor(getUserToken(), engineServiceClient).execute(taskInfo);
-                                processedTasks.remove(taskInfo);
-                            });
+                            try {
+                                taskExecutorService.submit(() -> {
+                                    new TaskExecutor(getUserToken(), engineServiceClient).execute(taskInfo);
+                                    processedTasks.remove(taskInfo);
+                                });
+                            } catch (RejectedExecutionException e) {
+                                LOGGER.warning("User[" + getUserToken().getName() + "] task-fetcher "+ e.getMessage());
+                            }
                         });
             }
         }, 0, 500);
     }
 
     public void stopTaskFetcher() {
-        LOGGER.info("User[" + getUserToken().getName() + "] stopping task-fetcher");
+        LOGGER.info("User[" + getUserToken().getName() + "] stopping tasks-fetcher");
         tasksFetcher.cancel();
         taskExecutorService.shutdown();
     }

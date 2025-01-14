@@ -1,6 +1,6 @@
 package org.opensbpm.engine.e2e;
 
-import org.opensbpm.engine.e2e.statistics.Statistics;
+import org.opensbpm.engine.stresstest.Statistics;
 
 import java.util.List;
 
