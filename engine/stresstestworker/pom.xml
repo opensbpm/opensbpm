@@ -24,15 +24,15 @@
         <version>1.0-SNAPSHOT</version>
     </parent>
 
-    <artifactId>opensbpm-engine-e2e</artifactId>
+    <artifactId>opensbpm-engine-stresstestworker</artifactId>
 
-    <name>OpenSBPM Engine - E2E</name>
-    <description>End to End Tests for OpenSBPM-Engine with Spring-Boot Application</description>
+    <name>OpenSBPM Engine - StressTest Worker</name>
+    <description>StressTest Worker for OpenSBPM-Engine with Spring-Boot Application</description>
 
     <properties>
-        <mainClass>org.opensbpm.engine.e2e.Main</mainClass>
+        <mainClass>org.opensbpm.engine.stresstestworker.Main</mainClass>
         
-        <sonar.coverage.exclusions>**/org/opensbpm/e2e/**/*.*</sonar.coverage.exclusions>
+        <sonar.coverage.exclusions>**/org/opensbpm/stresstestworker/**/*.*</sonar.coverage.exclusions>
 
     </properties>
 
@@ -52,11 +52,6 @@
         <dependency>
             <groupId>org.apache.cxf</groupId>
             <artifactId>cxf-spring-boot-starter-jaxrs</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.opensbpm.engine</groupId>
-            <artifactId>examples</artifactId>
         </dependency>
 
         <dependency>
@@ -122,7 +117,7 @@
                     </layers>
                     <image>
                         <!--name>docker.io/opensbpm/${project.artifactId}:${project.version}</name-->
-                        <name>docker.io/opensbpm/e2e-client</name>
+                        <name>docker.io/opensbpm/stresstest-worker</name>
                     </image>
                 </configuration>
                 <executions>
@@ -131,12 +126,11 @@
                             <goal>repackage</goal>
                         </goals>
                         <configuration>
-                            <finalName>e2e-exec</finalName>
+                            <finalName>stresstest-worker-exec</finalName>
                         </configuration>
                     </execution>
                 </executions>
             </plugin>
-
         </plugins>
     </build>
 </project>

@@ -16,6 +16,11 @@
         <module>service</module>
 
         <module>client</module>
+
+        <module>stresstest</module>
+        <module>stresstestworker</module>
+
         <module>e2e</module>
+
     </modules>
 </project>

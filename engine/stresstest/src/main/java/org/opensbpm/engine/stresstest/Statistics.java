@@ -1,4 +1,4 @@
-package org.opensbpm.engine.e2e.statistics;
+package org.opensbpm.engine.stresstest;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
