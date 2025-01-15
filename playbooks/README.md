@@ -28,7 +28,7 @@ export HCLOUD_TOKEN=<Hetzner API Token>
 ```
 
 ```
-ansible-playbook playbooks/setup_cluster.yml
+ansible-playbook playbooks/site.yml
 ```
 
 ### Run in powershell with docker
@@ -45,7 +45,7 @@ docker run --rm `
 ### Check
 Check kubeconfig with kubectl
 ```
-kubectl --kubeconfig ~/.kube/opensbm\@hetzner cluster-info
+kubectl --kubeconfig ~/.kube/opensbpm\@hetzner.yaml cluster-info
 ```
 
 ###
