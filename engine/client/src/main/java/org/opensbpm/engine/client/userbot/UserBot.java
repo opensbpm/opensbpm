@@ -45,6 +45,7 @@ public class UserBot {
     }
 
     public void startProcesses(int processCount) {
+        LOGGER.info("User[" + getUserToken().getName() + "] start processes");
         synchronized (lock) {
             startedProcesses = engineServiceClient.onEngineModelResource(modelResource -> modelResource.index().getProcessModelInfos()).stream()
                     .flatMap(model -> IntStream.range(0, processCount).boxed()
