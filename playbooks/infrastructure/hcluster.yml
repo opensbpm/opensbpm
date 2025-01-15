@@ -49,15 +49,12 @@
         state: started
       register: control_plane
 
-    - name: Retrieve ssh key from Control Plane
-      shell: "sleep 30; ssh-keyscan -vvv -T 240 -H {{ control_plane.hcloud_server.ipv4_address }}"
-      register: control_plane_sshkeyscan
-
     - name: Add Control Plane host keys to known_hosts
       ansible.builtin.known_hosts:
         path: ~/.ssh/known_hosts
         name: "{{ control_plane.hcloud_server.ipv4_address }}"
-        key: "{{ control_plane_sshkeyscan.stdout }}"
+        # add 'ssh-keyscan -vvv' to debug
+        key: "{{ lookup('ansible.builtin.pipe', 'sleep 5; ssh-keyscan -T 240 {{ control_plane.hcloud_server.ipv4_address }}') }}"
         state: present
 
     - name: Add Control Plane to inventory
@@ -99,6 +96,15 @@
         name: "{{ item.hcloud_server.ipv4_address }}"
         #name: "{{ item.hcloud_server.name }}"
         #ansible_host: "{{ item.hcloud_server.private_networks_info[0].ip }}"
-        groups: workers
+        groups: worker_nodes
         ansible_user: root
         ansible_ssh_private_key_file: ~/.ssh/opensbpm-hetzner
+
+    - name: Add worker nodes to known_hosts
+      loop: "{{ worker_nodes.results }}"
+      ansible.builtin.known_hosts:
+        path: ~/.ssh/known_hosts
+        name: "{{ item.hcloud_server.ipv4_address }}"
+        # add 'ssh-keyscan -vvv' to debug
+        key: "{{ lookup('ansible.builtin.pipe', 'sleep 5; ssh-keyscan -T 240 {{ item.hcloud_server.ipv4_address }}') }}"
+        state: present
