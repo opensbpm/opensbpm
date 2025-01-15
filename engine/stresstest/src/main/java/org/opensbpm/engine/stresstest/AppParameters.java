@@ -1,4 +1,4 @@
-package org.opensbpm.engine.stresstestworker;
+package org.opensbpm.engine.stresstest;
 
 import jakarta.validation.constraints.NotBlank;
 import org.opensbpm.engine.client.Credentials;

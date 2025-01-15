@@ -1,4 +1,4 @@
-package org.opensbpm.engine.stresstest;
+package org.opensbpm.engine.client.userbot;
 
 import java.time.Duration;
 import java.time.LocalDateTime;

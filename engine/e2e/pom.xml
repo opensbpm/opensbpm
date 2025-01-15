@@ -61,7 +61,7 @@
 
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>opensbpm-engine-stresstest</artifactId>
+            <artifactId>opensbpm-engine-client</artifactId>
             <version>${project.version}</version>
         </dependency>
 

@@ -1,7 +1,7 @@
-package org.opensbpm.engine.stresstestworker.user;
+package org.opensbpm.engine.stresstest.user;
 
-import org.opensbpm.engine.stresstest.UserClient;
-import org.opensbpm.engine.stresstestworker.WorkflowOrchestrator;
+import org.opensbpm.engine.client.userbot.UserBot;
+import org.opensbpm.engine.stresstest.WorkflowOrchestrator;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.stereotype.Component;
@@ -13,14 +13,14 @@ import java.util.logging.Logger;
 public class UserWorkflowOrchestrator implements WorkflowOrchestrator {
     private static final Logger LOGGER = Logger.getLogger(UserWorkflowOrchestrator.class.getName());
 
-    private final UserClient userClient;
+    private final UserBot userBot;
 
-    public UserWorkflowOrchestrator(UserClient userClient) {
-        this.userClient = userClient;
+    public UserWorkflowOrchestrator(UserBot userBot) {
+        this.userBot = userBot;
     }
 
     public void execute(ConfigurableApplicationContext context) {
-        userClient.startTaskFetcher();
+        userBot.startTaskFetcher();
 
         while (true) {
             try {

@@ -1,4 +1,4 @@
-package org.opensbpm.engine.stresstest;
+package org.opensbpm.engine.client.userbot;
 
 import jakarta.ws.rs.ProcessingException;
 import jakarta.ws.rs.WebApplicationException;
@@ -14,11 +14,10 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-import java.util.stream.Stream;
 
-public class UserClient {
+public class UserBot {
 
-    private static final Logger LOGGER = Logger.getLogger(UserClient.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(UserBot.class.getName());
 
     private final Object lock = new Object();
     //
@@ -32,7 +31,7 @@ public class UserClient {
     private Timer tasksFetcher;
 
 
-    public UserClient(EngineServiceClient engineServiceClient) {
+    public UserBot(EngineServiceClient engineServiceClient) {
         this.engineServiceClient = engineServiceClient;
         this.taskExecutorService = Executors.newWorkStealingPool();
 
