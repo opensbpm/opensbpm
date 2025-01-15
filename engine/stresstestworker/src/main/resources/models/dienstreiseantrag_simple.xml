@@ -1,0 +1,299 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!--
+  Copyright (C) 2020 Stefan Sedelmaier
+  
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU Affero General Public License as published
+  by the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+  
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU Affero General Public License for more details.
+  
+  You should have received a copy of the GNU Affero General Public License
+  along with this program. If not, see <http://www.gnu.org/licenses/>.
+-->
+<pm:process
+    xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
+    xmlns:pm='http://api.opensbpm.org/processmodel'>
+
+    <name>Dienstreiseantrag</name>
+    <version>1</version>
+    <description>Dienstreiseantrag von 'Subjektorientiertes Prozessmanagement' Seite 105</description>
+
+    <userSubject starter="true">
+        <name>Mitarbeiter</name>
+        <roles>Angestellte</roles>
+        <functionState eventType="START">>
+            <name>DR-Antrag ausfüllen</name>
+            <object>
+                <name>DR-Antrag</name>
+                <attribute>
+                    <name>Name</name>                        
+                    <permission>WRITE</permission>                        
+                    <mandatory>true</mandatory>
+                    <defaultValue>${user.name}</defaultValue>
+                </attribute>
+                <attribute>
+                    <name>Reisebeginn</name>
+                    <permission>WRITE</permission>
+                    <mandatory>true</mandatory>
+                </attribute>
+                <attribute>
+                    <name>Reiseende</name>
+                    <permission>WRITE</permission>
+                    <mandatory>true</mandatory>
+                </attribute>
+                <attribute>
+                    <name>Reiseziel</name>
+                    <permission>WRITE</permission>
+                    <mandatory>true</mandatory>
+                </attribute>
+                <object>
+                    <name>Mitreisende</name>
+                    <!--attribute>
+                        <name>Antragsteller</name>                        
+                        <permission>WRITE</permission>                        
+                        <mandatory>true</mandatory>
+                    </attribute-->
+                    <attribute>
+                        <name>Bemerkung</name>
+                        <permission>WRITE</permission>
+                        <mandatory>true</mandatory>
+                    </attribute>                    
+                </object>
+            </object>
+            <toState>DR-Antrag an Vorgesetzer senden</toState>
+        </functionState>
+        <sendState>
+            <name>DR-Antrag an Vorgesetzer senden</name>
+            <receiver>Vorgesetzter</receiver>
+            <message>DR-Antrag</message>
+            <toState>Antwort von Vorgesetzter empfangen</toState>
+        </sendState>
+        <receiveState>
+            <name>Antwort von Vorgesetzter empfangen</name>
+            <message>
+                <object>Genehmigung</object>
+                <toState>Buchung von Reisestelle empfangen</toState>
+            </message>
+        </receiveState>
+        <receiveState>
+            <name>Buchung von Reisestelle empfangen</name>
+            <message>
+                <object>Buchung</object>
+                <toState>DR antreten</toState>
+            </message>
+        </receiveState>
+        <functionState>
+            <name>DR antreten</name>
+            <object>
+                <name>DR-Antrag</name>
+                <attribute>
+                    <name>Name</name>                        
+                    <permission>READ</permission>                        
+                </attribute>
+                <attribute>
+                    <name>Reisebeginn</name>
+                    <permission>READ</permission>
+                </attribute>
+                <attribute>
+                    <name>Reiseende</name>
+                    <permission>READ</permission>
+                </attribute>
+                <attribute>
+                    <name>Reiseziel</name>
+                    <permission>READ</permission>
+                </attribute>
+                <object>
+                    <name>Mitreisende</name>
+                    <!--attribute>
+                        <name>Antragsteller</name>                        
+                        <permission>READ</permission>                        
+                    </attribute-->
+                    <attribute>
+                        <name>Bemerkung</name>
+                        <permission>READ</permission>
+                    </attribute>                    
+                </object>
+            </object>            
+            <object>
+                <name>Genehmigung</name>
+                <attribute>
+                    <name>Bemerkung</name>
+                    <permission>READ</permission>
+                </attribute>
+            </object>
+            <object>
+                <name>Buchung</name>
+                <attribute>
+                    <name>Hotel</name>
+                    <permission>READ</permission>
+                </attribute>
+            </object>
+            <toState>DR beendet</toState>
+        </functionState>
+        <functionState eventType="END">
+            <name>DR beendet</name>
+        </functionState>
+    </userSubject>
+    <userSubject>
+        <name>Vorgesetzter</name>
+        <roles>Abteilungsleiter</roles>
+        <receiveState eventType="START">
+            <name>DR-Antrag empfangen</name>
+            <message>
+                <object>DR-Antrag</object>
+                <toState>DR-Antrag prüfen</toState>
+            </message>
+        </receiveState>
+        <functionState>
+            <name>DR-Antrag prüfen</name>
+            <object>
+                <name>DR-Antrag</name>
+                <attribute>
+                    <name>Name</name>                        
+                    <permission>READ</permission>                        
+                </attribute>
+                <attribute>
+                    <name>Reisebeginn</name>
+                    <permission>WRITE</permission>
+                    <mandatory>true</mandatory>
+                </attribute>
+                <attribute>
+                    <name>Reiseende</name>
+                    <permission>WRITE</permission>
+                    <mandatory>true</mandatory>
+                </attribute>
+                <attribute>
+                    <name>Reiseziel</name>
+                    <permission>READ</permission>
+                </attribute>
+                <object>
+                    <name>Mitreisende</name>
+                    <!--attribute>
+                        <name>Antragsteller</name>                        
+                        <permission>READ</permission>                        
+                    </attribute-->
+                    <attribute>
+                        <name>Bemerkung</name>
+                        <permission>READ</permission>
+                    </attribute>                    
+                </object>
+                <object>
+                    <name>Kostenstelle</name>
+                    <attribute>
+                        <name>Nummer</name>                        
+                        <permission>WRITE</permission>
+                        <mandatory>true</mandatory>                        
+                    </attribute>
+                    <attribute>
+                        <name>Faktor</name>                        
+                        <permission>WRITE</permission>
+                        <mandatory>true</mandatory>                        
+                    </attribute>
+                </object>
+            </object>
+            <object>
+                <name>Genehmigung</name>
+                <attribute>
+                    <name>Bemerkung</name>                        
+                    <permission>WRITE</permission>
+                </attribute>
+            </object>
+            <object>
+                <name>Ablehnung</name>
+                <attribute>
+                    <name>Begründung</name>                        
+                    <permission>WRITE</permission>
+                </attribute>
+            </object>
+            <toState>Genehmigen</toState>
+            <toState>Abgelehnt</toState>
+        </functionState>
+        <!-- TODO merge these two SendStates to one SendState with multiple messages -->
+        <sendState async="true">
+            <name>Genehmigen</name>        
+            <receiver>Mitarbeiter</receiver>
+            <message>Genehmigung</message>
+            <toState>Buchung veranlassen</toState>
+        </sendState>
+        <sendState async="true" eventType="END">
+            <name>Buchung veranlassen</name>
+            <receiver>Reisestelle</receiver>
+            <message>genehmigter DR-Antrag</message>
+        </sendState>
+        <functionState eventType="END">
+            <name>Abgelehnt</name>
+        </functionState>
+    </userSubject>
+    <userSubject>
+        <name>Reisestelle</name>
+        <roles>Reisestelle</roles>
+        <receiveState eventType="START">
+            <name>DR-Antrag empfangen</name>
+            <message>
+                <object>genehmigter DR-Antrag</object>
+                <toState>Buchen</toState>
+            </message>
+        </receiveState>
+        <functionState>
+            <name>Buchen</name>
+            <object>
+                <name>Buchung</name>
+                <attribute>
+                    <name>Hotel</name>
+                    <permission>WRITE</permission>
+                    <mandatory>true</mandatory>
+                </attribute>
+            </object>
+            <toState>Reise gebucht</toState>
+        </functionState>
+        <sendState eventType="END">
+            <name>Reise gebucht</name>
+            <receiver>Mitarbeiter</receiver>
+            <message>Buchung</message>
+        </sendState>
+    </userSubject>
+    
+    <object>
+        <name>DR-Antrag</name>
+        <!--displayName>${Name} - ${Reiseziel}: ${Reisebeginn} - ${Reiseende}</displayName-->
+        <field type="STRING">Name</field>
+        <field type="DATE">Reisebeginn</field>
+        <field type="DATE">Reiseende</field>
+        <field type="STRING">Reiseziel</field>
+        <toMany>
+            <name>Mitreisende</name>
+            <!--reference object="Angestellter">Antragsteller</reference-->
+            <field type="STRING">Bemerkung</field>
+        </toMany>                
+        <toOne>
+            <name>Kostenstelle</name>
+            <field type="NUMBER">Nummer</field>
+            <field type="DECIMAL">Faktor</field>
+        </toOne>                
+    </object>
+    <object>
+        <name>Angestellter</name>
+        <field type="NUMBER">Nummer</field>
+        <field type="STRING">Name</field>
+    </object>
+    <object>
+        <name>Genehmigung</name>
+        <field type="STRING">Bemerkung</field>
+    </object>
+    <object>
+        <name>Ablehnung</name>
+        <field type="STRING">Begründung</field>
+    </object>
+    <object>
+        <name>Buchung</name>
+        <field type="STRING">Hotel</field>
+    </object>
+    <object>
+        <name>genehmigter DR-Antrag</name>
+    </object>
+</pm:process>

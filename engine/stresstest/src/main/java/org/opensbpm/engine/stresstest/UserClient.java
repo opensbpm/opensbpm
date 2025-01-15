@@ -201,7 +201,7 @@ public class UserClient {
                 .toList();
     }
 
-    public Stream<Statistics> getStatistics() {
+    public List<Statistics> getStatistics() {
         return getStartedProcesses(false).stream()
                 .map(processInfo
                                 -> engineServiceClient.onProcessInstanceResource(processInstanceResource -> {
@@ -211,7 +211,8 @@ public class UserClient {
                                     processInfo.getEndTime(),
                                     audits.getAuditTrails().size());
                         })
-                );
+                )
+                .toList();
     }
 
 }

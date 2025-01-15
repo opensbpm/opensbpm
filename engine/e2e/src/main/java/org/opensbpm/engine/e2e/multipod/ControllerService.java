@@ -156,7 +156,7 @@ public class ControllerService {
                 .append("process_duration,")
                 .append("process_task_count\n");
         List<Statistics> statistics = userClients.stream()
-                .flatMap(UserClient::getStatistics)
+                .flatMap(userClient -> userClient.getStatistics().stream())
                 .toList();
         long testTaskCount = statistics.stream()
                 .mapToLong(statistic -> statistic.getCount())

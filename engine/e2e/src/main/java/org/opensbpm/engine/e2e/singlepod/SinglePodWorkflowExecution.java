@@ -103,7 +103,7 @@ public class SinglePodWorkflowExecution implements WorkflowExecution {
         LOGGER.info("All started processes finished");
 
         return userClients.stream()
-                .flatMap(UserClient::getStatistics)
+                .flatMap(userClient -> userClient.getStatistics().stream())
                 .toList();
     }
 

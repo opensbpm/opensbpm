@@ -14,8 +14,15 @@ opensbpm:
   #authUrl:
   #username: miriam
   #password: miriam
+  #starter: true
+  statistics:
+    url: https://drive.sedelmaier.at/remote.php/dav/files/opensbpm/e2e-client/
+    username: opensbpm
+    password: opensbpm2025
 
-#debug: true
+
+  #debug: true
 #logging.level:
   #    root: INFO
   #org.opensbpm.engine.e2e.user.UserClient: DEBUG
+
