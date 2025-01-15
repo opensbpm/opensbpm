@@ -30,12 +30,8 @@ public class Main {
     public static void main(String[] args) {
         ConfigurableApplicationContext context = SpringApplication.run(Main.class, args);
 
-        try {
-            WorkflowOrchestrator orchestrator = context.getBean(WorkflowOrchestrator.class);
-            orchestrator.execute(context);
-        } finally {
-            SpringApplication.exit(context);
-        }
+        WorkflowOrchestrator orchestrator = context.getBean(WorkflowOrchestrator.class);
+        orchestrator.execute(context);
     }
 
     @Bean

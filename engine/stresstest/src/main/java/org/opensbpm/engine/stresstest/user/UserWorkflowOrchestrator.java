@@ -21,14 +21,6 @@ public class UserWorkflowOrchestrator implements WorkflowOrchestrator {
 
     public void execute(ConfigurableApplicationContext context) {
         userBot.startTaskFetcher();
-
-        while (true) {
-            try {
-                Thread.sleep(10000);
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            }
-        }
     }
 
 }

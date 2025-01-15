@@ -7,6 +7,7 @@ import org.opensbpm.engine.client.EngineServiceClient;
 import org.opensbpm.engine.client.userbot.UserBot;
 import org.opensbpm.engine.stresstest.AppParameters;
 import org.opensbpm.engine.stresstest.WorkflowOrchestrator;
+import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.stereotype.Component;
@@ -54,6 +55,8 @@ public class StarterWorkflowOrchestrator implements WorkflowOrchestrator {
         LocalDateTime endTime = LocalDateTime.now();
 
         webdavUploader.uploadStatistic(startTime, endTime, userBot.getStatistics());
+
+        SpringApplication.exit(context);
     }
 
     private void uploadModel() {
