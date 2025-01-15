@@ -1,12 +1,12 @@
-package org.opensbpm.engine.stresstestworker.starter;
+package org.opensbpm.engine.stresstest.starter;
 
 import org.opensbpm.engine.api.instance.ProcessInfo;
 import org.opensbpm.engine.api.model.ProcessModelInfo;
 import org.opensbpm.engine.client.Credentials;
 import org.opensbpm.engine.client.EngineServiceClient;
-import org.opensbpm.engine.stresstest.UserClient;
-import org.opensbpm.engine.stresstestworker.AppParameters;
-import org.opensbpm.engine.stresstestworker.WorkflowOrchestrator;
+import org.opensbpm.engine.client.userbot.UserBot;
+import org.opensbpm.engine.stresstest.AppParameters;
+import org.opensbpm.engine.stresstest.WorkflowOrchestrator;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.stereotype.Component;
@@ -27,12 +27,12 @@ public class StarterWorkflowOrchestrator implements WorkflowOrchestrator {
     private static final Logger LOGGER = Logger.getLogger(StarterWorkflowOrchestrator.class.getName());
 
     private final AppParameters appParameters;
-    private final UserClient userClient;
+    private final UserBot userBot;
     private final WebdavUploader webdavUploader;
 
-    public StarterWorkflowOrchestrator(AppParameters appParameters, UserClient userClient, WebdavUploader webdavUploader) {
+    public StarterWorkflowOrchestrator(AppParameters appParameters, UserBot userBot, WebdavUploader webdavUploader) {
         this.appParameters = appParameters;
-        this.userClient = userClient;
+        this.userBot = userBot;
         this.webdavUploader = webdavUploader;
     }
 
@@ -40,16 +40,16 @@ public class StarterWorkflowOrchestrator implements WorkflowOrchestrator {
         uploadModel();
 
         LocalDateTime startTime = LocalDateTime.now();
-        userClient.startProcesses(appParameters.getStatistics().getProcesses());
-        userClient.startTaskFetcher();
+        userBot.startProcesses(appParameters.getStatistics().getProcesses());
+        userBot.startTaskFetcher();
 
         waitFinished();
 
-        userClient.stopTaskFetcher();
+        userBot.stopTaskFetcher();
 
         LocalDateTime endTime = LocalDateTime.now();
 
-        webdavUploader.uploadStatistic(startTime, endTime, userClient.getStatistics());
+        webdavUploader.uploadStatistic(startTime, endTime, userBot.getStatistics());
     }
 
     private void uploadModel() {
@@ -66,12 +66,12 @@ public class StarterWorkflowOrchestrator implements WorkflowOrchestrator {
         boolean starterFinished = false;
         while (!starterFinished) {
             LOGGER.finest("Check started processes finished");
-            starterFinished = userClient.getActiveProcesses().isEmpty();
+            starterFinished = userBot.getActiveProcesses().isEmpty();
 
             if (LOGGER.isLoggable(Level.FINEST)) {
-                List<ProcessInfo> activeProcesses = userClient.getActiveProcesses();
+                List<ProcessInfo> activeProcesses = userBot.getActiveProcesses();
                 if (!activeProcesses.isEmpty()) {
-                    LOGGER.finest("User[" + userClient.getUserToken().getName() + "] has active processes " +
+                    LOGGER.finest("User[" + userBot.getUserToken().getName() + "] has active processes " +
                             activeProcesses.stream()
                                     .map(processInfo -> asString(processInfo))
                                     .collect(Collectors.joining(","))

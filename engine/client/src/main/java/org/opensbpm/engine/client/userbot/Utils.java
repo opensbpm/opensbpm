@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
-package org.opensbpm.engine.stresstest;
+package org.opensbpm.engine.client.userbot;
 
 import org.opensbpm.engine.api.instance.NextState;
 import org.opensbpm.engine.api.instance.Task;
@@ -31,16 +31,13 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.RandomUtils;
-import org.apache.commons.text.RandomStringGenerator;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.opensbpm.engine.api.instance.SimpleAttributeSchema;
 
 public class Utils {
 
     public static String randomString(String prefix) {
-        RandomStringGenerator generator = new RandomStringGenerator.Builder()
-                .withinRange('a', 'z')
-                .build();
-        return prefix + "-" + generator.generate(20);
+        return prefix + "-" + RandomStringUtils.secure().nextAlphabetic(20);
     }
 
     public static Serializable createRandomValue(SimpleAttributeSchema attributeSchema) {

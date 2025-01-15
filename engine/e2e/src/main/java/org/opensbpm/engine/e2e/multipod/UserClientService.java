@@ -6,14 +6,14 @@ import jakarta.jms.Message;
 import jakarta.jms.Session;
 import org.opensbpm.engine.client.Credentials;
 import org.opensbpm.engine.e2e.AppParameters;
-import org.opensbpm.engine.stresstest.Statistics;
+import org.opensbpm.engine.client.userbot.Statistics;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.jms.annotation.JmsListener;
 import org.springframework.jms.core.JmsTemplate;
 import org.springframework.jms.core.MessageCreator;
 import org.springframework.stereotype.Component;
-import org.opensbpm.engine.stresstest.UserClient;
+import org.opensbpm.engine.client.userbot.UserBot;
 
 import java.util.ArrayList;
 import java.util.Timer;
@@ -31,7 +31,7 @@ public class UserClientService implements AutoCloseable{
     private final AppParameters appParameters;
     private final JmsTemplate jmsTemplate;
 
-    private UserClient userClient;
+    private UserBot userBot;
 
     public UserClientService(ApplicationContext applicationContext, AppParameters appParameters, JmsTemplate jmsTemplate) {
         this.applicationContext = applicationContext;
@@ -42,18 +42,18 @@ public class UserClientService implements AutoCloseable{
     @PostConstruct
     public void init() {
         Credentials credentials = applicationContext.getBean("credentials_" + (appParameters.getJobCompletionIndex() - 1), Credentials.class);
-        userClient = new UserClient(appParameters.createEngineServiceClient(credentials));
+        userBot = new UserBot(appParameters.createEngineServiceClient(credentials));
         LOGGER.log(Level.INFO, "Running as User " + credentials.getUserName());
-        userClient.startTaskFetcher();
+        userBot.startTaskFetcher();
 
         new Timer().schedule(new TimerTask() {
             @Override
             public void run() {
-                if(userClient.getActiveProcesses().isEmpty()){
+                if(userBot.getActiveProcesses().isEmpty()){
                     jmsTemplate.send("user", new MessageCreator() {
                         public Message createMessage(Session session) throws JMSException {
                             //return session.createTextMessage(credentials.getUserName()+ "finished");
-                            ArrayList<Statistics> statistics = userClient.getStatistics().stream()
+                            ArrayList<Statistics> statistics = userBot.getStatistics().stream()
                                     .collect(Collectors.toCollection(ArrayList::new));
                             return session.createObjectMessage(statistics);
                         }
@@ -66,11 +66,11 @@ public class UserClientService implements AutoCloseable{
 
     @JmsListener(destination = "models")
     public void startProcesses(String content) {
-        userClient.startProcesses(appParameters.getProcessCount());
+        userBot.startProcesses(appParameters.getProcessCount());
     }
 
     @Override
     public void close() throws Exception {
-        userClient.stopTaskFetcher();
+        userBot.stopTaskFetcher();
     }
 }

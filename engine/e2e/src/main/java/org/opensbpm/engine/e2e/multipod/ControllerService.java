@@ -5,8 +5,8 @@ import org.opensbpm.engine.api.model.ProcessModelInfo;
 import org.opensbpm.engine.client.Credentials;
 import org.opensbpm.engine.client.EngineServiceClient;
 import org.opensbpm.engine.e2e.AppParameters;
-import org.opensbpm.engine.stresstest.Statistics;
-import org.opensbpm.engine.stresstest.UserClient;
+import org.opensbpm.engine.client.userbot.Statistics;
+import org.opensbpm.engine.client.userbot.UserBot;
 import org.opensbpm.engine.e2e.statistics.WebdavUploader;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.context.ApplicationContext;
@@ -96,13 +96,13 @@ public class ControllerService {
     private void executeSinglePod() {
         startTime = LocalDateTime.now();
 
-        Collection<UserClient> userClients = applicationContext.getBeansOfType(Credentials.class).values().stream()
-                .map(credentials -> new UserClient(appParameters.createEngineServiceClient(credentials)))
+        Collection<UserBot> userBots = applicationContext.getBeansOfType(Credentials.class).values().stream()
+                .map(credentials -> new UserBot(appParameters.createEngineServiceClient(credentials)))
                 .toList();
 
         ExecutorService taskExecutorService = Executors.newWorkStealingPool();
-        userClients.forEach(client -> taskExecutorService.submit(() -> client.startProcesses(appParameters.getProcessCount())));
-        userClients.forEach(client -> taskExecutorService.submit(() -> client.startTaskFetcher()));
+        userBots.forEach(client -> taskExecutorService.submit(() -> client.startProcesses(appParameters.getProcessCount())));
+        userBots.forEach(client -> taskExecutorService.submit(() -> client.startTaskFetcher()));
         taskExecutorService.shutdown();
         try {
             taskExecutorService.awaitTermination(1, TimeUnit.DAYS);
@@ -113,15 +113,15 @@ public class ControllerService {
         boolean allFinished = false;
         while (!allFinished) {
             LOGGER.finest("Check started processes finished");
-            allFinished = userClients.stream()
+            allFinished = userBots.stream()
                     .mapToLong(userClient -> userClient.getActiveProcesses().size())
                     .sum() == 0;
 
             if (LOGGER.isLoggable(Level.FINEST)) {
-                for (UserClient userClient : userClients) {
-                    List<ProcessInfo> activeProcesses = userClient.getActiveProcesses();
+                for (UserBot userBot : userBots) {
+                    List<ProcessInfo> activeProcesses = userBot.getActiveProcesses();
                     if (!activeProcesses.isEmpty()) {
-                        LOGGER.finest("User[" + userClient.getUserToken().getName() + "] has active processes " +
+                        LOGGER.finest("User[" + userBot.getUserToken().getName() + "] has active processes " +
                                 activeProcesses.stream()
                                         .map(processInfo -> asString(processInfo))
                                         .collect(Collectors.joining(","))
@@ -137,7 +137,7 @@ public class ControllerService {
                 Thread.currentThread().interrupt();
             }
         }
-        userClients.forEach(UserClient::stopTaskFetcher);
+        userBots.forEach(UserBot::stopTaskFetcher);
 
         LocalDateTime endTime = LocalDateTime.now();
         LOGGER.info("All started processes finished");
@@ -155,7 +155,7 @@ public class ControllerService {
                 .append("process_end,")
                 .append("process_duration,")
                 .append("process_task_count\n");
-        List<Statistics> statistics = userClients.stream()
+        List<Statistics> statistics = userBots.stream()
                 .flatMap(userClient -> userClient.getStatistics().stream())
                 .toList();
         long testTaskCount = statistics.stream()

@@ -1,4 +1,4 @@
-package org.opensbpm.engine.stresstestworker;
+package org.opensbpm.engine.stresstest;
 
 import org.springframework.context.ConfigurableApplicationContext;
 

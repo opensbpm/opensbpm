@@ -16,9 +16,9 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  * ****************************************************************************
  */
-package org.opensbpm.engine.stresstestworker;
+package org.opensbpm.engine.stresstest;
 
-import org.opensbpm.engine.stresstest.UserClient;
+import org.opensbpm.engine.client.userbot.UserBot;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ConfigurableApplicationContext;
@@ -39,8 +39,8 @@ public class Main {
     }
 
     @Bean
-    public UserClient userClient(AppParameters appParameters) {
-        return new UserClient(appParameters.createEngineServiceClient());
+    public UserBot userClient(AppParameters appParameters) {
+        return new UserBot(appParameters.createEngineServiceClient());
     }
 
 }
