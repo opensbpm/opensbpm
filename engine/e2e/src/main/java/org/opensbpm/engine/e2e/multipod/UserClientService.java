@@ -53,7 +53,7 @@ public class UserClientService implements AutoCloseable{
                     jmsTemplate.send("user", new MessageCreator() {
                         public Message createMessage(Session session) throws JMSException {
                             //return session.createTextMessage(credentials.getUserName()+ "finished");
-                            ArrayList<Statistics> statistics = userClient.getStatistics()
+                            ArrayList<Statistics> statistics = userClient.getStatistics().stream()
                                     .collect(Collectors.toCollection(ArrayList::new));
                             return session.createObjectMessage(statistics);
                         }

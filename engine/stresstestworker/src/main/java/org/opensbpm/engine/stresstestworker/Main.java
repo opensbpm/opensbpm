@@ -30,8 +30,12 @@ public class Main {
     public static void main(String[] args) {
         ConfigurableApplicationContext context = SpringApplication.run(Main.class, args);
 
-        UserClient userClient = context.getBean(UserClient.class);
-        userClient.startTaskFetcher();
+        try {
+            WorkflowOrchestrator orchestrator = context.getBean(WorkflowOrchestrator.class);
+            orchestrator.execute(context);
+        } finally {
+            SpringApplication.exit(context);
+        }
     }
 
     @Bean
