@@ -1,0 +1,24 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: worker-miriam
+spec:
+  #ttlSecondsAfterFinished: 100 #in Seconds
+  backoffLimit: 1
+  template:
+    spec:
+      containers:
+        - name: stresstest-worker-miriam
+          image: opensbpm/stresstest-worker
+          args: [
+            "--opensbpm.url=https://cloud-dev.opensbpm.org",
+            "--opensbpm.username=miriam",
+            "--opensbpm.password=miriam"
+          ]
+          imagePullPolicy: Always
+          resources:
+            requests:
+              cpu: "2"
+              memory: "768Mi"
+              #memory: "1024Mi"
+      restartPolicy: Never
