@@ -1,0 +1,104 @@
+---
+- name: Setup Hetzner cluster
+  hosts: localhost
+  gather_facts: no
+
+  vars:
+    #number of worker nodes to create
+    node_count: 2
+    ssh_key_name: "opensbpm@hetzner" # key name from  hetzner console
+
+  tasks:
+    - name: Create the IPv4 Primary IP
+      hetzner.hcloud.primary_ip:
+        name: opensbpm-primary-ip
+        datacenter: fsn1-dc14
+        type: ipv4
+        delete_protection: true
+        state: present
+
+    - name: Create Private Network
+      hetzner.hcloud.network:
+        name: opensbpm-private-network
+        ip_range: 10.0.0.0/16 # CIDR-Block für das private Netzwerk
+
+    - name: Create a basic subnetwork
+      hetzner.hcloud.subnetwork:
+        network: opensbpm-private-network
+        network_zone: eu-central
+        ip_range: 10.0.0.0/16
+        type: cloud
+
+    - name: Setup Control Plane
+      hetzner.hcloud.server:
+        location: fsn1
+        name: controlplane
+        # control_plane needs more than 4GB RAM
+        #
+        #server_type: cx22 # 2 VCPU, 4GB RAM
+        #server_type: cpx21 # 3 VCPU, 4GB RAM
+        server_type: cx32 # 4 VCPU, 8GB RAM, 80GB HDD
+        #server_type: cpx31 # 4 VCPU, 8GB RAM, 160GB HDD
+        #server_type: cpx41 # 8 VCPU, 16GB RAM
+        image: ubuntu-24.04
+        ipv4: opensbpm-primary-ip
+        private_networks:
+          - opensbpm-private-network
+        ssh_keys:
+          - "{{ ssh_key_name }}"
+        state: started
+      register: control_plane
+
+    - name: Retrieve ssh key from Control Plane
+      shell: "sleep 30; ssh-keyscan -vvv -T 240 -H {{ control_plane.hcloud_server.ipv4_address }}"
+      register: control_plane_sshkeyscan
+
+    - name: Add Control Plane host keys to known_hosts
+      ansible.builtin.known_hosts:
+        path: ~/.ssh/known_hosts
+        name: "{{ control_plane.hcloud_server.ipv4_address }}"
+        key: "{{ control_plane_sshkeyscan.stdout }}"
+        state: present
+
+    - name: Add Control Plane to inventory
+      add_host:
+        name: "{{ control_plane.hcloud_server.ipv4_address }}"
+        groups: control_planes
+        ansible_user: root
+        ansible_ssh_private_key_file: ~/.ssh/opensbpm-hetzner
+
+    - name: Create Worker Nodes
+      loop: "{{ range(1, node_count + 1) | list }}"
+      hetzner.hcloud.server:
+        location: fsn1
+        name: "workernode-{{ item }}"
+        # worker node needs more some RAM
+        #
+        server_type: cx22 # 2 VCPU, 4GB RAM
+        #server_type: cpx21 # 3 VCPU, 4GB RAM
+        #server_type: cx32 # 4 VCPU, 8GB RAM, 80GB HDD
+        #server_type: cpx31 # 4 VCPU, 8GB RAM, 160GB HDD
+        #server_type: cpx41 # 8 VCPU, 16GB RAM
+        image: ubuntu-24.04
+        enable_ipv4: true
+        #enable_ipv6: false
+        private_networks:
+          - opensbpm-private-network
+        ssh_keys:
+          - "{{ ssh_key_name }}"
+        state: started
+      register: worker_nodes
+
+#    - name: Show server details
+#      debug:
+#        var: worker_nodes
+
+    - name: Add Worker Nodes to inventory
+      loop: "{{ worker_nodes.results }}"
+      add_host:
+        name: "{{ item.hcloud_server.ipv4_address }}"
+        #name: "{{ item.hcloud_server.name }}"
+        #ansible_host: "{{ item.hcloud_server.private_networks_info[0].ip }}"
+        groups: workers
+        ansible_user: root
+        ansible_ssh_private_key_file: ~/.ssh/opensbpm-hetzner
