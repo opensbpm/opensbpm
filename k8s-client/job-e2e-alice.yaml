@@ -9,7 +9,21 @@ spec:
       containers:
         - name: opensbpm-e2e-client
           image: opensbpm/e2e-client
-          args: ["--url",  "https://cloud-dev.opensbpm.org" ,"--processes", "10"]
+          args: [
+            "--e2e.execution=single",
+            "--url=https://cloud-dev.opensbpm.org",
+            "--nodes=1",
+            "--pods=1",
+            "--processes=640"
+          ]
+          imagePullPolicy: Always
+          resources:
+            requests:
+              cpu: "4"
+              memory: "512Mi"
+              #memory: "768Mi"
+              #memory: "1024Mi"
+
           #see https://docs.spring.io/spring-boot/reference/features/external-config.html#features.external-config.files
           volumeMounts:
             - name: e2e-client-volume
@@ -20,4 +34,5 @@ spec:
           configMap:
             name: e2e-client
       restartPolicy: Never
+
   backoffLimit: 1
