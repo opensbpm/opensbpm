@@ -1,0 +1,17 @@
+---
+# This playbook creates a microk8s cluster with Hetzner cloud servers
+
+- import_playbook: infrastructure/hcluster.yml
+
+- name: Apply configuration to control planes
+  hosts: control_planes
+
+  roles:
+    - microk8s
+    - controlplane
+
+- name: Apply configuration to worker node
+  hosts: worker_nodes
+
+  roles:
+    - microk8s

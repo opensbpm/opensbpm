@@ -1,0 +1,72 @@
+---
+#- name: Configure the controller server
+#  become: yes
+#  tasks:
+- name: Install python3-kubernetes
+  ansible.builtin.apt:
+    name: python3-kubernetes
+    update_cache: true
+    state: present
+
+#    - name: Install basic microk8s
+#      community.general.snap:
+#        classic: true
+#        name:
+#          - microk8s
+#        state: present
+
+- name: Create kubctl config
+  ansible.builtin.shell:
+    cmd: |
+      mkdir -p ~/.kube
+      microk8s config > ~/.kube/config
+      sed -i 's/microk8s/opensbpm/' ~/.kube/config
+    creates: ~/.kube/config
+
+- name: Fetch the kubectl config from the remote server
+  ansible.builtin.fetch:
+    src: /root/.kube/config
+    #dest: ~/.kube/opensbpm@hetzner
+    dest: /mnt/c/Users/stefan/.kube/opensbpm@hetzner.yaml
+    flat: yes
+
+- name: Create opensbpm directory
+  ansible.builtin.file:
+    path: /srv/opensbpm
+    state: directory
+
+- name: Copy observability values
+  ansible.builtin.copy:
+    src: observability/values.yaml
+    dest: /srv/opensbpm/observability-values.yaml
+
+- name: Activate microk8s plugins
+  become: yes
+  shell: |
+    microk8s enable dns 
+    microk8s enable ingress 
+    microk8s enable cert-manager 
+    microk8s enable observability --kube-prometheus-stack-values=/srv/opensbpm/observability-values.yaml
+
+  #https://github.com/canonical/microk8s-core-addons/blob/main/addons/observability/enable
+
+- name: Create OpenSBPM namespace in k8s
+  kubernetes.core.k8s:
+    name: opensbpm
+    api_version: v1
+    kind: Namespace
+    state: present
+
+- name: Create secrets
+  kubernetes.core.k8s:
+    namespace: opensbpm
+    state: present
+    definition:
+      apiVersion: v1
+      kind: Secret
+      metadata:
+        name: opensbpm-secrets
+      type: Opaque
+      data:
+        keycloak-db-password: "{{ lookup('ansible.builtin.password', '/tmp/keycloak-passwd', chars=['ascii_letters', 'digits', 'punctuation']) | b64encode }}"
+        engine-db-password: "{{ lookup('ansible.builtin.password', '/tmp/engine-passwd', chars=['ascii_letters', 'digits', 'punctuation']) | b64encode }}"
