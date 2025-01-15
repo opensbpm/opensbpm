@@ -1,4 +1,6 @@
 ---
+- include: microk8s_token.yml
+
 #- name: Configure the controller server
 #  become: yes
 #  tasks:
@@ -50,23 +52,4 @@
 
   #https://github.com/canonical/microk8s-core-addons/blob/main/addons/observability/enable
 
-- name: Create OpenSBPM namespace in k8s
-  kubernetes.core.k8s:
-    name: opensbpm
-    api_version: v1
-    kind: Namespace
-    state: present
-
-- name: Create secrets
-  kubernetes.core.k8s:
-    namespace: opensbpm
-    state: present
-    definition:
-      apiVersion: v1
-      kind: Secret
-      metadata:
-        name: opensbpm-secrets
-      type: Opaque
-      data:
-        keycloak-db-password: "{{ lookup('ansible.builtin.password', '/tmp/keycloak-passwd', chars=['ascii_letters', 'digits', 'punctuation']) | b64encode }}"
-        engine-db-password: "{{ lookup('ansible.builtin.password', '/tmp/engine-passwd', chars=['ascii_letters', 'digits', 'punctuation']) | b64encode }}"
+- include: kubernetes.yml

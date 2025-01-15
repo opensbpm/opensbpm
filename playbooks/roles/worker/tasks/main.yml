@@ -1,0 +1,2 @@
+---
+- include: microk8s_join.yml
