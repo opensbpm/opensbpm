@@ -15,6 +15,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -40,7 +42,9 @@ public class StarterWorkflowOrchestrator implements WorkflowOrchestrator {
         uploadModel();
 
         LocalDateTime startTime = LocalDateTime.now();
-        userBot.startProcesses(appParameters.getStatistics().getProcesses());
+        ExecutorService executorService = Executors.newSingleThreadExecutor();
+        executorService.submit(() -> userBot.startProcesses(appParameters.getStatistics().getProcesses()));
+        executorService.shutdown();
         userBot.startTaskFetcher();
 
         waitFinished();
