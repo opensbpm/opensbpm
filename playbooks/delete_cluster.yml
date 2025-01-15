@@ -1,9 +1,0 @@
----
-- name: Delete Hetzner cluster
-  hosts: localhost
-  gather_facts: no
-  tasks:
-    - name: Ensure server is absent
-      hetzner.hcloud.server:
-        name: controller
-        state: absent

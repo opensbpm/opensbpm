@@ -1,0 +1,20 @@
+---
+- name: Delete all Hetzner Cloud servers
+  hosts: localhost
+  gather_facts: no
+
+  tasks:
+    - name: Fetch all servers from Hetzner Cloud
+      hcloud_server_info:
+      register: server_info
+
+#    - name: Debug server list (optional)
+#      debug:
+#        msg: "Deleting server: {{ item.name }}"
+#      loop: "{{ server_info.hcloud_server_info }}"
+
+    - name: Delete all servers
+      loop: "{{ server_info.hcloud_server_info }}"
+      hcloud_server:
+        name: "{{ item.name }}"
+        state: absent
