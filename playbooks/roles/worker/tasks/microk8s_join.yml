@@ -1,0 +1,13 @@
+---
+### create join keys for microk8s join
+#- name: Create microk8s join keys for worker-nodes
+#  delegate_to: control_plane
+#  shell: microk8s add-node --format json
+#  register: microk8s_join_token
+
+- name:
+  debug:
+    msg: "K8S_TOKEN_HOLDER K8S token is {{ hostvars['K8S_TOKEN_HOLDER']['token'] }}"
+
+- name: "Join microk8s cluster"
+  shell: microk8s join --worker {{ hostvars['K8S_TOKEN_HOLDER']['token'].urls[1] }}
