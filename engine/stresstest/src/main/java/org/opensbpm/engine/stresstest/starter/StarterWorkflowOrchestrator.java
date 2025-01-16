@@ -70,21 +70,20 @@ public class StarterWorkflowOrchestrator implements WorkflowOrchestrator {
     }
 
     private void waitFinished() {
-        boolean starterFinished = false;
-        while (!starterFinished) {
+        int activeCount = Integer.MAX_VALUE;
+        while (activeCount > 0) {
             List<ProcessInfo> activeProcesses = userBot.getActiveProcesses();
-            LOGGER.info("Still " + activeProcesses.size()+" processes running");
-            starterFinished = activeProcesses.isEmpty();
-
-            if (LOGGER.isLoggable(Level.FINEST)) {
-                if (!activeProcesses.isEmpty()) {
-                    LOGGER.finest("User[" + userBot.getUserToken().getName() + "] has active processes " +
-                            activeProcesses.stream()
-                                    .map(processInfo -> asString(processInfo))
-                                    .collect(Collectors.joining(","))
-                    );
-                }
+            if(activeCount == activeProcesses.size()) {
+                LOGGER.info("Still " + activeProcesses.size() + " processes running:\n"+
+                        activeProcesses.stream()
+                                .map(processInfo -> asString(processInfo))
+                                .collect(Collectors.joining(",\n"))
+                );
+            }else {
+                LOGGER.info("Still " + activeProcesses.size() + " processes running");
             }
+            activeCount = activeProcesses.size();
+
             try {
                 Thread.sleep(1000);
             } catch (InterruptedException ex) {
