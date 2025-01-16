@@ -5,7 +5,7 @@
 
   vars:
     #number of worker nodes to create
-    node_count: 2
+    node_count: 1
     ssh_key_name: "opensbpm@hetzner" # key name from  hetzner console
 
   tasks:
@@ -54,7 +54,7 @@
         path: ~/.ssh/known_hosts
         name: "{{ control_plane.hcloud_server.ipv4_address }}"
         # add 'ssh-keyscan -vvv' to debug
-        key: "{{ lookup('ansible.builtin.pipe', 'sleep 15; ssh-keyscan -T 240 {{ control_plane.hcloud_server.ipv4_address }}') }}"
+        key: "{{ lookup('ansible.builtin.pipe', 'sleep 25; ssh-keyscan -T 240 {{ control_plane.hcloud_server.ipv4_address }}') }}"
         state: present
 
     - name: Add Control Plane to inventory
@@ -106,5 +106,5 @@
         path: ~/.ssh/known_hosts
         name: "{{ item.hcloud_server.ipv4_address }}"
         # add 'ssh-keyscan -vvv' to debug
-        key: "{{ lookup('ansible.builtin.pipe', 'sleep 15; ssh-keyscan -T 240 {{ item.hcloud_server.ipv4_address }}') }}"
+        key: "{{ lookup('ansible.builtin.pipe', 'sleep 25; ssh-keyscan -T 240 {{ item.hcloud_server.ipv4_address }}') }}"
         state: present
