@@ -197,6 +197,7 @@ public class EngineResourceService implements EngineResource {
         @Override
         public TaskResponse retrieve(Long taskId) {
             try {
+                //TODO add taskId to QUERY (if possible)
                 TaskInfo taskInfo = filterToOne(engineService.getTasks(userToken),
                         task -> Objects.equals(task.getId(), taskId))
                         .orElseThrow(() -> new ClientErrorException("Task with id " + taskId + " doesn't exists anymore", Status.GONE));
