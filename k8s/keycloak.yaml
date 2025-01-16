@@ -30,7 +30,8 @@ spec:
         app: keycloak
     spec:
       nodeSelector:
-        kubernetes.io/hostname: workernode-1
+        #kubernetes.io/hostname: workernode-1
+        kubernetes.io/hostname: controlplane
       initContainers:
         - name: init-keycloak
           image: opensbpm/keycloak-init
