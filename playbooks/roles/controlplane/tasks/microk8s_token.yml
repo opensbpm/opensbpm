@@ -1,7 +1,8 @@
 ---
 ### create join keys for microk8s join
 - name: Create microk8s join keys for worker-nodes
-  shell: microk8s add-node --token-ttl 120 --format json
+  #it takes some time till all worker nodes are up
+  shell: microk8s add-node --token-ttl 300 --format json
   register: k8s_token
 
 - name: "Add token to dummy host"

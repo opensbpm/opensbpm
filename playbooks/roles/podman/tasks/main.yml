@@ -1,0 +1,10 @@
+---
+- name: Install podman
+  ansible.builtin.apt:
+    pkg:
+      - podman
+      - podman-docker
+    update_cache: true
+    state: present
+
+

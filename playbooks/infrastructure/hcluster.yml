@@ -29,7 +29,7 @@
         ip_range: 10.0.0.0/16
         type: cloud
 
-    - name: Setup Control Plane
+    - name: Create Control Plane server
       hetzner.hcloud.server:
         location: fsn1
         name: controlplane
@@ -64,7 +64,7 @@
         ansible_user: root
         ansible_ssh_private_key_file: ~/.ssh/opensbpm-hetzner
 
-    - name: Create Worker Nodes
+    - name: Create worker servers
       loop: "{{ range(1, node_count + 1) | list }}"
       hetzner.hcloud.server:
         location: fsn1
