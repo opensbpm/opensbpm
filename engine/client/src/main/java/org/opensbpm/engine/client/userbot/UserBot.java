@@ -69,19 +69,32 @@ public class UserBot {
             @Override
             public void run() {
                 LOGGER.finest("User[" + getUserToken().getName() + "] fetching tasks");
-                engineServiceClient.onEngineTaskResource(taskResource -> taskResource.index(0, 50).getTaskInfos()).stream()
-                        .filter(taskInfo -> processedTasks.add(taskInfo))
-                        .forEach(taskInfo -> {
-                            try {
-                                taskExecutorService.submit(() -> {
-                                    new TaskExecutor(getUserToken(), engineServiceClient).execute(taskInfo);
-                                    processedTasks.remove(taskInfo);
-                                });
-                            } catch (RejectedExecutionException e) {
-                                LOGGER.warning("User[" + getUserToken().getName() + "] task-fetcher " + e.getMessage());
-                            }
-                        });
+                int page = 0;
+                boolean hasMorePages = true;
+                while (hasMorePages) {
+                    List<TaskInfo> tasks = getTaskInfos(page++, 50);
+                    if (tasks.isEmpty()) {
+                        hasMorePages = false;
+                    }
+                    tasks.stream()
+                            .filter(taskInfo -> processedTasks.add(taskInfo))
+                            .forEach(taskInfo -> {
+                                try {
+                                    taskExecutorService.submit(() -> {
+                                        new TaskExecutor(getUserToken(), engineServiceClient).execute(taskInfo);
+                                        processedTasks.remove(taskInfo);
+                                    });
+                                } catch (RejectedExecutionException e) {
+                                    LOGGER.warning("User[" + getUserToken().getName() + "] task-fetcher " + e.getMessage());
+                                }
+                            });
+                }
             }
+
+            private List<TaskInfo> getTaskInfos(int page, int size) {
+                return engineServiceClient.onEngineTaskResource(taskResource -> taskResource.index(page, size).getTaskInfos());
+            }
+
         }, 0, 500);
     }
 
