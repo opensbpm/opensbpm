@@ -69,26 +69,33 @@ public class UserBot {
             @Override
             public void run() {
                 LOGGER.finest("User[" + getUserToken().getName() + "] fetching tasks");
+
+                getTaskInfos(50).stream()
+                        .filter(taskInfo -> processedTasks.add(taskInfo))
+                        .forEach(taskInfo -> {
+                            try {
+                                taskExecutorService.submit(() -> {
+                                    new TaskExecutor(getUserToken(), engineServiceClient).execute(taskInfo);
+                                    processedTasks.remove(taskInfo);
+                                });
+                            } catch (RejectedExecutionException e) {
+                                LOGGER.warning("User[" + getUserToken().getName() + "] task-fetcher " + e.getMessage());
+                            }
+                        });
+            }
+
+            private List<TaskInfo> getTaskInfos(int size) {
+                List<TaskInfo> allTasks = new ArrayList<>();
                 int page = 0;
                 boolean hasMorePages = true;
                 while (hasMorePages) {
-                    List<TaskInfo> tasks = getTaskInfos(page++, 50);
+                    List<TaskInfo> tasks = getTaskInfos(page++, size);
+                    allTasks.addAll(tasks);
                     if (tasks.isEmpty()) {
                         hasMorePages = false;
                     }
-                    tasks.stream()
-                            .filter(taskInfo -> processedTasks.add(taskInfo))
-                            .forEach(taskInfo -> {
-                                try {
-                                    taskExecutorService.submit(() -> {
-                                        new TaskExecutor(getUserToken(), engineServiceClient).execute(taskInfo);
-                                        processedTasks.remove(taskInfo);
-                                    });
-                                } catch (RejectedExecutionException e) {
-                                    LOGGER.warning("User[" + getUserToken().getName() + "] task-fetcher " + e.getMessage());
-                                }
-                            });
                 }
+                return allTasks;
             }
 
             private List<TaskInfo> getTaskInfos(int page, int size) {
@@ -127,12 +134,12 @@ public class UserBot {
     public void killActiveProcesses() {
         List<ProcessInfo> processInfos = engineServiceClient.onProcessInstanceResource(processInstanceResource
                 -> getActiveProcesses().stream()
-                    .map(process -> process.getId())
-                    .map(processId -> processInstanceResource.stop(processId))
-                    .toList());
+                .map(process -> process.getId())
+                .map(processId -> processInstanceResource.stop(processId))
+                .toList());
         LOGGER.info("Killed " + processInfos.stream()
-                        .map(processInfo -> processInfo.toString())
-                        .collect(Collectors.joining("\n"))
+                .map(processInfo -> processInfo.toString())
+                .collect(Collectors.joining("\n"))
         );
     }
 
