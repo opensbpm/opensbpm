@@ -70,13 +70,14 @@ public class UserBot {
             public void run() {
                 LOGGER.info("User[" + getUserToken().getName() + "] fetching tasks");
 
-                int page = 0;
-                boolean hasMorePages = true;
-                while (hasMorePages) {
-                    List<TaskInfo> tasks = getTaskInfos(page++, 50);
-                    if (tasks.isEmpty()) {
-                        hasMorePages = false;
-                    }
+//                int page = 0;
+//                boolean hasMorePages = true;
+//                while (hasMorePages) {
+//                    List<TaskInfo> tasks = getTaskInfos(page++, 50);
+//                    if (tasks.isEmpty()) {
+//                        hasMorePages = false;
+//                    }
+                    List<TaskInfo> tasks = getTaskInfos(0, 50);
                     tasks.stream()
                             .filter(taskInfo -> processedTasks.add(taskInfo))
                             .forEach(taskInfo -> {
@@ -89,7 +90,7 @@ public class UserBot {
                                     LOGGER.warning("User[" + getUserToken().getName() + "] task-fetcher " + e.getMessage());
                                 }
                             });
-                }
+//                }
             }
 
             private List<TaskInfo> getTaskInfos(int page, int size) {
