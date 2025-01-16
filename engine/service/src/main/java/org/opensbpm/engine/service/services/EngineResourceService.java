@@ -183,11 +183,12 @@ public class EngineResourceService implements EngineResource {
             Pageable pageRequest = PageRequest.of(page, size);
             try {
                 List<TaskInfo> tasks = engineService.getTasks(userToken);
-                int start = (int) pageRequest.getOffset();
-                int end = Math.min((start + pageRequest.getPageSize()), tasks.size());
-                List<TaskInfo> taskInfos = tasks.subList(start, end);
-                //List<TaskInfo> taskInfos = PageableExecutionUtils.getPage(tasks, pageRequest, tasks::size).getContent();
-                return new Tasks(taskInfos);
+//                int start = (int) pageRequest.getOffset();
+//                int end = Math.min((start + pageRequest.getPageSize()), tasks.size());
+//                List<TaskInfo> taskInfos = tasks.subList(start, end);
+//                //List<TaskInfo> taskInfos = PageableExecutionUtils.getPage(tasks, pageRequest, tasks::size).getContent();
+//                return new Tasks(taskInfos);
+                return new Tasks(tasks);
             } catch (UserNotFoundException ex) {
                 throw new NotFoundException(ex.getMessage(), ex);
             }
