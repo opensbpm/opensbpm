@@ -44,6 +44,8 @@ spec:
       labels:
         app: keycloak-db
     spec:
+      nodeSelector:
+        kubernetes.io/hostname: workernode-1
       containers:
         - name: keycloak-postgres
           image: docker.io/library/postgres:15.4
