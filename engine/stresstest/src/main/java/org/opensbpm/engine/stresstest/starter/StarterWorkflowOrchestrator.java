@@ -79,13 +79,15 @@ public class StarterWorkflowOrchestrator implements WorkflowOrchestrator {
                                 .map(processInfo -> asString(processInfo))
                                 .collect(Collectors.joining(",\n"))
                 );
+                userBot.killActiveProcesses();
+
             }else {
                 LOGGER.info("Still " + activeProcesses.size() + " processes running");
             }
             activeCount = activeProcesses.size();
 
             try {
-                Thread.sleep(1000);
+                Thread.sleep(2000);
             } catch (InterruptedException ex) {
                 LOGGER.log(Level.SEVERE, ex.getMessage(), ex);
                 // Restore interrupted state...

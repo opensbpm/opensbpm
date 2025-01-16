@@ -124,6 +124,18 @@ public class UserBot {
                 .toList();
     }
 
+    public void killActiveProcesses() {
+        List<ProcessInfo> processInfos = engineServiceClient.onProcessInstanceResource(processInstanceResource
+                -> getActiveProcesses().stream()
+                    .map(process -> process.getId())
+                    .map(processId -> processInstanceResource.stop(processId))
+                    .toList());
+        LOGGER.info("Killed " + processInfos.stream()
+                        .map(processInfo -> processInfo.toString())
+                        .collect(Collectors.joining("\n"))
+        );
+    }
+
     public List<Statistics> getStatistics() {
         return getStartedProcesses(false).stream()
                 .map(processInfo
