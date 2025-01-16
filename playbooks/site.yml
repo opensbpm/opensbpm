@@ -2,6 +2,7 @@
 # This playbook creates a microk8s cluster with Hetzner cloud servers
 
 - import_playbook: infrastructure/hcluster.yml
+- import_playbook: infrastructure/stresstest.yml
 
 - name: Apply configuration to control planes
   hosts: control_planes
@@ -18,7 +19,7 @@
     - worker
 
 - name: Apply configuration to stresstest server
-  hosts: worker_nodes
+  hosts: stresstest
 
   roles:
     - podman
