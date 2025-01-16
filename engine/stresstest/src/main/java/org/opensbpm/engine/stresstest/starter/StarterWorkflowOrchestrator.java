@@ -79,7 +79,7 @@ public class StarterWorkflowOrchestrator implements WorkflowOrchestrator {
                                 .map(processInfo -> asString(processInfo))
                                 .collect(Collectors.joining(",\n"))
                 );
-                userBot.killActiveProcesses();
+                //userBot.killActiveProcesses();
 
             }else {
                 LOGGER.info("Still " + activeProcesses.size() + " processes running");
@@ -102,9 +102,13 @@ public class StarterWorkflowOrchestrator implements WorkflowOrchestrator {
                 processInfo.getStartTime(),
                 processInfo.getOwner().getName(),
                 processInfo.getSubjects().stream()
-                        .map(subjectStateInfo -> {
-                            return "{"+subjectStateInfo.getSubjectName()+"->"+ subjectStateInfo.getStateName()+"}";
-                        })
+                        .map(subjectStateInfo ->
+                            format("{%s->%s last change at %s}",
+                                    subjectStateInfo.getSubjectName(),
+                                    subjectStateInfo.getStateName(),
+                                    subjectStateInfo.getLastChanged()
+                            )
+                        )
                         .collect(Collectors.joining(","))
         );
     }
