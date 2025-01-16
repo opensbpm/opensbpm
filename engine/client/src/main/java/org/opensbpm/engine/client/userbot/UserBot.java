@@ -70,33 +70,26 @@ public class UserBot {
             public void run() {
                 LOGGER.info("User[" + getUserToken().getName() + "] fetching tasks");
 
-                getTaskInfos(50).stream()
-                        .filter(taskInfo -> processedTasks.add(taskInfo))
-                        .forEach(taskInfo -> {
-                            try {
-                                taskExecutorService.submit(() -> {
-                                    new TaskExecutor(getUserToken(), engineServiceClient).execute(taskInfo);
-                                    processedTasks.remove(taskInfo);
-                                });
-                            } catch (RejectedExecutionException e) {
-                                LOGGER.warning("User[" + getUserToken().getName() + "] task-fetcher " + e.getMessage());
-                            }
-                        });
-
-            }
-
-            private List<TaskInfo> getTaskInfos(int size) {
-                List<TaskInfo> allTasks = new ArrayList<>();
                 int page = 0;
                 boolean hasMorePages = true;
                 while (hasMorePages) {
-                    List<TaskInfo> tasks = getTaskInfos(page++, size);
-                    allTasks.addAll(tasks);
+                    List<TaskInfo> tasks = getTaskInfos(page++, 50);
                     if (tasks.isEmpty()) {
                         hasMorePages = false;
                     }
+                    tasks.stream()
+                            .filter(taskInfo -> processedTasks.add(taskInfo))
+                            .forEach(taskInfo -> {
+                                try {
+                                    taskExecutorService.submit(() -> {
+                                        new TaskExecutor(getUserToken(), engineServiceClient).execute(taskInfo);
+                                        processedTasks.remove(taskInfo);
+                                    });
+                                } catch (RejectedExecutionException e) {
+                                    LOGGER.warning("User[" + getUserToken().getName() + "] task-fetcher " + e.getMessage());
+                                }
+                            });
                 }
-                return allTasks;
             }
 
             private List<TaskInfo> getTaskInfos(int page, int size) {
