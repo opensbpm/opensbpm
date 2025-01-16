@@ -100,7 +100,9 @@ public class StarterWorkflowOrchestrator implements WorkflowOrchestrator {
                 processInfo.getStartTime(),
                 processInfo.getOwner().getName(),
                 processInfo.getSubjects().stream()
-                        .map(ProcessInfo.SubjectStateInfo::getStateName)
+                        .map(subjectStateInfo -> {
+                            return "{"+subjectStateInfo.getSubjectName()+"->"+ subjectStateInfo.getStateName()+"}";
+                        })
                         .collect(Collectors.joining(","))
         );
     }
