@@ -45,7 +45,8 @@ spec:
         app: engine-db
     spec:
       nodeSelector:
-        kubernetes.io/hostname: workernode-1
+        #kubernetes.io/hostname: workernode-1
+        kubernetes.io/hostname: controlplane
       containers:
         - name: engine-postgres
           image: docker.io/library/postgres:15.4
