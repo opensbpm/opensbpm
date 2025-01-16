@@ -180,10 +180,13 @@ public class EngineResourceService implements EngineResource {
 
         @Override
         public Tasks index(int page, int size) {
-            Pageable pageable = PageRequest.of(page, size);
+            Pageable pageRequest = PageRequest.of(page, size);
             try {
                 List<TaskInfo> tasks = engineService.getTasks(userToken);
-                List<TaskInfo> taskInfos = PageableExecutionUtils.getPage(tasks, pageable, tasks::size).getContent();
+                int start = (int) pageRequest.getOffset();
+                int end = Math.min((start + pageRequest.getPageSize()), tasks.size());
+                List<TaskInfo> taskInfos = tasks.subList(start, end);
+                //List<TaskInfo> taskInfos = PageableExecutionUtils.getPage(tasks, pageRequest, tasks::size).getContent();
                 return new Tasks(taskInfos);
             } catch (UserNotFoundException ex) {
                 throw new NotFoundException(ex.getMessage(), ex);
