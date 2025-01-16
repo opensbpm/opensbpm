@@ -12,7 +12,7 @@ resources:
   - keycloak.yaml
   - pv-engine-db-local.yaml
   - engine-db.yaml
-  - config-map-engine.yaml
+  - configmap-engine.yaml
   - engine.yaml
 #  - frontend.yaml
   - vaadinui.yaml
