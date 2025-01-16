@@ -45,8 +45,8 @@ public class StarterWorkflowOrchestrator implements WorkflowOrchestrator {
         LocalDateTime startTime = LocalDateTime.now();
         ExecutorService executorService = Executors.newSingleThreadExecutor();
         executorService.submit(() -> userBot.startProcesses(appParameters.getStatistics().getProcesses()));
-        executorService.submit(() -> userBot.startTaskFetcher());
         executorService.shutdown();
+        userBot.startTaskFetcher();
 
         waitFinished();
 
