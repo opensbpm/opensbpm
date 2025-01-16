@@ -45,8 +45,8 @@ public class UserBot {
     }
 
     public void startProcesses(int processCount) {
-        LOGGER.info("User[" + getUserToken().getName() + "] start processes");
         synchronized (lock) {
+            LOGGER.info("User[" + getUserToken().getName() + "] start processes");
             startedProcesses = engineServiceClient.onEngineModelResource(modelResource -> modelResource.index().getProcessModelInfos()).stream()
                     .flatMap(model -> IntStream.range(0, processCount).boxed()
                             .parallel()
@@ -68,26 +68,28 @@ public class UserBot {
     }
 
     public void startTaskFetcher() {
-        LOGGER.info("User[" + getUserToken().getName() + "] start tasks-fetcher");
-        tasksFetcher = new Timer("TasksFetcher for " + getUserToken().getName());
-        tasksFetcher.schedule(new TimerTask() {
-            @Override
-            public void run() {
-                LOGGER.finest("User[" + getUserToken().getName() + "] fetching tasks");
-                engineServiceClient.onEngineTaskResource(taskResource -> taskResource.index(0, 50).getTaskInfos()).stream()
-                        .filter(taskInfo -> processedTasks.add(taskInfo))
-                        .forEach(taskInfo -> {
-                            try {
-                                taskExecutorService.submit(() -> {
-                                    new TaskExecutor(getUserToken(), engineServiceClient).execute(taskInfo);
-                                    processedTasks.remove(taskInfo);
-                                });
-                            } catch (RejectedExecutionException e) {
-                                LOGGER.warning("User[" + getUserToken().getName() + "] task-fetcher "+ e.getMessage());
-                            }
-                        });
-            }
-        }, 0, 500);
+        synchronized (lock) {
+            LOGGER.info("User[" + getUserToken().getName() + "] start tasks-fetcher");
+            tasksFetcher = new Timer("TasksFetcher for " + getUserToken().getName());
+            tasksFetcher.schedule(new TimerTask() {
+                @Override
+                public void run() {
+                    LOGGER.finest("User[" + getUserToken().getName() + "] fetching tasks");
+                    engineServiceClient.onEngineTaskResource(taskResource -> taskResource.index(0, 50).getTaskInfos()).stream()
+                            .filter(taskInfo -> processedTasks.add(taskInfo))
+                            .forEach(taskInfo -> {
+                                try {
+                                    taskExecutorService.submit(() -> {
+                                        new TaskExecutor(getUserToken(), engineServiceClient).execute(taskInfo);
+                                        processedTasks.remove(taskInfo);
+                                    });
+                                } catch (RejectedExecutionException e) {
+                                    LOGGER.warning("User[" + getUserToken().getName() + "] task-fetcher " + e.getMessage());
+                                }
+                            });
+                }
+            }, 0, 500);
+        }
     }
 
     public void stopTaskFetcher() {
