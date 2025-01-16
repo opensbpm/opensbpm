@@ -16,3 +16,10 @@
   roles:
     - microk8s
     - worker
+
+- name: Apply configuration to stresstest server
+  hosts: worker_nodes
+
+  roles:
+    - podman
+    - stresstest

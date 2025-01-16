@@ -1,0 +1,8 @@
+---
+- name: Copy stresstest script
+  ansible.builtin.copy:
+    src: stresstest.sh
+    dest: //usr/local/bin/stresstest.sh
+
+- name: Pull an stresstest image
+  ansible.builtin.shell: docker pull docker.io/opensbpm/stresstest

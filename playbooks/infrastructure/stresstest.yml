@@ -1,0 +1,39 @@
+---
+- name: Setup Hetzner stresstest
+  hosts: localhost
+  gather_facts: no
+
+  vars:
+    ssh_key_name: "opensbpm@hetzner" # key name from  hetzner console
+
+  tasks:
+    - name: Create stresstest server
+      hetzner.hcloud.server:
+        location: fsn1
+        name: stresstest
+        #server_type: cx22 # 2 VCPU, 4GB RAM
+        #server_type: cpx21 # 3 VCPU, 4GB RAM
+        #server_type: cx32 # 4 VCPU, 8GB RAM, 80GB HDD
+        #server_type: cpx31 # 4 VCPU, 8GB RAM, 160GB HDD
+        server_type: cpx41 # 8 VCPU, 16GB RAM
+        image: ubuntu-24.04
+        enable_ipv4: true
+        ssh_keys:
+          - "{{ ssh_key_name }}"
+        state: started
+      register: stresstest
+
+    - name: Add stresstest host keys to known_hosts
+      ansible.builtin.known_hosts:
+        path: ~/.ssh/known_hosts
+        name: "{{ stresstest.hcloud_server.ipv4_address }}"
+        # add 'ssh-keyscan -vvv' to debug
+        key: "{{ lookup('ansible.builtin.pipe', 'sleep 15; ssh-keyscan -T 240 {{ stresstest.hcloud_server.ipv4_address }}') }}"
+        state: present
+
+    - name: Add stresstest to inventory
+      add_host:
+        name: "{{ stresstest.hcloud_server.ipv4_address }}"
+        groups: stresstest
+        ansible_user: root
+        ansible_ssh_private_key_file: ~/.ssh/opensbpm-hetzner
