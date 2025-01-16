@@ -20,15 +20,16 @@ public class UserBot {
     //
     private final EngineServiceClient engineServiceClient;
     private final ExecutorService taskExecutorService;
+    private final ScheduledExecutorService tasksFetcher;
     //
     private List<TaskInfo> startedProcesses = Collections.emptyList();
     private Collection<ProcessInfo> processInfos;
-    private Timer tasksFetcher;
 
 
     public UserBot(EngineServiceClient engineServiceClient) {
         this.engineServiceClient = engineServiceClient;
-        this.taskExecutorService = Executors.newWorkStealingPool();
+        taskExecutorService = Executors.newWorkStealingPool();
+        tasksFetcher = Executors.newScheduledThreadPool(1);
 
         LOGGER.info("User[" + getUserToken().getName() + "] with Roles " + getUserToken().getRoles().stream()
                 .map(RoleToken::getName)
@@ -64,11 +65,10 @@ public class UserBot {
 
     public void startTaskFetcher() {
         LOGGER.info("User[" + getUserToken().getName() + "] start tasks-fetcher");
-        tasksFetcher = new Timer("TasksFetcher for " + getUserToken().getName());
-        tasksFetcher.schedule(new TimerTask() {
+        tasksFetcher.scheduleWithFixedDelay(new Runnable() {
             @Override
             public void run() {
-                LOGGER.finest("User[" + getUserToken().getName() + "] fetching tasks");
+                LOGGER.info("User[" + getUserToken().getName() + "] fetching tasks");
 
                 getTaskInfos(50).stream()
                         .filter(taskInfo -> processedTasks.add(taskInfo))
@@ -82,6 +82,7 @@ public class UserBot {
                                 LOGGER.warning("User[" + getUserToken().getName() + "] task-fetcher " + e.getMessage());
                             }
                         });
+
             }
 
             private List<TaskInfo> getTaskInfos(int size) {
@@ -102,12 +103,12 @@ public class UserBot {
                 return engineServiceClient.onEngineTaskResource(taskResource -> taskResource.index(page, size).getTaskInfos());
             }
 
-        }, 0, 500);
+        }, 1, 500, TimeUnit.MILLISECONDS);
     }
 
     public void stopTaskFetcher() {
         LOGGER.info("User[" + getUserToken().getName() + "] stopping tasks-fetcher");
-        tasksFetcher.cancel();
+        tasksFetcher.shutdown();
         taskExecutorService.shutdown();
     }
 
