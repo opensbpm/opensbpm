@@ -72,11 +72,11 @@ public class StarterWorkflowOrchestrator implements WorkflowOrchestrator {
     private void waitFinished() {
         boolean starterFinished = false;
         while (!starterFinished) {
-            LOGGER.finest("Check started processes finished");
-            starterFinished = userBot.getActiveProcesses().isEmpty();
+            List<ProcessInfo> activeProcesses = userBot.getActiveProcesses();
+            LOGGER.info("Still " + activeProcesses.size()+" processes running");
+            starterFinished = activeProcesses.isEmpty();
 
             if (LOGGER.isLoggable(Level.FINEST)) {
-                List<ProcessInfo> activeProcesses = userBot.getActiveProcesses();
                 if (!activeProcesses.isEmpty()) {
                     LOGGER.finest("User[" + userBot.getUserToken().getName() + "] has active processes " +
                             activeProcesses.stream()
