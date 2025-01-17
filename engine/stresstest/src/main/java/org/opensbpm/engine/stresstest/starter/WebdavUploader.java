@@ -68,7 +68,10 @@ public class WebdavUploader {
 
     private void uploadData(String statData) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd_HH-mm-ss");
-        String fileName = String.format("statistics-%s-%s.csv", appParameters.getStatistics().getProcesses(), LocalDateTime.now().format(formatter));
+        String fileName = String.format("stresstest_%s_%s.csv",
+                LocalDateTime.now().format(formatter),
+                appParameters.getStatistics().getProcesses()
+        );
 
         RestTemplate restTemplate = new RestTemplateBuilder()
                 .basicAuthentication(appParameters.getStatistics().getUsername(), appParameters.getStatistics().getPassword())
