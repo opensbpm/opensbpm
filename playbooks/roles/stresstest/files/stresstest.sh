@@ -1,7 +1,5 @@
 #!/bin/bash
 
-#!/bin/bash
-
 # show help and end programm
 show_help() { echo "Usage: $0 --nodes <count> --pods <count>"; exit 1; }
 
@@ -35,18 +33,22 @@ docker run --rm --name stresstest-alice opensbpm/stresstest \
 steps=12
 
 for ((i=1; i<=steps; i++)); do
-  # Calculate the processcount and repetitions
-  process_count=$((2 ** (i)))
-  #repetitions=$((2 ** (i - 1)))
-  echo "Running stresstest command with $process_count processes"
+    # Calculate the processcount and repetitions
+    process_count=$((2 ** i))
 
-  docker run --rm --name stresstest-alice opensbpm/stresstest \
-    --opensbpm.username=alice --opensbpm.password=alice \
-    --opensbpm.starter=true \
-    --opensbpm.statistics.nodes=$NODES \
-    --opensbpm.statistics.pods=$PODS \
-    --opensbpm.statistics.processes=$process_count
-
+    repetitions=1
+    if ((process_count <64 )); then
+      repetitions=8
+    fi
+    for ((j=1; j<=repetitions; j++)); do
+        echo "Running stresstest command with $process_count (repetition $repetitions)"
+        docker run --rm --name stresstest-alice opensbpm/stresstest \
+          --opensbpm.username=alice --opensbpm.password=alice \
+          --opensbpm.starter=true \
+          --opensbpm.statistics.nodes=$NODES \
+          --opensbpm.statistics.pods=$PODS \
+          --opensbpm.statistics.processes=$process_count
+    done
 done
 
 docker stop stresstest-miriam stresstest-jdoe
