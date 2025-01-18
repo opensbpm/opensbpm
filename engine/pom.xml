@@ -18,7 +18,5 @@
         <module>client</module>
 
         <module>userbot</module>
-        <module>e2e</module>
-
     </modules>
 </project>
