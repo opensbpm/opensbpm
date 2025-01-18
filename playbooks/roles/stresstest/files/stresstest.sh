@@ -16,12 +16,12 @@ done
 [[ "$NODES" =~ ^[0-9]+$ && "$PODS" =~ ^[0-9]+$ ]] || { echo "Error: Both --nodes and --pods must be integers."; show_help; }
 
 
-docker run --rm --name userbot-jdoe opensbpm/stresstest \
-  --opensbpm.username=jdoe --opensbpm.password=jdoe &
-docker run --rm --name userbot-miriam opensbpm/stresstest \
-  --opensbpm.username=miriam --opensbpm.password=miriam &
+docker run --rm --detach --name userbot-jdoe opensbpm/userbot \
+  --opensbpm.username=jdoe --opensbpm.password=jdoe
+docker run --rm --detach --name userbot-miriam opensbpm/userbot \
+  --opensbpm.username=miriam --opensbpm.password=miriam
 
-docker run --rm --name userbot-alice opensbpm/stresstest \
+docker run --rm --name userbot-alice opensbpm/userbot \
   --opensbpm.username=alice --opensbpm.password=alice \
   --opensbpm.starter=true \
   --opensbpm.statistics.nodes=$NODES \
@@ -42,7 +42,7 @@ for ((i=1; i<=steps; i++)); do
     fi
     for ((j=1; j<=repetitions; j++)); do
         echo "Running userbot-alice with $process_count processes (repetition $j)"
-        docker run --rm --name userbot-alice opensbpm/stresstest \
+        docker run --rm --name userbot-alice opensbpm/userbot \
           --opensbpm.username=alice --opensbpm.password=alice \
           --opensbpm.starter=true \
           --opensbpm.statistics.nodes=$NODES \
