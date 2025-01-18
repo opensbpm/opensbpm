@@ -1,7 +1,7 @@
-package org.opensbpm.engine.stresstest.user;
+package org.opensbpm.engine.userbot.user;
 
 import org.opensbpm.engine.client.userbot.UserBot;
-import org.opensbpm.engine.stresstest.WorkflowOrchestrator;
+import org.opensbpm.engine.userbot.WorkflowOrchestrator;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.stereotype.Component;

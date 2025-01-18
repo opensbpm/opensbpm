@@ -17,7 +17,7 @@
 
         <module>client</module>
 
-        <module>stresstest</module>
+        <module>userbot</module>
         <module>e2e</module>
 
     </modules>

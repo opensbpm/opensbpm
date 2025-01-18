@@ -1,4 +1,4 @@
-package org.opensbpm.engine.stresstest;
+package org.opensbpm.engine.userbot;
 
 import jakarta.validation.constraints.NotBlank;
 import org.opensbpm.engine.client.Credentials;
