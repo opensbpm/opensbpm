@@ -4,7 +4,7 @@ import org.opensbpm.engine.api.instance.ProcessInfo;
 import org.opensbpm.engine.api.model.ProcessModelInfo;
 import org.opensbpm.engine.client.Credentials;
 import org.opensbpm.engine.client.EngineServiceClient;
-import org.opensbpm.engine.client.userbot.UserBot;
+import org.opensbpm.engine.userbot.client.UserBot;
 import org.opensbpm.engine.userbot.AppParameters;
 import org.opensbpm.engine.userbot.WorkflowOrchestrator;
 import org.springframework.boot.SpringApplication;

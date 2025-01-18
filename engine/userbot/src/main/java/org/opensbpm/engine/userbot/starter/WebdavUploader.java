@@ -1,6 +1,6 @@
 package org.opensbpm.engine.userbot.starter;
 
-import org.opensbpm.engine.client.userbot.Statistics;
+import org.opensbpm.engine.userbot.client.Statistics;
 import org.opensbpm.engine.userbot.AppParameters;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.web.client.RestTemplateBuilder;
