@@ -1,12 +1,12 @@
-package org.opensbpm.engine.stresstest.starter;
+package org.opensbpm.engine.userbot.starter;
 
 import org.opensbpm.engine.api.instance.ProcessInfo;
 import org.opensbpm.engine.api.model.ProcessModelInfo;
 import org.opensbpm.engine.client.Credentials;
 import org.opensbpm.engine.client.EngineServiceClient;
 import org.opensbpm.engine.client.userbot.UserBot;
-import org.opensbpm.engine.stresstest.AppParameters;
-import org.opensbpm.engine.stresstest.WorkflowOrchestrator;
+import org.opensbpm.engine.userbot.AppParameters;
+import org.opensbpm.engine.userbot.WorkflowOrchestrator;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.ConfigurableApplicationContext;

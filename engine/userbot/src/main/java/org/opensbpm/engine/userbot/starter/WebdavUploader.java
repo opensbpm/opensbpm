@@ -1,7 +1,7 @@
-package org.opensbpm.engine.stresstest.starter;
+package org.opensbpm.engine.userbot.starter;
 
 import org.opensbpm.engine.client.userbot.Statistics;
-import org.opensbpm.engine.stresstest.AppParameters;
+import org.opensbpm.engine.userbot.AppParameters;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.stereotype.Component;

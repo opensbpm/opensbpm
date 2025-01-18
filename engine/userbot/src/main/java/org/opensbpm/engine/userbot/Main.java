@@ -16,7 +16,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  * ****************************************************************************
  */
-package org.opensbpm.engine.stresstest;
+package org.opensbpm.engine.userbot;
 
 import org.opensbpm.engine.client.userbot.UserBot;
 import org.springframework.boot.SpringApplication;

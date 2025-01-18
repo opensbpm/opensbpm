@@ -24,15 +24,15 @@
         <version>1.0-SNAPSHOT</version>
     </parent>
 
-    <artifactId>opensbpm-engine-stresstest</artifactId>
+    <artifactId>opensbpm-engine-userbot</artifactId>
 
     <name>OpenSBPM Engine - StressTest</name>
-    <description>StressTest for OpenSBPM-Engine with Spring-Boot Application</description>
+    <description>Userbot for OpenSBPM-Engine with Spring-Boot Application</description>
 
     <properties>
-        <mainClass>org.opensbpm.engine.stresstest.Main</mainClass>
+        <mainClass>org.opensbpm.engine.userbot.Main</mainClass>
         
-        <sonar.coverage.exclusions>**/org/opensbpm/stresstest/**/*.*</sonar.coverage.exclusions>
+        <sonar.coverage.exclusions>**/org/opensbpm/userbot/**/*.*</sonar.coverage.exclusions>
 
     </properties>
 
@@ -122,7 +122,7 @@
                     </systemPropertyVariables>
                     <image>
                         <!--name>docker.io/opensbpm/${project.artifactId}:${project.version}</name-->
-                        <name>docker.io/opensbpm/stresstest</name>
+                        <name>docker.io/opensbpm/userbot</name>
                     </image>
                 </configuration>
                 <executions>
@@ -131,7 +131,7 @@
                             <goal>repackage</goal>
                         </goals>
                         <configuration>
-                            <finalName>stresstest-exec</finalName>
+                            <finalName>userbot-exec</finalName>
                         </configuration>
                     </execution>
                 </executions>

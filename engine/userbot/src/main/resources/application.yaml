@@ -2,7 +2,7 @@
 
 spring:
   application:
-    name: opensbpm-stresstest-worker
+    name: opensbpm-userbot
 
 #  main:
 #    web-application-type: none
