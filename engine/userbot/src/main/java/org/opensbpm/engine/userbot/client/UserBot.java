@@ -1,4 +1,4 @@
-package org.opensbpm.engine.client.userbot;
+package org.opensbpm.engine.userbot.client;
 
 import org.opensbpm.engine.api.instance.*;
 import org.opensbpm.engine.client.EngineServiceClient;

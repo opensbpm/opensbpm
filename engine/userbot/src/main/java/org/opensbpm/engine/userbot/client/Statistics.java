@@ -1,4 +1,4 @@
-package org.opensbpm.engine.client.userbot;
+package org.opensbpm.engine.userbot.client;
 
 import java.time.Duration;
 import java.time.LocalDateTime;

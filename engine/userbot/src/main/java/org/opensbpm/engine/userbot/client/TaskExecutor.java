@@ -1,4 +1,4 @@
-package org.opensbpm.engine.client.userbot;
+package org.opensbpm.engine.userbot.client;
 
 import jakarta.ws.rs.ProcessingException;
 import jakarta.ws.rs.WebApplicationException;
