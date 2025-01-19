@@ -5,5 +5,5 @@
     dest: //usr/local/bin/stresstest.sh
     mode: "0777"
 
-- name: Pull an stresstest image
-  ansible.builtin.shell: docker pull docker.io/opensbpm/stresstest
+- name: Pull the userbot image
+  ansible.builtin.shell: docker pull docker.io/opensbpm/userbot
