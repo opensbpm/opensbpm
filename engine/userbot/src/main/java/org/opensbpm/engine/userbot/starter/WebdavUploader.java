@@ -27,8 +27,7 @@ public class WebdavUploader {
     public void uploadStatistic(LocalDateTime startTime, LocalDateTime endTime, List<Statistics> statistics) {
         Duration duration = Duration.between(startTime, endTime);
         StringBuilder builder = new StringBuilder()
-                .append("node_count,")
-                .append("pod_count,")
+                .append("config,")
                 .append("test_start,")
                 .append("test_end,")
                 .append("test_duration,")
@@ -44,8 +43,7 @@ public class WebdavUploader {
         String data = statistics.stream()
                 .map(statistic ->
                         new StringBuilder()
-                                .append(appParameters.getStatistics().getNodes()).append(",")
-                                .append(appParameters.getStatistics().getPods()).append(",")
+                                .append(appParameters.getStatistics().getConfig()).append(",")
                                 .append(asString(startTime)).append(",")
                                 .append(asString(endTime)).append(",")
                                 .append(duration.toMillis()).append(",")
@@ -68,7 +66,8 @@ public class WebdavUploader {
 
     private void uploadData(String statData) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd_HH-mm-ss");
-        String fileName = String.format("stresstest_%s_%s.csv",
+        String fileName = String.format("%s/stresstest_%s_%s.csv",
+                appParameters.getStatistics().getConfig(),
                 LocalDateTime.now().format(formatter),
                 appParameters.getStatistics().getProcesses()
         );

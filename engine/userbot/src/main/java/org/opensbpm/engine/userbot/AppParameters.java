@@ -96,8 +96,7 @@ public class AppParameters {
         private String username;
         private String password;
 
-        private Integer nodes;
-        private Integer pods;
+        private String config;
         private Integer processes;
 
         public String getUrl() {
@@ -124,20 +123,12 @@ public class AppParameters {
             this.password = password;
         }
 
-        public Integer getNodes() {
-            return nodes;
+        public String getConfig() {
+            return config;
         }
 
-        public void setNodes(Integer nodes) {
-            this.nodes = nodes;
-        }
-
-        public Integer getPods() {
-            return pods;
-        }
-
-        public void setPods(Integer pods) {
-            this.pods = pods;
+        public void setConfig(String config) {
+            this.config = config;
         }
 
         public Integer getProcesses() {

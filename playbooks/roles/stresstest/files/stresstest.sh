@@ -1,19 +1,18 @@
 #!/bin/bash
 
 # show help and end programm
-show_help() { echo "Usage: $0 --nodes <count> --pods <count>"; exit 1; }
+show_help() { echo "Usage: $0 --config <name>"; exit 1; }
 
 # Argumente parsen
 while [[ $# -gt 0 ]]; do
     case "$1" in
-        --nodes) NODES="$2"; shift 2 ;;
-        --pods)  PODS="$2"; shift 2 ;;
+        --config) CONFIG="$2"; shift 2 ;;
         *) show_help ;;
     esac
 done
 
 # validate parameters
-[[ "$NODES" =~ ^[0-9]+$ && "$PODS" =~ ^[0-9]+$ ]] || { echo "Error: Both --nodes and --pods must be integers."; show_help; }
+[[ "CONFIG" =~ ^[a-zA-Z0-9]+$ ]] || { echo "Error: --config must be alphanumeric."; show_help; }
 
 
 docker run --rm --detach --name userbot-jdoe opensbpm/userbot \
@@ -24,8 +23,7 @@ docker run --rm --detach --name userbot-miriam opensbpm/userbot \
 docker run --rm --name userbot-alice opensbpm/userbot \
   --opensbpm.username=alice --opensbpm.password=alice \
   --opensbpm.starter=true \
-  --opensbpm.statistics.nodes=$NODES \
-  --opensbpm.statistics.pods=$PODS \
+  --opensbpm.statistics.config=$CONFIG \
   --opensbpm.statistics.processes=1
 
 
@@ -45,8 +43,7 @@ for ((i=1; i<=steps; i++)); do
         docker run --rm --name userbot-alice opensbpm/userbot \
           --opensbpm.username=alice --opensbpm.password=alice \
           --opensbpm.starter=true \
-          --opensbpm.statistics.nodes=$NODES \
-          --opensbpm.statistics.pods=$PODS \
+          --opensbpm.statistics.config=$CONFIG \
           --opensbpm.statistics.processes=$process_count
     done
 done
