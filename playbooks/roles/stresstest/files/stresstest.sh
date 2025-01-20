@@ -35,11 +35,11 @@ for ((i=1; i<=steps; i++)); do
     process_count=$((2 ** i))
 
     repetitions=1
-    if ((process_count <64 )); then
+    if ((process_count < 64)); then
       repetitions=8
     fi
     for ((j=1; j<=repetitions; j++)); do
-        echo "Running userbot-alice with $process_count processes (repetition $j)"
+        echo "Running userbot with $process_count processes (repetition $j)"
         docker run --rm --name userbot-alice opensbpm/userbot \
           --opensbpm.username=alice --opensbpm.password=alice \
           --opensbpm.starter=true \
