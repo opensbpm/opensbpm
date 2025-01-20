@@ -12,7 +12,7 @@ while [[ $# -gt 0 ]]; do
 done
 
 # validate parameters
-[[ "CONFIG" =~ ^[a-zA-Z0-9]+$ ]] || { echo "Error: --config must be alphanumeric."; show_help; }
+[[ "$CONFIG" =~ ^[a-zA-Z0-9]+$ ]] || { echo "Error: --config must be alphanumeric."; show_help; }
 
 
 docker run --rm --detach --name userbot-jdoe opensbpm/userbot \
