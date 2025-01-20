@@ -10,13 +10,6 @@
     update_cache: true
     state: present
 
-#    - name: Install basic microk8s
-#      community.general.snap:
-#        classic: true
-#        name:
-#          - microk8s
-#        state: present
-
 - name: Create kubctl config
   ansible.builtin.shell:
     cmd: |

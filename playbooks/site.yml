@@ -10,6 +10,7 @@
   roles:
     - microk8s
     - controlplane
+    - litmuschaos
 
 - name: Apply configuration to worker node
   hosts: worker_nodes
