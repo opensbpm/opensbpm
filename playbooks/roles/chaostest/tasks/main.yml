@@ -1,0 +1,9 @@
+---
+- name: Copy chaostest script
+  ansible.builtin.copy:
+    src: chaostest.sh
+    dest: //usr/local/bin/chaostest.sh
+    mode: "0777"
+
+- name: Pull the userbot image
+  ansible.builtin.shell: docker pull docker.io/opensbpm/userbot
