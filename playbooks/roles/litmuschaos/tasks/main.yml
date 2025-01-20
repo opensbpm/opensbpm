@@ -1,0 +1,37 @@
+---
+
+- name: Install helm charts
+  community.general.snap:
+    classic: true
+    name: helm
+    state: present
+
+#- name: Create litmuschaos k8s namespace
+#  kubernetes.core.k8s:
+#    kind: Namespace
+#    name: litmus
+#    state: present
+
+- name: Copy litmuschaos helm chart values
+  ansible.builtin.copy:
+    src: values.yaml
+    dest: /srv/opensbpm/litmuschaos-values.yaml
+
+# helm repo add litmuschaos https://litmuschaos.github.io/litmus-helm/
+- name: Add litmuschaos chart repo
+  kubernetes.core.helm_repository:
+    name: litmuschaos
+    repo_url: "https://litmuschaos.github.io/litmus-helm/"
+
+# helm install chaos litmuschaos/litmus --namespace=litmus --set portal.frontend.service.type=NodePort
+- name: Deploy latest version of litmuschaos chart inside litmus namespace (and create it)
+  kubernetes.core.helm:
+    name: chaos
+    chart_ref: litmuschaos/litmus
+    release_namespace: litmus
+    create_namespace: true
+    set_values:
+      - value: portal.frontend.service.type=ClusterIP
+        value_type: string
+    values_files: /srv/opensbpm/litmuschaos-values.yaml
+

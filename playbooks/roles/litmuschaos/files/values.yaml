@@ -1,0 +1,15 @@
+# For details, see https://github.com/litmuschaos/litmus-helm/blob/master/charts/litmus/values.yaml
+
+ingress:
+  enabled: true
+
+  annotations:
+    cert-manager.io/cluster-issuer: lets-encrypt
+
+  host:
+    name: litmus.cloud-dev.opensbpm.org
+
+  tls:
+    - secretName: litmus-tls
+      hosts:
+        - litmus.cloud-dev.opensbpm.org
