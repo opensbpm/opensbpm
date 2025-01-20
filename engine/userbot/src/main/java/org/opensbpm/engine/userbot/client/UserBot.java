@@ -3,6 +3,7 @@ package org.opensbpm.engine.userbot.client;
 import org.opensbpm.engine.api.instance.*;
 import org.opensbpm.engine.client.EngineServiceClient;
 import org.opensbpm.engine.server.api.dto.instance.Audits;
+import org.opensbpm.engine.userbot.AppParameters;
 
 import java.util.*;
 import java.util.concurrent.*;
@@ -21,6 +22,8 @@ public class UserBot {
     private final EngineServiceClient engineServiceClient;
     private final ExecutorService taskExecutorService;
     private final ScheduledExecutorService tasksFetcher;
+
+    private ScheduledExecutorService processStarter;
     //
     private List<TaskInfo> startedProcesses = Collections.emptyList();
     private Collection<ProcessInfo> processInfos;
@@ -40,27 +43,46 @@ public class UserBot {
         return engineServiceClient.getUserToken();
     }
 
-    public void startProcesses(int processCount) {
+    public void startProcesses(AppParameters appParameters) {
         synchronized (lock) {
             LOGGER.info("User[" + getUserToken().getName() + "] start processes");
-            startedProcesses = engineServiceClient.onEngineModelResource(modelResource -> modelResource.index().getProcessModelInfos()).stream()
-                    .flatMap(model -> IntStream.range(0, processCount).boxed()
-                            .parallel()
-                            .map(idx -> {
-                                        LOGGER.fine("User[" + getUserToken().getName() + "] starting process " + model.getName());
-                                        TaskInfo taskInfo = engineServiceClient.onEngineModelResource(modelResource -> modelResource.start(model.getId()));
-                                        processedTasks.add(taskInfo);
-                                        taskExecutorService.submit(() -> {
-                                            new TaskExecutor(getUserToken(), engineServiceClient).execute(taskInfo);
-                                            processedTasks.remove(taskInfo);
-                                        });
-                                        return taskInfo;
-                                    }
-                            )
-                    )
-                    .toList();
-            LOGGER.info("User[" + getUserToken().getName() + "] started " + startedProcesses.size() + " processes");
+            if (appParameters.getStatistics().getInterval() != null) {
+                startedProcesses = new ArrayList<>();
+
+                processStarter = Executors.newScheduledThreadPool(1);
+                processStarter.scheduleWithFixedDelay(() -> {
+                    List<TaskInfo> processes = startProcesses(appParameters.getStatistics().getProcesses());
+                    startedProcesses.addAll(processes);
+                    LOGGER.info("User[" + getUserToken().getName() + "] started " + startedProcesses.size() + " processes");
+
+                    if(startedProcesses.size() >= appParameters.getStatistics().getInterval()*appParameters.getStatistics().getProcesses()){
+                        processStarter.shutdown();
+                    }
+                }, 10, appParameters.getStatistics().getInterval(), TimeUnit.SECONDS);
+            } else {
+                startedProcesses = startProcesses(appParameters.getStatistics().getProcesses());
+                LOGGER.info("User[" + getUserToken().getName() + "] started " + startedProcesses.size() + " processes");
+            }
         }
+    }
+
+    private List<TaskInfo> startProcesses(Integer processes) {
+        return engineServiceClient.onEngineModelResource(modelResource -> modelResource.index().getProcessModelInfos()).stream()
+                .flatMap(model -> IntStream.range(0, processes).boxed()
+                        .parallel()
+                        .map(idx -> {
+                                    LOGGER.fine("User[" + getUserToken().getName() + "] starting process " + model.getName());
+                                    TaskInfo taskInfo = engineServiceClient.onEngineModelResource(modelResource -> modelResource.start(model.getId()));
+                                    processedTasks.add(taskInfo);
+                                    taskExecutorService.submit(() -> {
+                                        new TaskExecutor(getUserToken(), engineServiceClient).execute(taskInfo);
+                                        processedTasks.remove(taskInfo);
+                                    });
+                                    return taskInfo;
+                                }
+                        )
+                )
+                .toList();
     }
 
     public void startTaskFetcher() {
@@ -77,19 +99,19 @@ public class UserBot {
 //                    if (tasks.isEmpty()) {
 //                        hasMorePages = false;
 //                    }
-                    List<TaskInfo> tasks = getTaskInfos(0, 50);
-                    tasks.stream()
-                            .filter(taskInfo -> processedTasks.add(taskInfo))
-                            .forEach(taskInfo -> {
-                                try {
-                                    taskExecutorService.submit(() -> {
-                                        new TaskExecutor(getUserToken(), engineServiceClient).execute(taskInfo);
-                                        processedTasks.remove(taskInfo);
-                                    });
-                                } catch (RejectedExecutionException e) {
-                                    LOGGER.warning("User[" + getUserToken().getName() + "] task-fetcher " + e.getMessage());
-                                }
-                            });
+                List<TaskInfo> tasks = getTaskInfos(0, 50);
+                tasks.stream()
+                        .filter(taskInfo -> processedTasks.add(taskInfo))
+                        .forEach(taskInfo -> {
+                            try {
+                                taskExecutorService.submit(() -> {
+                                    new TaskExecutor(getUserToken(), engineServiceClient).execute(taskInfo);
+                                    processedTasks.remove(taskInfo);
+                                });
+                            } catch (RejectedExecutionException e) {
+                                LOGGER.warning("User[" + getUserToken().getName() + "] task-fetcher " + e.getMessage());
+                            }
+                        });
 //                }
             }
 
@@ -104,6 +126,10 @@ public class UserBot {
         LOGGER.info("User[" + getUserToken().getName() + "] stopping tasks-fetcher");
         tasksFetcher.shutdown();
         taskExecutorService.shutdown();
+    }
+
+    public List<TaskInfo> getStartedProcesses() {
+        return startedProcesses;
     }
 
     public Collection<ProcessInfo> getStartedProcesses(boolean refresh) {
