@@ -97,6 +97,7 @@ public class AppParameters {
         private String password;
 
         private String config;
+        private Integer interval;
         private Integer processes;
 
         public String getUrl() {
@@ -129,6 +130,14 @@ public class AppParameters {
 
         public void setConfig(String config) {
             this.config = config;
+        }
+
+        public Integer getInterval() {
+            return interval;
+        }
+
+        public void setInterval(Integer interval) {
+            this.interval = interval;
         }
 
         public Integer getProcesses() {

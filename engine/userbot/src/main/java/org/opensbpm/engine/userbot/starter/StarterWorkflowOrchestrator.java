@@ -44,7 +44,7 @@ public class StarterWorkflowOrchestrator implements WorkflowOrchestrator {
 
         LocalDateTime startTime = LocalDateTime.now();
         ExecutorService executorService = Executors.newSingleThreadExecutor();
-        executorService.submit(() -> userBot.startProcesses(appParameters.getStatistics().getProcesses()));
+        executorService.submit(() -> userBot.startProcesses(appParameters));
         executorService.shutdown();
         userBot.startTaskFetcher();
 
@@ -72,20 +72,26 @@ public class StarterWorkflowOrchestrator implements WorkflowOrchestrator {
     private void waitFinished() {
         int activeCount = Integer.MAX_VALUE;
         while (activeCount > 0) {
-            List<ProcessInfo> activeProcesses = userBot.getActiveProcesses();
-            if(activeCount == activeProcesses.size()) {
-                LOGGER.info("Still " + activeProcesses.size() + " processes running:\n"+
-                        activeProcesses.stream()
-                                .map(processInfo -> asString(processInfo))
-                                .collect(Collectors.joining(",\n"))
-                );
-                //userBot.killActiveProcesses();
-
+            if(appParameters.getStatistics().getInterval() != null &&
+                    userBot.getStartedProcesses().size() <
+                            (appParameters.getStatistics().getInterval()*appParameters.getStatistics().getProcesses())
+            ){
+                activeCount = Integer.MAX_VALUE;
             }else {
-                LOGGER.info("Still " + activeProcesses.size() + " processes running");
-            }
-            activeCount = activeProcesses.size();
+                List<ProcessInfo> activeProcesses = userBot.getActiveProcesses();
+                if (activeCount == activeProcesses.size()) {
+                    LOGGER.info("Still " + activeProcesses.size() + " processes running:\n" +
+                            activeProcesses.stream()
+                                    .map(processInfo -> asString(processInfo))
+                                    .collect(Collectors.joining(",\n"))
+                    );
+                    //userBot.killActiveProcesses();
 
+                } else {
+                    LOGGER.info("Still " + activeProcesses.size() + " processes running");
+                }
+                activeCount = activeProcesses.size();
+            }
             try {
                 Thread.sleep(2000);
             } catch (InterruptedException ex) {
