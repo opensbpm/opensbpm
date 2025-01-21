@@ -7,6 +7,7 @@ import org.opensbpm.engine.userbot.AppParameters;
 
 import java.util.*;
 import java.util.concurrent.*;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -55,7 +56,7 @@ public class UserBot {
                     startedProcesses.addAll(processes);
                     LOGGER.info("User[" + getUserToken().getName() + "] started " + startedProcesses.size() + " processes");
 
-                    if(startedProcesses.size() >= appParameters.getStatistics().getInterval()*appParameters.getStatistics().getProcesses()){
+                    if (startedProcesses.size() >= appParameters.getStatistics().getInterval() * appParameters.getStatistics().getProcesses()) {
                         processStarter.shutdown();
                     }
                 }, 10, appParameters.getStatistics().getInterval(), TimeUnit.SECONDS);
@@ -90,29 +91,26 @@ public class UserBot {
         tasksFetcher.scheduleWithFixedDelay(new Runnable() {
             @Override
             public void run() {
-                LOGGER.info("User[" + getUserToken().getName() + "] fetching tasks");
+                try {
+                    LOGGER.info("User[" + getUserToken().getName() + "] fetching tasks");
 
-//                int page = 0;
-//                boolean hasMorePages = true;
-//                while (hasMorePages) {
-//                    List<TaskInfo> tasks = getTaskInfos(page++, 50);
-//                    if (tasks.isEmpty()) {
-//                        hasMorePages = false;
-//                    }
-                List<TaskInfo> tasks = getTaskInfos(0, 50);
-                tasks.stream()
-                        .filter(taskInfo -> processedTasks.add(taskInfo))
-                        .forEach(taskInfo -> {
-                            try {
-                                taskExecutorService.submit(() -> {
-                                    new TaskExecutor(getUserToken(), engineServiceClient).execute(taskInfo);
-                                    processedTasks.remove(taskInfo);
-                                });
-                            } catch (RejectedExecutionException e) {
-                                LOGGER.warning("User[" + getUserToken().getName() + "] task-fetcher " + e.getMessage());
-                            }
-                        });
+                    getTaskInfos(0, 50).stream()
+                            .filter(taskInfo -> processedTasks.add(taskInfo))
+                            .forEach(taskInfo -> {
+                                try {
+                                    taskExecutorService.submit(() -> {
+                                        new TaskExecutor(getUserToken(), engineServiceClient).execute(taskInfo);
+                                        processedTasks.remove(taskInfo);
+                                    });
+                                } catch (RejectedExecutionException e) {
+                                    LOGGER.warning("User[" + getUserToken().getName() + "] task-fetcher " + e.getMessage());
+                                }
+                            });
 //                }
+                } catch (Throwable ex) {
+                    //TODO handle uncaught exceptions correctly
+                    LOGGER.log(Level.SEVERE, "User[" + getUserToken().getName() + "] : " + ex.getMessage(), ex);
+                }
             }
 
             private List<TaskInfo> getTaskInfos(int page, int size) {
