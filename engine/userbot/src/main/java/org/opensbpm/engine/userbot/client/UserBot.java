@@ -45,22 +45,28 @@ public class UserBot {
     }
 
     public void startProcesses(AppParameters appParameters) {
-        synchronized (lock) {
-            LOGGER.info("User[" + getUserToken().getName() + "] start processes");
-            if (appParameters.getStatistics().getInterval() != null) {
-                startedProcesses = new ArrayList<>();
+        LOGGER.info("User[" + getUserToken().getName() + "] start processes");
+        if (appParameters.getStatistics().getInterval() != null) {
+            startedProcesses = new ArrayList<>();
 
-                processStarter = Executors.newScheduledThreadPool(1);
-                processStarter.scheduleWithFixedDelay(() -> {
-                    List<TaskInfo> processes = startProcesses(appParameters.getStatistics().getProcesses());
-                    startedProcesses.addAll(processes);
-                    LOGGER.info("User[" + getUserToken().getName() + "] started " + startedProcesses.size() + " processes");
-
-                    if (startedProcesses.size() >= appParameters.getStatistics().getInterval() * appParameters.getStatistics().getProcesses()) {
-                        processStarter.shutdown();
+            processStarter = Executors.newScheduledThreadPool(1);
+            processStarter.scheduleWithFixedDelay(() -> {
+                synchronized (lock) {
+                    try {
+                        List<TaskInfo> processes = startProcesses(appParameters.getStatistics().getProcesses());
+                        startedProcesses.addAll(processes);
+                        LOGGER.info("User[" + getUserToken().getName() + "] started " + startedProcesses.size() + " processes");
+                    } catch (Throwable ex) {
+                        //TODO handle uncaught exceptions correctly
+                        LOGGER.log(Level.SEVERE, "User[" + getUserToken().getName() + "] : " + ex.getMessage(), ex);
                     }
-                }, 10, appParameters.getStatistics().getInterval(), TimeUnit.SECONDS);
-            } else {
+                }
+                if (startedProcesses.size() >= appParameters.getStatistics().getInterval() * appParameters.getStatistics().getProcesses()) {
+                    processStarter.shutdown();
+                }
+            }, 10, appParameters.getStatistics().getInterval(), TimeUnit.SECONDS);
+        } else {
+            synchronized (lock) {
                 startedProcesses = startProcesses(appParameters.getStatistics().getProcesses());
                 LOGGER.info("User[" + getUserToken().getName() + "] started " + startedProcesses.size() + " processes");
             }
