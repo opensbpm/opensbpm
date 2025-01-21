@@ -77,9 +77,11 @@ public class WebdavUploader {
                 .build();
         //see https://docs.nextcloud.com/server/20/user_manual/en/files/access_webdav.html#accessing-files-using-curl
         restTemplate.put(String.format("%s/%s/%s",
-                appParameters.getStatistics().getConfig(),
                 appParameters.getStatistics().getUrl(),
-                fileName), statData);
+                appParameters.getStatistics().getConfig(),
+                fileName
+            ),
+                statData);
     }
 
     private static String asString(LocalDateTime dateTime) {
