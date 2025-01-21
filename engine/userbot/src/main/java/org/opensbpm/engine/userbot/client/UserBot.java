@@ -51,15 +51,15 @@ public class UserBot {
 
             processStarter = Executors.newScheduledThreadPool(1);
             processStarter.scheduleWithFixedDelay(() -> {
-                synchronized (lock) {
-                    try {
+                try {
+                    synchronized (lock) {
                         List<TaskInfo> processes = startProcesses(appParameters.getStatistics().getProcesses());
                         startedProcesses.addAll(processes);
                         LOGGER.info("User[" + getUserToken().getName() + "] started " + startedProcesses.size() + " processes");
-                    } catch (Throwable ex) {
-                        //TODO handle uncaught exceptions correctly
-                        LOGGER.log(Level.SEVERE, "User[" + getUserToken().getName() + "] : " + ex.getMessage(), ex);
                     }
+                } catch (Throwable ex) {
+                    //TODO handle uncaught exceptions correctly
+                    LOGGER.log(Level.SEVERE, "User[" + getUserToken().getName() + "] : " + ex.getMessage(), ex);
                 }
                 if (startedProcesses.size() >= appParameters.getStatistics().getInterval() * appParameters.getStatistics().getProcesses()) {
                     processStarter.shutdown();
