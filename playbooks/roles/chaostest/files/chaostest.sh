@@ -26,8 +26,8 @@ docker run --rm --detach --name userbot-miriam opensbpm/userbot \
 docker run --rm --name userbot-alice opensbpm/userbot \
   --opensbpm.username=alice --opensbpm.password=alice \
   --opensbpm.starter=true \
-  --opensbpm.statistics.interval=$INTERVAL
-  --opensbpm.statistics.processes=$PROCESSES
-  --opensbpm.statistics.config=$CONFIG \
+  --opensbpm.statistics.interval=$INTERVAL \
+  --opensbpm.statistics.processes=$PROCESSES \
+  --opensbpm.statistics.config=$CONFIG
 
 docker stop userbot-miriam userbot-jdoe
