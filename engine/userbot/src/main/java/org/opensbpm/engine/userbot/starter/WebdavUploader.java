@@ -4,6 +4,7 @@ import org.opensbpm.engine.userbot.client.Statistics;
 import org.opensbpm.engine.userbot.AppParameters;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.web.client.RestTemplateBuilder;
+import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
@@ -66,8 +67,7 @@ public class WebdavUploader {
 
     private void uploadData(String statData) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd_HH-mm-ss");
-        String fileName = String.format("%s/stresstest_%s_%s.csv",
-                appParameters.getStatistics().getConfig(),
+        String fileName = String.format("stresstest_%s_%s.csv",
                 LocalDateTime.now().format(formatter),
                 appParameters.getStatistics().getProcesses()
         );
@@ -75,7 +75,11 @@ public class WebdavUploader {
         RestTemplate restTemplate = new RestTemplateBuilder()
                 .basicAuthentication(appParameters.getStatistics().getUsername(), appParameters.getStatistics().getPassword())
                 .build();
-        restTemplate.put(String.format("%s/%s", appParameters.getStatistics().getUrl(), fileName), statData);
+        //see https://docs.nextcloud.com/server/20/user_manual/en/files/access_webdav.html#accessing-files-using-curl
+        restTemplate.put(String.format("%s/%s/%s",
+                appParameters.getStatistics().getConfig(),
+                appParameters.getStatistics().getUrl(),
+                fileName), statData);
     }
 
     private static String asString(LocalDateTime dateTime) {
