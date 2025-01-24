@@ -20,7 +20,7 @@
         -->
         <dependency>
             <groupId>org.opensbpm.engine</groupId>
-            <artifactId>api</artifactId>
+            <artifactId>opensbpm-engine-api</artifactId>
         </dependency>
 
         <dependency>
