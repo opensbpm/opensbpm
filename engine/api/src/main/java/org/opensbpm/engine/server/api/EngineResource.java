@@ -76,7 +76,7 @@ public interface EngineResource {
     public interface TaskResource {
 
         @GET
-        Tasks index(@QueryParam("page") int page,@QueryParam("size") int size);
+        Tasks index();
 
         @GET
         @Path(value = "/{taskId}")

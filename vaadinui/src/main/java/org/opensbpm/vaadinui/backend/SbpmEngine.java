@@ -9,9 +9,6 @@ import org.opensbpm.engine.api.UserNotFoundException;
 import org.opensbpm.engine.api.instance.*;
 import org.opensbpm.engine.api.model.ProcessModelInfo;
 import org.opensbpm.engine.client.EngineServiceClient;
-import org.opensbpm.engine.server.api.EngineResource.ProcessModelResource;
-import org.opensbpm.engine.server.api.EngineResource.ProcessInstanceResource;
-import org.opensbpm.engine.server.api.EngineResource.TaskResource;
 
 import java.io.InputStream;
 import java.util.List;
@@ -85,7 +82,7 @@ public class SbpmEngine {
     }
 
     private Stream<TaskInfo> getAllTasks() throws UserNotFoundException {
-        return getEngineServiceClient().onEngineTaskResource(resource -> resource.index(0,50).getTaskInfos()).stream();
+        return getEngineServiceClient().onEngineTaskResource(resource -> resource.index().getTaskInfos()).stream();
     }
 
     public TaskInfo getNextTask(TaskInfo taskInfo) throws UserNotFoundException {

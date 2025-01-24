@@ -120,7 +120,7 @@ public class UserBot {
             }
 
             private List<TaskInfo> getTaskInfos(int page, int size) {
-                return engineServiceClient.onEngineTaskResource(taskResource -> taskResource.index(page, size).getTaskInfos());
+                return engineServiceClient.onEngineTaskResource(taskResource -> taskResource.index().getTaskInfos());
             }
 
         }, 1, 500, TimeUnit.MILLISECONDS);
