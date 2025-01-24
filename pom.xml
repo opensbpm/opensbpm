@@ -62,7 +62,7 @@
         </sonar.coverage.jacoco.xmlReportPaths>
 
         <!-- dependency versions -->
-        <opensbpm.version>1.1-SNAPSHOT</opensbpm.version>
+        <opensbpm.version>0.1</opensbpm.version>
         <spring.boot.version>3.4.1</spring.boot.version>
         <apache.cxf.version>4.0.4</apache.cxf.version>
     </properties>
@@ -76,7 +76,7 @@
             -->
             <dependency>
                 <groupId>org.opensbpm.engine</groupId>
-                <artifactId>engine-bom</artifactId>
+                <artifactId>opensbpm-engine-bom</artifactId>
                 <version>${opensbpm.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
@@ -112,15 +112,9 @@
         </repository>
 
         <repository>
-            <id>opensbpm-snapshots</id>
-            <name>OpenSBPM Snapshots</name>
-            <url>https://team.sedelmaier.at/archiva/repository/opensbpm-snapshots/</url>
-            <releases>
-                <enabled>false</enabled>
-            </releases>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
+            <id>opensbpm-release</id>
+            <name>OpenSBPM Releases</name>
+            <url>https://maven.pkg.github.com/opensbpm/engine</url>
         </repository>
     </repositories>
 

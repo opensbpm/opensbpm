@@ -32,16 +32,16 @@
 
         <dependency>
             <groupId>org.opensbpm.engine</groupId>
-            <artifactId>core</artifactId>
+            <artifactId>opensbpm-engine-core</artifactId>
         </dependency>
 
         <dependency>
             <groupId>org.opensbpm.engine</groupId>
-            <artifactId>xmlmodel</artifactId>
+            <artifactId>opensbpm-engine-xmlmodel</artifactId>
         </dependency>
 
         <!-- opensbpm plugins -->
-        <dependency>
+        <!--dependency>
             <groupId>org.opensbpm.plugins</groupId>
             <artifactId>jasperreports-plugin</artifactId>
             <version>1.1-SNAPSHOT</version>
@@ -51,16 +51,11 @@
                     <artifactId>commons-logging</artifactId>
                 </exclusion>
             </exclusions>
-        </dependency>
-        <!--dependency>
-            <groupId>at.softwaremacherei.jsbpm</groupId>
-            <artifactId>sbpm-plugin-elasticsearch</artifactId>
-            <version>${jsbpm.version}</version>
         </dependency-->
 
         <dependency>
             <groupId>org.opensbpm.engine</groupId>
-            <artifactId>examples</artifactId>
+            <artifactId>opensbpm-engine-examples</artifactId>
         </dependency>
 
         <dependency>
