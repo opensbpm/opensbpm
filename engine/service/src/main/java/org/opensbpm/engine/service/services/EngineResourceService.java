@@ -33,7 +33,6 @@ import org.opensbpm.engine.api.instance.UserToken;
 import org.opensbpm.engine.api.model.ProcessModelInfo;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -44,9 +43,6 @@ import org.opensbpm.engine.server.api.dto.instance.Tasks;
 import org.opensbpm.engine.server.api.dto.model.ProcessModels;
 import org.opensbpm.engine.service.authentication.SpringAuthentication;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.support.PageableExecutionUtils;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
@@ -179,16 +175,9 @@ public class EngineResourceService implements EngineResource {
         }
 
         @Override
-        public Tasks index(int page, int size) {
-            Pageable pageRequest = PageRequest.of(page, size);
+        public Tasks index() {
             try {
-                List<TaskInfo> tasks = engineService.getTasks(userToken);
-//                int start = (int) pageRequest.getOffset();
-//                int end = Math.min((start + pageRequest.getPageSize()), tasks.size());
-//                List<TaskInfo> taskInfos = tasks.subList(start, end);
-//                //List<TaskInfo> taskInfos = PageableExecutionUtils.getPage(tasks, pageRequest, tasks::size).getContent();
-//                return new Tasks(taskInfos);
-                return new Tasks(tasks);
+                return new Tasks(engineService.getTasks(userToken));
             } catch (UserNotFoundException ex) {
                 throw new NotFoundException(ex.getMessage(), ex);
             }
