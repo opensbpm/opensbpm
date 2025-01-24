@@ -5,7 +5,7 @@
 
   vars:
     #number of worker nodes to create
-    node_count: 1
+    node_count: 2
     ssh_key_name: "opensbpm@hetzner" # key name from  hetzner console
 
   tasks:
