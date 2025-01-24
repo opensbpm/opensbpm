@@ -1,5 +1,5 @@
 {
-  "realm": "quickstart",
+  "realm": "opensbpm",
   "enabled": true,
   "requiredCredentials": [
     "password"

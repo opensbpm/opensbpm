@@ -81,7 +81,7 @@ public abstract class EngineServiceClient {
 
             private Authentication requestToken(BodyPublisher bodyPublishers) {
                 try {
-                    HttpRequest authRequest = HttpRequest.newBuilder(URI.create(String.format("%s/auth/realms/quickstart/protocol/openid-connect/token", authAddress)))
+                    HttpRequest authRequest = HttpRequest.newBuilder(URI.create(String.format("%s/auth/realms/opensbpm/protocol/openid-connect/token", authAddress)))
                             .header("content-type", "application/x-www-form-urlencoded")
                             .POST(bodyPublishers)
                             .build();
