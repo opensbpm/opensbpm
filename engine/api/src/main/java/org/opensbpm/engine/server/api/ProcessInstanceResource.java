@@ -45,7 +45,7 @@ public interface ProcessInstanceResource {
     Audits retrieveAudit(@PathParam(value = "instanceId") Long instanceId);
 
     @Operation(summary = "stop process",
-            description = "Immediatly stop process with given id")
+            description = "Immediately stop process with given id")
     @POST
     @Path(value = "/{instanceId}/stop")
     ProcessInfo stop(@PathParam("instanceId") Long instanceId);
