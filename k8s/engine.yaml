@@ -20,7 +20,7 @@ metadata:
   labels:
     app: engine
 spec:
-  replicas: 1
+  replicas: 2
   selector:
     matchLabels:
       app: engine
@@ -34,6 +34,9 @@ spec:
         prometheus.io/path: "/api/actuator/prometheus"
         prometheus.io/port: "8080"
     spec:
+      nodeSelector:
+        #kubernetes.io/hostname: controlplane
+        kubernetes.io/hostname: workernode-2
       containers:
         - name: engine
           image: opensbpm/engine:latest
