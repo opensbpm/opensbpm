@@ -45,11 +45,12 @@ spec:
         app: engine-db
     spec:
       nodeSelector:
-        #kubernetes.io/hostname: workernode-1
-        kubernetes.io/hostname: controlplane
+        kubernetes.io/hostname: workernode-1
       containers:
         - name: engine-postgres
           image: docker.io/library/postgres:15.4
+          args: ["-c", "idle_in_transaction_session_timeout=60s"]
+          #attach:
           env:
             - name: POSTGRES_DB
               value: opensbpm
