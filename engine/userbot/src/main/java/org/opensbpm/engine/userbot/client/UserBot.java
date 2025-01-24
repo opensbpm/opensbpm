@@ -100,7 +100,7 @@ public class UserBot {
                 try {
                     LOGGER.info("User[" + getUserToken().getName() + "] fetching tasks");
 
-                    getTaskInfos(0, 50).stream()
+                    getTaskInfos().stream()
                             .filter(taskInfo -> processedTasks.add(taskInfo))
                             .forEach(taskInfo -> {
                                 try {
@@ -119,7 +119,7 @@ public class UserBot {
                 }
             }
 
-            private List<TaskInfo> getTaskInfos(int page, int size) {
+            private List<TaskInfo> getTaskInfos() {
                 return engineServiceClient.onEngineTaskResource(taskResource -> taskResource.index().getTaskInfos());
             }
 
