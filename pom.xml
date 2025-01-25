@@ -62,7 +62,7 @@
         </sonar.coverage.jacoco.xmlReportPaths>
 
         <!-- dependency versions -->
-        <opensbpm.version>0.1</opensbpm.version>
+        <opensbpm.version>0.1.0</opensbpm.version>
         <spring.boot.version>3.4.1</spring.boot.version>
         <apache.cxf.version>4.0.4</apache.cxf.version>
     </properties>
@@ -112,7 +112,7 @@
         </repository>
 
         <repository>
-            <id>opensbpm-release</id>
+            <id>opensbpm</id>
             <name>OpenSBPM Releases</name>
             <url>https://maven.pkg.github.com/opensbpm/engine</url>
         </repository>
