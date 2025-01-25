@@ -305,11 +305,20 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <version>${spring.boot.version}</version>
-                <!-- Clean build and startup time for Vaadin apps sometimes may exceed
-                the default Spring Boot's 30sec timeout.  -->
                 <configuration>
+                    <!-- Clean build and startup time for Vaadin apps sometimes may exceed
+                    the default Spring Boot's 30sec timeout.  -->
                     <wait>2000</wait>
                     <maxAttempts>240</maxAttempts>
+
+                    <addResources>true</addResources>
+                    <systemPropertyVariables>
+                        <java.net.preferIPv4Stack>true</java.net.preferIPv4Stack>
+                    </systemPropertyVariables>
+                    <image>
+                        <!--name>docker.io/opensbpm/${project.artifactId}:${project.version}</name-->
+                        <name>docker.io/opensbpm/vaadinui</name>
+                    </image>
                 </configuration>
                 <executions>
                     <execution>
