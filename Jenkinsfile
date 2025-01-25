@@ -27,8 +27,6 @@ node('docker && nodejs && jdk17'){
                     withSonarQubeEnv('Sonarqube') {
                         sh "mvn clean test verify sonar:sonar package -Pproduction"
                     }
-
-                    stash(name: 'vaadinui-jar', includes: 'vaadinui/target/vaadinui-exec.jar')
                 }
                 //junit '**/target/*-reports/TEST-*.xml'
                 recordCoverage(name: 'Coverage Service',
@@ -43,11 +41,12 @@ node('docker && nodejs && jdk17'){
                     mavenSettingsConfig: '05894f91-85e1-4e6d-8eb5-a101d90c62e3'
                 ) {
                     sh "mvn -DskipTests -U install"
-                    sh "mvn -pl engine/userbot,engine/service spring-boot:build-image"
+                    sh "mvn -pl engine/userbot,engine/service,vaadinui spring-boot:build-image"
                 }
                 docker.withRegistry('', 'opensbpm@hub.docker.com') {
                     sh "docker push docker.io/opensbpm/userbot:latest"
                     sh "docker push docker.io/opensbpm/engine:latest"
+                    sh "docker push docker.io/opensbpm/vaadinui:latest"
                 }
             }
 
@@ -58,16 +57,6 @@ node('docker && nodejs && jdk17'){
                     dir('keycloak'){
                         docker.withRegistry('', 'opensbpm@hub.docker.com') {
                             def image = docker.build("opensbpm/keycloak-init:${env.BUILD_ID}")
-                            image.push("${env.BUILD_ID}")
-                            image.push("latest")
-                        }
-                    }
-
-
-                    unstash('vaadinui-jar')
-                    dir('vaadinui'){
-                        docker.withRegistry('', 'sedstef@hub.docker.com') {
-                            def image = docker.build("sedstef/opensbpm-vaadinui:${env.BUILD_ID}")
                             image.push("${env.BUILD_ID}")
                             image.push("latest")
                         }
