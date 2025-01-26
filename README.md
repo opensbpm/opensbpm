@@ -27,6 +27,12 @@ export HCLOUD_TOKEN=<Hetzner API Token>
 ansible-playbook ansible/site.yml
 ```
 
+4. Validate setup
+```
+kubectl --kubeconfig ~/.kube/opensbpm\@hetzner.yaml cluster-info
+```
+
+
 More details in [ansible README](ansible/README.md)
    
 

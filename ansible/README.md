@@ -33,7 +33,7 @@ For details see https://community.hetzner.com/tutorials/howto-ssh-key
 
 ## Setup microk8s cluster
 
-### Run in wsl
+### Run ansible playbook 
 Export Hetzner API Token as HCLOUD_TOKEN und execute ansible playbook.
 ```
 export HCLOUD_TOKEN=<Hetzner API Token>
@@ -69,5 +69,12 @@ kubectl --kubeconfig ~/.kube/opensbpm\@hetzner.yaml events
 ssh-keygen -R cloud-dev.opensbpm.org; ssh -i ~/.ssh/opensbpm\@hetzner root@cloud-dev.opensbpm.org
 ```
 
-#### TODO
+## Delete Hetzner Cloud
+```
+ansible-playbook ansible/delete_site.yml
+```
+
+
+## TODO
 https://docs.ansible.com/ansible/2.8/user_guide/playbooks_best_practices.html
+
