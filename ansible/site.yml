@@ -12,12 +12,14 @@
     - controlplane
     - litmuschaos
 
+
 - name: Apply configuration to worker node
   hosts: worker_nodes
 
   roles:
     - microk8s
     - worker
+
 
 - name: Apply configuration to stresstest server
   hosts: stresstest
@@ -26,3 +28,10 @@
     - podman
     - stresstest
     - chaostest
+
+
+- name: Apply opensbpm k8s config
+  hosts: localhost
+
+  roles:
+    - opensbpm

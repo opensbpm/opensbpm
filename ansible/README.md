@@ -59,9 +59,14 @@ Check kubeconfig with kubectl
 kubectl --kubeconfig ~/.kube/opensbpm\@hetzner.yaml cluster-info
 ```
 
-###
+To show the latest events, use:
 ```
-ssh-keygen -R cloud-dev.opesnsbpm.org; ssh -i ~/.ssh/opensbpm\@hetzner root@cloud-dev.opensbpm.org
+kubectl --kubeconfig ~/.kube/opensbpm\@hetzner.yaml events
+```
+
+### Login in control-plane
+```
+ssh-keygen -R cloud-dev.opensbpm.org; ssh -i ~/.ssh/opensbpm\@hetzner root@cloud-dev.opensbpm.org
 ```
 
 #### TODO
