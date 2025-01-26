@@ -6,9 +6,13 @@
   vars:
     #number of worker nodes to create
     node_count: 2
-    ssh_key_name: "opensbpm@hetzner" # key name from  hetzner console
 
   tasks:
+    - name: Register local SSH key on Hetzner Cloud
+      hetzner.hcloud.ssh_key:
+        name: opensbpm@hetzner
+        public_key: "{{ lookup('file', '~/.ssh/opensbpm@hetzner.pub') }}"
+
     - name: Create the IPv4 Primary IP
       hetzner.hcloud.primary_ip:
         name: opensbpm-primary-ip
@@ -45,7 +49,7 @@
         private_networks:
           - opensbpm-private-network
         ssh_keys:
-          - "{{ ssh_key_name }}"
+          - opensbpm@hetzner
         state: started
       register: control_plane
 
@@ -62,7 +66,7 @@
         name: "{{ control_plane.hcloud_server.ipv4_address }}"
         groups: control_planes
         ansible_user: root
-        ansible_ssh_private_key_file: ~/.ssh/opensbpm-hetzner
+        ansible_ssh_private_key_file: ~/.ssh/opensbpm@hetzner
 
     - name: Create worker servers
       loop: "{{ range(1, node_count + 1) | list }}"
@@ -82,7 +86,7 @@
         private_networks:
           - opensbpm-private-network
         ssh_keys:
-          - "{{ ssh_key_name }}"
+          - opensbpm@hetzner
         state: started
       register: worker_nodes
 
@@ -98,7 +102,7 @@
         #ansible_host: "{{ item.hcloud_server.private_networks_info[0].ip }}"
         groups: worker_nodes
         ansible_user: root
-        ansible_ssh_private_key_file: ~/.ssh/opensbpm-hetzner
+        ansible_ssh_private_key_file: ~/.ssh/opensbpm@hetzner
 
     - name: Add worker nodes to known_hosts
       loop: "{{ worker_nodes.results }}"

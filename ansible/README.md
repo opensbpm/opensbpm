@@ -1,37 +1,48 @@
+# OpenSBPM - Ansible Playbook
 
-Voraussetzung:
-* Hetzner Projekt muss erstellt worden sein
-* API-Token für das Projekt generiert werden sein. Der API Token 
-entscheidet zu welchem Projekt die Server hinzugefügt werden.
-* SSH_Key für die Administration von Ansible mit den Server 
+This playbook handles all aspects of managing a MicroK8s cluster on Hetzner Cloud. It provisions a control plane and multiple 
+worker nodes, sets up a MicroK8s cluster, and deploys OpenSBPM as a distributed, cloud-native application.
 
-### SSH Key erstellen
-Details unter https://community.hetzner.com/tutorials/howto-ssh-key
-In lokaler GIT-Bash:
-```
-ssh-keygen -t ed25519
-```
-Den Public-Key als `opensbpm@hetzner` in den SSH-Keys des Hetzner-Projekts hinterlegen.
-Bei wsl den key nach `~/.ssh/opensbpm-hetzner` kopieren
 
 ## Requirements
-Install hetzner.hcloud and kubernetes.core with ansbile-galaxy.
+Install _hetzner.hcloud_ and _kubernetes.core_ with ansible-galaxy.
+
 ```
 ansible-galaxy collection install hetzner.hcloud
 ansible-galaxy collection install kubernetes.core
 ```
 
-### Run in wsl
-API-Token muss als Environment-Variable gesetzt worden sein
-```
-export HCLOUD_TOKEN=<Hetzner API Token>
-```
+## Prepare Hetzner Cloud
+
+- Ensure a Hetzner project is available.
+- Generate an API token for the project to enable automation.
+- Set up an SSH key for Ansible administration on the servers.
+
+
+### Create SSH Key
+
+Generate a local SSH key, which will be registered in Hetzner Cloud. This key will be used by all servers to enable secure 
+root access.
 
 ```
-ansible-playbook playbooks/site.yml
+ssh-keygen -t ed25519 -f ~/.ssh/opensbpm@hetzner
+```
+
+For details see https://community.hetzner.com/tutorials/howto-ssh-key
+
+
+## Setup microk8s cluster
+
+### Run in wsl
+Export Hetzner API Token as HCLOUD_TOKEN und execute ansible playbook.
+```
+export HCLOUD_TOKEN=<Hetzner API Token>
+ansible-playbook ansible/site.yml
 ```
 
 ### Run in powershell with docker
+
+**Use with caution**
 To run playbook in powershell (standalone) run (in root dir):
 ```
 docker run --rm `
@@ -42,7 +53,7 @@ docker run --rm `
      
 ```
 
-### Check
+## Check cluster
 Check kubeconfig with kubectl
 ```
 kubectl --kubeconfig ~/.kube/opensbpm\@hetzner.yaml cluster-info
@@ -50,7 +61,7 @@ kubectl --kubeconfig ~/.kube/opensbpm\@hetzner.yaml cluster-info
 
 ###
 ```
-ssh-keygen -R cloud-dev.opesnsbpm.org; ssh -i ~/.ssh/opensbpm-hetzner root@cloud-dev.opensbpm.org
+ssh-keygen -R cloud-dev.opesnsbpm.org; ssh -i ~/.ssh/opensbpm\@hetzner root@cloud-dev.opensbpm.org
 ```
 
 #### TODO
