@@ -10,7 +10,6 @@ import org.springframework.context.annotation.Import;
 public class EngineServiceApplication {
 
     public static void main(String[] args) {
-        SslConfiguration.trustAll();
         SpringApplication.run(EngineServiceApplication.class, args);
     }
 
