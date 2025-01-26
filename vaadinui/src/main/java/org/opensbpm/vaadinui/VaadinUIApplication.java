@@ -22,7 +22,6 @@ import org.springframework.boot.autoconfigure.web.servlet.error.ErrorMvcAutoConf
 public class VaadinUIApplication implements AppShellConfigurator {
 
     public static void main(String[] args) {
-        SslConfiguration.trustAll();
         SpringApplication.run(VaadinUIApplication.class, args);
     }
 
