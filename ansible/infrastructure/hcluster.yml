@@ -18,13 +18,13 @@
         name: opensbpm-primary-ip
         datacenter: fsn1-dc14
         type: ipv4
-        delete_protection: true
+        delete_protection: true #reuse ipv4 to avoid problems with dns
         state: present
 
-    - name: Create Private Network
+    - name: Create private network
       hetzner.hcloud.network:
         name: opensbpm-private-network
-        ip_range: 10.0.0.0/16 # CIDR-Block für das private Netzwerk
+        ip_range: 10.0.0.0/16
 
     - name: Create a basic subnetwork
       hetzner.hcloud.subnetwork:
@@ -33,7 +33,7 @@
         ip_range: 10.0.0.0/16
         type: cloud
 
-    - name: Create Control Plane server
+    - name: Create control plane server
       hetzner.hcloud.server:
         location: fsn1
         name: controlplane
@@ -53,7 +53,7 @@
         state: started
       register: control_plane
 
-    - name: Add Control Plane host keys to known_hosts
+    - name: Add control plane host keys to known_hosts
       ansible.builtin.known_hosts:
         path: ~/.ssh/known_hosts
         name: "{{ control_plane.hcloud_server.ipv4_address }}"
@@ -61,7 +61,7 @@
         key: "{{ lookup('ansible.builtin.pipe', 'sleep 25; ssh-keyscan -T 240 {{ control_plane.hcloud_server.ipv4_address }}') }}"
         state: present
 
-    - name: Add Control Plane to inventory
+    - name: Add control plane to inventory
       add_host:
         name: "{{ control_plane.hcloud_server.ipv4_address }}"
         groups: control_planes

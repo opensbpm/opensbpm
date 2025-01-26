@@ -21,8 +21,8 @@
 - name: Fetch the kubectl config from the remote server
   ansible.builtin.fetch:
     src: /root/.kube/config
-    #dest: ~/.kube/opensbpm@hetzner
-    dest: /mnt/c/Users/stefan/.kube/opensbpm@hetzner.yaml
+    dest: ~/.kube/opensbpm@hetzner.yaml
+    #dest: /mnt/c/Users/stefan/.kube/opensbpm@hetzner.yaml
     flat: yes
 
 - name: Create opensbpm directory

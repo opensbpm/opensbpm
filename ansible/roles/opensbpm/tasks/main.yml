@@ -1,0 +1,5 @@
+---
+- name: Install opensbpm on k8s
+  kubernetes.core.k8s:
+    kubeconfig: ~/.kube/opensbpm@hetzner.yaml
+    definition: "{{ lookup('kubernetes.core.kustomize', dir='k8s') }}"
