@@ -1,0 +1,12 @@
+#A description about all values is available on https://docs.spring.io/spring-boot/appendix/application-properties/index.html
+
+spring.main.allow-circular-references: true
+
+#debug: true
+
+#logging.level:
+#    root: INFO
+#    org.springframework.web: DEBUG
+#    org.springframework.security: DEBUG
+#    org.springframework.security.oauth2: INFO
+#    org.apache.cxf: DEBUG
