@@ -1,3 +1,5 @@
+#A description about all values is available on https://docs.spring.io/spring-boot/appendix/application-properties/index.html
+
 server:
   port: 8090
   servlet:

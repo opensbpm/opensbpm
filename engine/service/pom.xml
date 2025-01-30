@@ -15,7 +15,7 @@
 
     <properties>
         <!-- dependency versions -->
-        <jasperreports.version>6.17.0</jasperreports.version>
+        <!--jasperreports.version>6.17.0</jasperreports.version-->
     </properties>
 
     <dependencies>
@@ -125,6 +125,7 @@
             <optional>true</optional>
         </dependency>
 
+
         <!--
             =======================
               Test Dependencies
@@ -138,6 +139,18 @@
         <dependency>
             <groupId>org.springframework.security</groupId>
             <artifactId>spring-security-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+
+        <!--
+        ============================
+         Test Runtime Dependencies
+        ============================
+        -->
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
             <scope>test</scope>
         </dependency>
 
