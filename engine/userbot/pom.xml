@@ -32,7 +32,7 @@
     <properties>
         <mainClass>org.opensbpm.engine.userbot.Main</mainClass>
         
-        <sonar.coverage.exclusions>**/org/opensbpm/userbot/**/*.*</sonar.coverage.exclusions>
+        <sonar.coverage.exclusions>**/org/opensbpm/engine/userbot/**/*.*</sonar.coverage.exclusions>
 
     </properties>
 
