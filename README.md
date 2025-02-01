@@ -40,9 +40,3 @@ More details in [ansible README](ansible/README.md)
 
 The repository includes a Userbot to perform stress and chaos testing to simulate various failure conditions and ensure 
 system stability.
-
-### Run Tests
-Execute the Userbot with the desired test parameters to start stress testing:
-```bash
-./userbot.sh --type stress --duration 60
-```
