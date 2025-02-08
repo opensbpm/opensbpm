@@ -22,6 +22,8 @@
         <kotlin.version>1.6.0</kotlin.version>
         
         <junit.jupiter.version>5.8.2</junit.jupiter.version>
+
+        <sonar.coverage.exclusions>**/org/opensbpm/vaadinui/**/*.*</sonar.coverage.exclusions>
     </properties>
 
     <dependencyManagement>
